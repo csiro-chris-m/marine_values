@@ -322,6 +322,7 @@ class CSIROMarineValues:
                     sortOrder = self.dlg.tableView.model().item(i, 2)
                     sortOrder.setText('{:05d}'.format(treeLayerIdx))
             treeLayerIdx += 1
+        print self.layerInfo
         self.dlg.tableView.model().sort(2)
                     
 
@@ -333,7 +334,9 @@ class CSIROMarineValues:
         layerInfo = []
         for feature in layer.getFeatures():
             geom = feature.geometry()
-            layerInfo.append("Feature ID %d: " % feature.id())
+            #layerInfo.append("Feature ID %d: " % feature.id())
+            if len(feature.attributes()) > 3:
+                layerInfo.append(feature.attributes()[3])
         return "\n".join(layerInfo)
 
 
