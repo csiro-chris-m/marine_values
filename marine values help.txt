@@ -1,0 +1,4 @@
+
+
+Setting default path if it needs to be changed (user only gets one chance at first start.
+Go to QGIS Settings Option Advanced. Click the 'I will be careful, I promise!' button. Browse to marine_values/default_path entry. Then either enter a path in the value box or ensure it is empty. This will cause it to prompt for a path on next startup.
