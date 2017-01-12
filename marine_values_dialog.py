@@ -48,5 +48,13 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
         #Doesn't work. Need to make resources
         self.setWindowIcon(QtGui.QIcon('marvin_icon.png'))
 
-        print self.test
+        #Disable action of the close button 'x'. 
+        #self._want_to_close = False
+
         #print self.defaultPath.toPlainText()
+
+    #def closeEvent(self, evnt):
+    #    if self._want_to_close:
+    #        super(MyDialog, self).closeEvent(evnt)
+    #    else:
+    #        evnt.ignore()
