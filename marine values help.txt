@@ -2,3 +2,5 @@
 
 Setting default path if it needs to be changed (user only gets one chance at first start.
 Go to QGIS Settings Option Advanced. Click the 'I will be careful, I promise!' button. Browse to marine_values/default_path entry. Then either enter a path in the value box or ensure it is empty. This will cause it to prompt for a path on next startup.
+
+MARVIN syncs from the app window to QGIS but not vice versa. Hence, do all changes in MARVIN and they will come through to the QGIS project. Save when you are done. You can make changes in the QGIS project but do them with the MARVIN window closed. When starting MARVIN again it will reflect the changes that were made.
