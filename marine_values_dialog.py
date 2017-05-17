@@ -42,7 +42,7 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
 
         pal=QtGui.QPalette()
         role = QtGui.QPalette.Background
-        pal.setColor(role, QtGui.QColor(219, 219, 200))
+        pal.setColor(role, QtGui.QColor(214, 211, 171))
         self.setPalette(pal)        
 
         #Doesn't work. Need to make resources

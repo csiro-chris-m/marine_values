@@ -13,10 +13,7 @@
 
 /***************************************************************************
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
+ *   This program is copyright protected                                   *
  *                                                                         *
  ***************************************************************************/
 
@@ -26,6 +23,7 @@
  *   and called "marine values help.txt"                                   *                                  
  *                                                                         *
  *   Environment Versions                                                  *
+ *   ------------------------------------                                  *
  *   QGIS 2.18.2 Las Palmas                                                *
  *   Qt Creator 4.2.0                                                      *
  *                                                                         *
@@ -61,13 +59,8 @@ class CSIROMarineValues:
 
 
     def __init__(self, iface):
-        """Constructor.
+        #Constructor.
 
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
         # Have we filled the list widget with the shps yet?
         self.filled = False
         # Save reference to the QGIS interface
@@ -80,6 +73,7 @@ class CSIROMarineValues:
         #  'dev' - development. Ending does not close QGIS.
         #  'prod'- production. End command ends QGIS.
         self.opmode = 'dev'
+        self.geometryTypes = defaultdict(lambda: 'unknown', {QGis.Polygon: 'polygon', QGis.Point: 'point'})
 
 
         # initialize locale
@@ -268,49 +262,40 @@ class CSIROMarineValues:
         self.dlg.tableView.setModel(xmod)
 
         header = self.dlg.tableView.horizontalHeader()
-        header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
+        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
         header.setResizeMode(QtGui.QHeaderView.Fixed)
         self.dlg.tableView.setColumnWidth(0,200)
+        self.dlg.tableView.setColumnWidth(1,100)
+        self.dlg.tableView.setColumnWidth(2,0)
+        self.dlg.tableView.setColumnWidth(3,0)
 
-
-
-
-            #self.dlg.tableView.model().clicked.connect(self.tableViewselectionChanged)
+        #self.dlg.tableView.model().clicked.connect(self.tableViewselectionChanged)
 
         self.dlg.tableView.verticalHeader().setMovable(True)
-        #self.dlg.tableView.verticalHeader().setDragEnabled(True)
-        #self.dlg.tableView.verticalHeader().setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.dlg.tableView.verticalHeader().setDragEnabled(True)
+        self.dlg.tableView.verticalHeader().setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+
+        QtCore.QObject.connect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
+
         #self.dlg.tableView.setDropIndicatorShown(True)
-        
-
-
-
-        
-
-
+        #self.dlg.tableView.setAcceptDrops(True)
+        #self.dlg.tableView.setDragEnabled(True)
+        #self.dlg.tableView.dropOn = lambda event: pprint(event)
+        #self.dlg.tableView.droppingOnItself = lambda event: pprint(event)
 
         #self.dlg.tableView.model().selectionChanged = lambda x, y: pprint([self, x, y])
-
-
         #self.dlg.tableView.stateChanged = lambda x, y: pprint([self, x, y])
         #self.dlg.tableView.itemChanged.connect(self.s_changed)
         self.dlg.tableView.clicked.connect(self.tableViewClicked)
 
-
-        #self.dlg.tableView.setAcceptDrops(True)
         #self.dlg.tableView.mousePressEvent = lambda event: pprint(event)
         #self.dlg.tableView.dropEvent = lambda event: pprint(event)
-        #self.dlg.tableView.dropOn = lambda event: pprint(event)
-        #self.dlg.tableView.droppingOnItself = lambda event: pprint(event)
-        #self.dlg.tableView.setAcceptDrops(True)
         #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
 
         #Load main project
         self.project_load()
 
         self.dlg.tableView.selectRow(0)
-
-
 
         ## show the dialog
         self.dlg.show()
@@ -364,7 +349,6 @@ class CSIROMarineValues:
             #return
         qset = QSettings()
         defpath = qset.value("marine_values/default_path", "")
-        geometryTypes = defaultdict(lambda: 'unknown', {QGis.Polygon: 'polygon', QGis.Point: 'point'})
         
 
         #tryCount is an attempt at solving loading problems. Probalby not needed anymore since
@@ -372,6 +356,9 @@ class CSIROMarineValues:
         #that an application instance cannot exist without an open project file.
         #tryCount = 0
         #while tryCount < 2:
+
+        #print project.fileName()
+
         if not project.read(QFileInfo(defpath + '\marine_values.qgs')):
             self.dlg.error.setText("Could not load marine_values.qgs")
         elif len(project.layerTreeRoot().findLayers()) < 1:
@@ -379,7 +366,7 @@ class CSIROMarineValues:
         else:
             pass
             #tryCount = 9999
-        #tryCount += 1
+            #tryCount += 1
 
 
 
@@ -412,7 +399,7 @@ class CSIROMarineValues:
 
 
                         geometryType = self.dlg.tableView.model().item(i, 1)
-                        geometryType.setText(geometryTypes[layer.geometryType()])
+                        geometryType.setText(self.geometryTypes[layer.geometryType()])
                         sortOrder = self.dlg.tableView.model().item(i, 2)
                         sortOrder.setText('{:05d}'.format(self.treeLayerIdx))
             self.treeLayerIdx += 1
@@ -455,12 +442,12 @@ class CSIROMarineValues:
             # retrieve every feature with its geometry and attributes
             # fetch geometry
             geom = feature.geometry()
-            print "Feature ID %d: " % feature.id()
+            #print "Feature ID %d: " % feature.id()
 
             # show some information about the feature
             if geom.type() == QGis.Point:
                 x = geom.asPoint()
-                print "Point: " + str(x)
+                #print "Point: " + str(x)
             elif geom.type() == QGis.Line:
                 x = geom.asPolyline()
                 print "Line: %d points" % len(x)
@@ -469,9 +456,10 @@ class CSIROMarineValues:
                 numPts = 0
                 for ring in x:
                     numPts += len(ring)
-                print "Polygon: %d rings with %d points" % (len(x), numPts)
+                #print "Polygon: %d rings with %d points" % (len(x), numPts)
             else:
-                print "Unknown"
+                pass #Dummy statement so next one can be rem'ed w/o failing
+                #print "Unknown"
 
             # fetch attributes
             attrs = feature.attributes()
@@ -550,11 +538,12 @@ class CSIROMarineValues:
         if v2a == "not checked" and model.item(row,0).checkState() == QtCore.Qt.Checked: 
         #if model.item(row,0).checkState() == QtCore.Qt.Checked:
             layer = self.iface.addVectorLayer(sfile, val_wo_ext, "ogr")
+            lid = layer.id()
+
             #Add map to layer registry
             QgsMapLayerRegistry.instance().addMapLayer(layer)
 
-
-            #Previously loaded items are reordered startin with value 2
+            #Previously loaded items are reordered starting with value 2
             neworder = 2
             for i in range(self.dlg.tableView.model().rowCount()):
                 it4 = self.dlg.tableView.model().item(i, 2)
@@ -569,6 +558,13 @@ class CSIROMarineValues:
             #Newly loaded layer gets order 1, which is default QGIS behavious, set it on top
             model.item(row, 2).setText('{:05d}'.format(1)) 
             #self.treeLayerIdx += 1
+
+            #Look up layer geometry type
+            root = QgsProject.instance().layerTreeRoot()
+            lyr3 = root.findLayer(lid).layer()
+            geot = self.geometryTypes[lyr3.geometryType()]
+            model.item(row, 1).setText(self.tr(geot))
+
 
             self.dlg.tableView.model().sort(2)
             return
@@ -591,6 +587,8 @@ class CSIROMarineValues:
             if val_wo_ext == lnam:
                 self.iface.setActiveLayer(layer)
 
+        self.getNameValueClicked()
+
     def saveProjectClicked(self):
         project = QgsProject.instance()
         project.write()
@@ -599,6 +597,45 @@ class CSIROMarineValues:
     def renderTest(self, painter):
         # use painter for drawing to map canvas
         print ""
+
+    def tableViewRowMoved(self, row, old_index, new_index):
+        str1 = "row:" + str(row) + ", old_index:" + str(old_index) + ", new_index:" + str(new_index)
+        print str1
+
+        #Previously loaded items are reordered
+        neworder = 1
+        model = self.dlg.tableView.model()
+
+        for i in range(self.dlg.tableView.model().rowCount()):
+            it4 = self.dlg.tableView.model().item(i, 2)
+            it5 = it4.text()
+            if it5 == '90000': #Arrived at divider between loaded and unloaded layers
+                break
+            model.item(i, 2).setText('{:05d}'.format(neworder))
+            neworder += 1
+
+
+
+
+
+        #for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        #        if val_wo_ext == layer.name():
+        #            QgsMapLayerRegistry.instance().removeMapLayer(layer)
+
+        #Move layer from old to new position in layertree
+
+        for treeLayer in project.layerTreeRoot().findLayers():
+            layer = treeLayer.layer()
+            idd = layer.Id()
+            print idd
+            lnam = layer.name()
+            print lnam
+
+
+        #root = QgsProject.instance().layerTreeRoot()
+        #layid = project.layerTreeRoot().findLayer(new_index).Id()
+        #lyr3 = root.findLayer(layid).layer()
+        #lyr3.id = new_index
 
 
 class Model(QStandardItemModel):
@@ -630,7 +667,8 @@ class Model(QStandardItemModel):
                 self.filled = True
                 onlyfiles.sort()
                 for fil in onlyfiles:
-                    self.d = QStandardItem(fil) 
+                    self.d = QStandardItem(fil)
+                    self.d.setTextAlignment(QtCore.Qt.AlignLeft)
                     self.d.setText = "testing"
                     self.d.setCheckable(True) 
                     #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
