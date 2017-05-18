@@ -1,0 +1,110 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="" version="2.18.2">
+  <title></title>
+  <autotransaction active="0"/>
+  <evaluateDefaultValues active="0"/>
+  <layer-tree-group expanded="1" checked="Qt::Checked" name="">
+    <customproperties/>
+  </layer-tree-group>
+  <relations/>
+  <mapcanvas>
+    <units>degrees</units>
+    <extent>
+      <xmin>151.97225135635605398</xmin>
+      <ymin>-28.40069528543306987</ymin>
+      <xmax>154.1489785452187391</xmax>
+      <ymax>-26.57798526574802978</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <projections>1</projections>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs</proj4>
+        <srsid>3415</srsid>
+        <srid>4283</srid>
+        <authid>EPSG:4283</authid>
+        <description>GDA94</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <layer_coordinate_transform_info>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102141451585"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102132721790"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112060637512"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213053150"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213308141"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170102144803154"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213301381"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112060622629"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102141621746"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213059726"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213053542"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213057935"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102122605394"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213305357"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102141622076"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112060627641"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112212949799"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112060619541"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102141451819"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213259389"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112112811321"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112192631840"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112112809893"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112192530120"/>
+      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213058950"/>
+    </layer_coordinate_transform_info>
+  </mapcanvas>
+  <layer-tree-canvas>
+    <custom-order enabled="0"/>
+  </layer-tree-canvas>
+  <legend updateDrawingOrder="true"/>
+  <projectlayers/>
+  <properties>
+    <Measurement>
+      <DistanceUnits type="QString"></DistanceUnits>
+      <AreaUnits type="QString"></AreaUnits>
+    </Measurement>
+    <SpatialRefSys>
+      <ProjectCRSProj4String type="QString">+proj=longlat +datum=WGS84 +no_defs</ProjectCRSProj4String>
+      <ProjectCrs type="QString">EPSG:4326</ProjectCrs>
+      <ProjectCRSID type="int">3452</ProjectCRSID>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
+    <Gui>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+    </Gui>
+    <Digitizing>
+      <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
+      <LayerSnappingList type="QStringList"/>
+      <LayerSnappingEnabledList type="QStringList"/>
+      <SnappingMode type="QString">current_layer</SnappingMode>
+      <AvoidIntersectionsList type="QStringList"/>
+      <LayerSnappingToleranceUnitList type="QStringList"/>
+      <LayerSnapToList type="QStringList"/>
+      <DefaultSnapType type="QString">off</DefaultSnapType>
+      <DefaultSnapTolerance type="double">0</DefaultSnapTolerance>
+      <LayerSnappingToleranceList type="QStringList"/>
+    </Digitizing>
+    <PositionPrecision>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+      <Automatic type="bool">true</Automatic>
+    </PositionPrecision>
+    <Legend>
+      <filterByMap type="bool">false</filterByMap>
+    </Legend>
+  </properties>
+  <visibility-presets/>
+</qgis>
