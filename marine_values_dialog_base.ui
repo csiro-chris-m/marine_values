@@ -111,8 +111,8 @@
   <widget class="QPushButton" name="saveProject">
    <property name="geometry">
     <rect>
-     <x>480</x>
-     <y>470</y>
+     <x>560</x>
+     <y>450</y>
      <width>71</width>
      <height>23</height>
     </rect>
