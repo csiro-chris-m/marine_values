@@ -45,6 +45,27 @@
      <height>431</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="selectionMode">
+    <enum>QAbstractItemView::SingleSelection</enum>
+   </property>
+   <property name="selectionBehavior">
+    <enum>QAbstractItemView::SelectRows</enum>
+   </property>
+   <attribute name="horizontalHeaderMinimumSectionSize">
+    <number>37</number>
+   </attribute>
+   <attribute name="verticalHeaderDefaultSectionSize">
+    <number>18</number>
+   </attribute>
+   <attribute name="verticalHeaderMinimumSectionSize">
+    <number>18</number>
+   </attribute>
   </widget>
   <widget class="QPushButton" name="endButton">
    <property name="geometry">
@@ -161,6 +182,19 @@
    </property>
    <property name="text">
     <string>Layers:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="rubberband">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>460</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>rubberband</string>
    </property>
   </widget>
  </widget>

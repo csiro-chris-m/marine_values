@@ -5,13 +5,7 @@
   <evaluateDefaultValues active="0"/>
   <layer-tree-group expanded="1" checked="Qt::Checked" name="">
     <customproperties/>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="locations20170518131956787" name="locations">
-      <customproperties/>
-    </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="moreton_bay_reefs20170113211725756" name="moreton_bay_reefs">
-      <customproperties/>
-    </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="islands20170113211723109" name="islands">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="feature_valuetype_llg_two_parts20170608090118383" name="feature_valuetype_llg_two_parts">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -19,450 +13,60 @@
   <mapcanvas>
     <units>degrees</units>
     <extent>
-      <xmin>111.90490674999998078</xmin>
-      <ymin>-44.61322125000000227</ymin>
-      <xmax>154.59636324999999601</xmax>
-      <ymax>-8.06308874999999858</ymax>
+      <xmin>147.49951989883555825</xmin>
+      <ymin>-5.24103391752857473</ymin>
+      <xmax>149.98228000453445929</xmax>
+      <ymax>-4.23580284169485832</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
     <destinationsrs>
       <spatialrefsys>
-        <proj4>+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs</proj4>
-        <srsid>3415</srsid>
-        <srid>4283</srid>
-        <authid>EPSG:4283</authid>
-        <description>GDA94</description>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
         <projectionacronym>longlat</projectionacronym>
-        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
         <geographicflag>true</geographicflag>
       </spatialrefsys>
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
     <layer_coordinate_transform_info>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170113211725756"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102141451585"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102132721790"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112060637512"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213053150"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213308141"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170102144803154"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213301381"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170113211723733"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112060622629"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102141621746"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213059726"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213053542"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112213057935"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102122605394"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112213305357"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170102141622076"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112060627641"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112212949799"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112060619541"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170102141451819"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213259389"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170518131956787"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112112811321"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112192631840"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170112112809893"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="moreton_bay_reefs20170112192530120"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="locations20170112213058950"/>
-      <layer_coordinate_transform destAuthId="EPSG:4283" srcAuthId="EPSG:4283" srcDatumTransform="-1" destDatumTransform="-1" layerid="islands20170113211723109"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_one_part20170607045401341"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170608021002038"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170607231647803"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170607231647663"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_two_parts20170608090118383"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_one_part20170607045404476"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170608015044332"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170608015044462"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="hillshade_new_brittain_small20170607044941277"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170608021002211"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg20170606101412904"/>
     </layer_coordinate_transform_info>
   </mapcanvas>
   <layer-tree-canvas>
     <custom-order enabled="0">
-      <item>islands20170113211723109</item>
-      <item>moreton_bay_reefs20170113211725756</item>
-      <item>locations20170518131956787</item>
+      <item>feature_valuetype_llg_two_parts20170608090118383</item>
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="locations" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="feature_valuetype_llg_two_parts" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="locations20170518131956787" visible="1"/>
-      </filegroup>
-    </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="moreton_bay_reefs" showFeatureCount="0">
-      <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="moreton_bay_reefs20170113211725756" visible="1"/>
-      </filegroup>
-    </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="islands" showFeatureCount="0">
-      <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="islands20170113211723109" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="feature_valuetype_llg_two_parts20170608090118383" visible="1"/>
       </filegroup>
     </legendlayer>
   </legend>
   <projectlayers>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-      <extent>
-        <xmin>112.92136999999999603</xmin>
-        <ymin>-43.74298000000000286</ymin>
-        <xmax>153.57990000000000919</xmax>
-        <ymax>-8.93332999999999799</ymax>
-      </extent>
-      <id>islands20170113211723109</id>
-      <datasource>./islands.shp</datasource>
+      <id>feature_valuetype_llg_two_parts20170608090118383</id>
+      <datasource>./feature_valuetype_llg_two_parts.shp</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>islands</layername>
-      <srs>
-        <spatialrefsys>
-          <proj4>+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs</proj4>
-          <srsid>3415</srsid>
-          <srid>4283</srid>
-          <authid>EPSG:4283</authid>
-          <description>GDA94</description>
-          <projectionacronym>longlat</projectionacronym>
-          <ellipsoidacronym>GRS80</ellipsoidacronym>
-          <geographicflag>true</geographicflag>
-        </spatialrefsys>
-      </srs>
-      <provider encoding="System">ogr</provider>
-      <previewExpression></previewExpression>
-      <vectorjoins/>
-      <layerDependencies/>
-      <expressionfields/>
-      <defaults>
-        <default field="OBJECTID" expression=""/>
-        <default field="FEATTYPE" expression=""/>
-        <default field="NAME" expression=""/>
-        <default field="STATE" expression=""/>
-        <default field="FEATREL" expression=""/>
-        <default field="ATTRREL" expression=""/>
-        <default field="PLANACC" expression=""/>
-        <default field="SOURCE" expression=""/>
-        <default field="CREATED" expression=""/>
-        <default field="RETIRED" expression=""/>
-        <default field="PID" expression=""/>
-        <default field="SYMBOL" expression=""/>
-        <default field="SHAPE_Leng" expression=""/>
-        <default field="SHAPE_Area" expression=""/>
-      </defaults>
-      <map-layer-style-manager current="">
-        <map-layer-style name=""/>
-      </map-layer-style-manager>
-      <edittypes>
-        <edittype widgetv2type="TextEdit" name="OBJECTID">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="FEATTYPE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="NAME">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="STATE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="FEATREL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="ATTRREL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="PLANACC">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SOURCE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="CREATED">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="RETIRED">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="PID">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SYMBOL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SHAPE_Leng">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SHAPE_Area">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-      </edittypes>
-      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
-        <symbols>
-          <symbol alpha="1" clip_to_extent="1" type="fill" name="0">
-            <layer pass="0" class="SimpleFill" locked="0">
-              <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="color" v="220,211,39,255"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0.26"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
-            </layer>
-          </symbol>
-        </symbols>
-        <rotation/>
-        <sizescale scalemethod="diameter"/>
-      </renderer-v2>
-      <labeling type="simple"/>
-      <customproperties/>
-      <blendMode>0</blendMode>
-      <featureBlendMode>0</featureBlendMode>
-      <layerTransparency>0</layerTransparency>
-      <displayfield>NAME</displayfield>
-      <label>0</label>
-      <labelattributes>
-        <label fieldname="" text="Label"/>
-        <family fieldname="" name="MS Shell Dlg 2"/>
-        <size fieldname="" units="pt" value="12"/>
-        <bold fieldname="" on="0"/>
-        <italic fieldname="" on="0"/>
-        <underline fieldname="" on="0"/>
-        <strikeout fieldname="" on="0"/>
-        <color fieldname="" red="0" blue="0" green="0"/>
-        <x fieldname=""/>
-        <y fieldname=""/>
-        <offset x="0" y="0" units="pt" yfieldname="" xfieldname=""/>
-        <angle fieldname="" value="0" auto="0"/>
-        <alignment fieldname="" value="center"/>
-        <buffercolor fieldname="" red="255" blue="255" green="255"/>
-        <buffersize fieldname="" units="pt" value="1"/>
-        <bufferenabled fieldname="" on=""/>
-        <multilineenabled fieldname="" on=""/>
-        <selectedonly on=""/>
-      </labelattributes>
-      <annotationform>.</annotationform>
-      <aliases>
-        <alias field="OBJECTID" index="0" name=""/>
-        <alias field="FEATTYPE" index="1" name=""/>
-        <alias field="NAME" index="2" name=""/>
-        <alias field="STATE" index="3" name=""/>
-        <alias field="FEATREL" index="4" name=""/>
-        <alias field="ATTRREL" index="5" name=""/>
-        <alias field="PLANACC" index="6" name=""/>
-        <alias field="SOURCE" index="7" name=""/>
-        <alias field="CREATED" index="8" name=""/>
-        <alias field="RETIRED" index="9" name=""/>
-        <alias field="PID" index="10" name=""/>
-        <alias field="SYMBOL" index="11" name=""/>
-        <alias field="SHAPE_Leng" index="12" name=""/>
-        <alias field="SHAPE_Area" index="13" name=""/>
-      </aliases>
-      <excludeAttributesWMS/>
-      <excludeAttributesWFS/>
-      <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="664243304">
-        <columns/>
-      </attributetableconfig>
-      <editform>.</editform>
-      <editforminit/>
-      <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath>.</editforminitfilepath>
-      <editforminitcode><![CDATA[]]></editforminitcode>
-      <featformsuppress>0</featformsuppress>
-      <editorlayout>generatedlayout</editorlayout>
-      <widgets/>
-      <conditionalstyles>
-        <rowstyles/>
-        <fieldstyles/>
-      </conditionalstyles>
-    </maplayer>
-    <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Point" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-      <id>locations20170518131956787</id>
-      <datasource>./locations.shp</datasource>
-      <keywordList>
-        <value></value>
-      </keywordList>
-      <layername>locations</layername>
-      <srs>
-        <spatialrefsys>
-          <proj4>+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs</proj4>
-          <srsid>3415</srsid>
-          <srid>4283</srid>
-          <authid>EPSG:4283</authid>
-          <description>GDA94</description>
-          <projectionacronym>longlat</projectionacronym>
-          <ellipsoidacronym>GRS80</ellipsoidacronym>
-          <geographicflag>true</geographicflag>
-        </spatialrefsys>
-      </srs>
-      <provider encoding="System">ogr</provider>
-      <previewExpression></previewExpression>
-      <vectorjoins/>
-      <layerDependencies/>
-      <expressionfields/>
-      <defaults>
-        <default field="OBJECTID" expression=""/>
-        <default field="FEATTYPE" expression=""/>
-        <default field="TYPE" expression=""/>
-        <default field="NAME" expression=""/>
-        <default field="FEATREL" expression=""/>
-        <default field="ATTRREL" expression=""/>
-        <default field="PLANACC" expression=""/>
-        <default field="SOURCE" expression=""/>
-        <default field="CREATED" expression=""/>
-        <default field="RETIRED" expression=""/>
-        <default field="PID" expression=""/>
-        <default field="SYMBOL" expression=""/>
-        <default field="FEATWIDTH" expression=""/>
-        <default field="ORIENTATN" expression=""/>
-        <default field="TEXTNOTE" expression=""/>
-      </defaults>
-      <map-layer-style-manager current="">
-        <map-layer-style name=""/>
-      </map-layer-style-manager>
-      <edittypes>
-        <edittype widgetv2type="TextEdit" name="OBJECTID">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="FEATTYPE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="TYPE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="NAME">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="FEATREL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="ATTRREL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="PLANACC">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SOURCE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="CREATED">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="RETIRED">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="PID">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="SYMBOL">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="FEATWIDTH">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="ORIENTATN">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="TEXTNOTE">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-      </edittypes>
-      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
-        <symbols>
-          <symbol alpha="1" clip_to_extent="1" type="marker" name="0">
-            <layer pass="0" class="SimpleMarker" locked="0">
-              <prop k="angle" v="0"/>
-              <prop k="color" v="213,117,239,255"/>
-              <prop k="horizontal_anchor_point" v="1"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="name" v="circle"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0"/>
-              <prop k="outline_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="scale_method" v="diameter"/>
-              <prop k="size" v="2"/>
-              <prop k="size_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="size_unit" v="MM"/>
-              <prop k="vertical_anchor_point" v="1"/>
-            </layer>
-          </symbol>
-        </symbols>
-        <rotation/>
-        <sizescale scalemethod="diameter"/>
-      </renderer-v2>
-      <labeling type="simple"/>
-      <customproperties/>
-      <blendMode>0</blendMode>
-      <featureBlendMode>0</featureBlendMode>
-      <layerTransparency>0</layerTransparency>
-      <displayfield>NAME</displayfield>
-      <label>0</label>
-      <labelattributes>
-        <label fieldname="" text="Label"/>
-        <family fieldname="" name="MS Shell Dlg 2"/>
-        <size fieldname="" units="pt" value="12"/>
-        <bold fieldname="" on="0"/>
-        <italic fieldname="" on="0"/>
-        <underline fieldname="" on="0"/>
-        <strikeout fieldname="" on="0"/>
-        <color fieldname="" red="0" blue="0" green="0"/>
-        <x fieldname=""/>
-        <y fieldname=""/>
-        <offset x="0" y="0" units="pt" yfieldname="" xfieldname=""/>
-        <angle fieldname="" value="0" auto="0"/>
-        <alignment fieldname="" value="center"/>
-        <buffercolor fieldname="" red="255" blue="255" green="255"/>
-        <buffersize fieldname="" units="pt" value="1"/>
-        <bufferenabled fieldname="" on=""/>
-        <multilineenabled fieldname="" on=""/>
-        <selectedonly on=""/>
-      </labelattributes>
-      <annotationform>.</annotationform>
-      <aliases>
-        <alias field="OBJECTID" index="0" name=""/>
-        <alias field="FEATTYPE" index="1" name=""/>
-        <alias field="TYPE" index="2" name=""/>
-        <alias field="NAME" index="3" name=""/>
-        <alias field="FEATREL" index="4" name=""/>
-        <alias field="ATTRREL" index="5" name=""/>
-        <alias field="PLANACC" index="6" name=""/>
-        <alias field="SOURCE" index="7" name=""/>
-        <alias field="CREATED" index="8" name=""/>
-        <alias field="RETIRED" index="9" name=""/>
-        <alias field="PID" index="10" name=""/>
-        <alias field="SYMBOL" index="11" name=""/>
-        <alias field="FEATWIDTH" index="12" name=""/>
-        <alias field="ORIENTATN" index="13" name=""/>
-        <alias field="TEXTNOTE" index="14" name=""/>
-      </aliases>
-      <excludeAttributesWMS/>
-      <excludeAttributesWFS/>
-      <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
-        <columns/>
-      </attributetableconfig>
-      <editform>.</editform>
-      <editforminit/>
-      <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath>.</editforminitfilepath>
-      <editforminitcode><![CDATA[]]></editforminitcode>
-      <featformsuppress>0</featformsuppress>
-      <editorlayout>generatedlayout</editorlayout>
-      <widgets/>
-      <conditionalstyles>
-        <rowstyles/>
-        <fieldstyles/>
-      </conditionalstyles>
-    </maplayer>
-    <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-      <id>moreton_bay_reefs20170113211725756</id>
-      <datasource>./moreton_bay_reefs.shp</datasource>
-      <keywordList>
-        <value></value>
-      </keywordList>
-      <layername>moreton_bay_reefs</layername>
+      <layername>feature_valuetype_llg_two_parts</layername>
       <srs>
         <spatialrefsys>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
@@ -481,17 +85,81 @@
       <layerDependencies/>
       <expressionfields/>
       <defaults>
-        <default field="id" expression=""/>
-        <default field="name" expression=""/>
+        <default field="OBJECTID" expression=""/>
+        <default field="Shape_Leng" expression=""/>
+        <default field="Shape_Area" expression=""/>
+        <default field="spat_feat" expression=""/>
+        <default field="province" expression=""/>
+        <default field="district" expression=""/>
+        <default field="llg" expression=""/>
+        <default field="llg_2" expression=""/>
+        <default field="spatial_fe" expression=""/>
+        <default field="food_secur" expression=""/>
+        <default field="well_being" expression=""/>
+        <default field="income" expression=""/>
+        <default field="food_area" expression=""/>
+        <default field="well_area" expression=""/>
+        <default field="income_are" expression=""/>
+        <default field="value_food" expression=""/>
+        <default field="value_well" expression=""/>
+        <default field="value_inco" expression=""/>
       </defaults>
       <map-layer-style-manager current="">
         <map-layer-style name=""/>
       </map-layer-style-manager>
       <edittypes>
-        <edittype widgetv2type="TextEdit" name="id">
+        <edittype widgetv2type="TextEdit" name="OBJECTID">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="name">
+        <edittype widgetv2type="TextEdit" name="Shape_Leng">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="Shape_Area">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="spat_feat">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="province">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="district">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="llg">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="llg_2">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="spatial_fe">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="food_secur">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="well_being">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="income">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="food_area">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="well_area">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="income_are">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="value_food">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="value_well">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="value_inco">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
       </edittypes>
@@ -500,7 +168,7 @@
           <symbol alpha="1" clip_to_extent="1" type="fill" name="0">
             <layer pass="0" class="SimpleFill" locked="0">
               <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="color" v="46,132,137,255"/>
+              <prop k="color" v="205,221,156,255"/>
               <prop k="joinstyle" v="bevel"/>
               <prop k="offset" v="0,0"/>
               <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -521,7 +189,7 @@
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerTransparency>0</layerTransparency>
-      <displayfield>name</displayfield>
+      <displayfield>OBJECTID</displayfield>
       <label>0</label>
       <labelattributes>
         <label fieldname="" text="Label"/>
@@ -545,8 +213,24 @@
       </labelattributes>
       <annotationform>.</annotationform>
       <aliases>
-        <alias field="id" index="0" name=""/>
-        <alias field="name" index="1" name=""/>
+        <alias field="OBJECTID" index="0" name=""/>
+        <alias field="Shape_Leng" index="1" name=""/>
+        <alias field="Shape_Area" index="2" name=""/>
+        <alias field="spat_feat" index="3" name=""/>
+        <alias field="province" index="4" name=""/>
+        <alias field="district" index="5" name=""/>
+        <alias field="llg" index="6" name=""/>
+        <alias field="llg_2" index="7" name=""/>
+        <alias field="spatial_fe" index="8" name=""/>
+        <alias field="food_secur" index="9" name=""/>
+        <alias field="well_being" index="10" name=""/>
+        <alias field="income" index="11" name=""/>
+        <alias field="food_area" index="12" name=""/>
+        <alias field="well_area" index="13" name=""/>
+        <alias field="income_are" index="14" name=""/>
+        <alias field="value_food" index="15" name=""/>
+        <alias field="value_well" index="16" name=""/>
+        <alias field="value_inco" index="17" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
@@ -569,19 +253,47 @@
     </maplayer>
   </projectlayers>
   <properties>
-    <Measurement>
-      <DistanceUnits type="QString"></DistanceUnits>
-      <AreaUnits type="QString"></AreaUnits>
-    </Measurement>
-    <SpatialRefSys>
-      <ProjectCRSProj4String type="QString">+proj=longlat +datum=WGS84 +no_defs</ProjectCRSProj4String>
-      <ProjectCrs type="QString">EPSG:4326</ProjectCrs>
-      <ProjectCRSID type="int">3452</ProjectCRSID>
-      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
-    </SpatialRefSys>
+    <Variables>
+      <variableNames type="QStringList"/>
+      <variableValues type="QStringList"/>
+    </Variables>
+    <WMSContactPerson type="QString"></WMSContactPerson>
+    <WMSOnlineResource type="QString"></WMSOnlineResource>
+    <WMSUseLayerIDs type="bool">false</WMSUseLayerIDs>
+    <WMSContactOrganization type="QString"></WMSContactOrganization>
+    <WMSKeywordList type="QStringList">
+      <value></value>
+    </WMSKeywordList>
+    <WFSUrl type="QString"></WFSUrl>
     <Paths>
       <Absolute type="bool">false</Absolute>
     </Paths>
+    <WMSServiceTitle type="QString"></WMSServiceTitle>
+    <WFSLayers type="QStringList"/>
+    <WMSRestrictedLayers type="QStringList"/>
+    <WMSContactMail type="QString"></WMSContactMail>
+    <WMSRestrictedComposers type="QStringList"/>
+    <PositionPrecision>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+      <Automatic type="bool">true</Automatic>
+      <DegreeFormat type="QString">D</DegreeFormat>
+    </PositionPrecision>
+    <WCSUrl type="QString"></WCSUrl>
+    <WMSServiceCapabilities type="bool">false</WMSServiceCapabilities>
+    <WMSContactPhone type="QString"></WMSContactPhone>
+    <WMSServiceAbstract type="QString"></WMSServiceAbstract>
+    <WMSContactPosition type="QString"></WMSContactPosition>
+    <WMSAddWktGeometry type="bool">false</WMSAddWktGeometry>
+    <Measure>
+      <Ellipsoid type="QString">WGS84</Ellipsoid>
+    </Measure>
+    <WMSPrecision type="QString">8</WMSPrecision>
+    <WMSSegmentizeFeatureInfoGeometry type="bool">false</WMSSegmentizeFeatureInfoGeometry>
+    <WFSTLayers>
+      <Insert type="QStringList"/>
+      <Update type="QStringList"/>
+      <Delete type="QStringList"/>
+    </WFSTLayers>
     <Gui>
       <SelectionColorBluePart type="int">0</SelectionColorBluePart>
       <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
@@ -594,37 +306,57 @@
     <Digitizing>
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
       <LayerSnappingList type="QStringList">
-        <value>islands20170113211723109</value>
-        <value>moreton_bay_reefs20170113211725756</value>
+        <value>feature_valuetype_llg_two_parts20170608090118383</value>
       </LayerSnappingList>
       <LayerSnappingEnabledList type="QStringList">
-        <value>disabled</value>
         <value>disabled</value>
       </LayerSnappingEnabledList>
       <SnappingMode type="QString">current_layer</SnappingMode>
       <AvoidIntersectionsList type="QStringList"/>
       <LayerSnappingToleranceUnitList type="QStringList">
         <value>2</value>
-        <value>2</value>
       </LayerSnappingToleranceUnitList>
       <LayerSnapToList type="QStringList">
-        <value>to_vertex_and_segment</value>
         <value>to_vertex_and_segment</value>
       </LayerSnapToList>
       <DefaultSnapType type="QString">off</DefaultSnapType>
       <DefaultSnapTolerance type="double">0</DefaultSnapTolerance>
       <LayerSnappingToleranceList type="QStringList">
         <value>0.000000</value>
-        <value>0.000000</value>
       </LayerSnappingToleranceList>
     </Digitizing>
-    <PositionPrecision>
-      <DecimalPlaces type="int">2</DecimalPlaces>
-      <Automatic type="bool">true</Automatic>
-    </PositionPrecision>
+    <Identify>
+      <disabledLayers type="QStringList"/>
+    </Identify>
+    <Macros>
+      <pythonCode type="QString"></pythonCode>
+    </Macros>
+    <WMSAccessConstraints type="QString">None</WMSAccessConstraints>
+    <WCSLayers type="QStringList"/>
     <Legend>
       <filterByMap type="bool">false</filterByMap>
     </Legend>
+    <SpatialRefSys>
+      <ProjectCRSProj4String type="QString">+proj=longlat +datum=WGS84 +no_defs</ProjectCRSProj4String>
+      <ProjectCrs type="QString">EPSG:4326</ProjectCrs>
+      <ProjectCRSID type="int">3452</ProjectCRSID>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
+    <DefaultStyles>
+      <Fill type="QString"></Fill>
+      <Line type="QString"></Line>
+      <Marker type="QString"></Marker>
+      <RandomColors type="bool">true</RandomColors>
+      <AlphaInt type="int">255</AlphaInt>
+      <ColorRamp type="QString"></ColorRamp>
+    </DefaultStyles>
+    <WMSFees type="QString">conditions unknown</WMSFees>
+    <WMSImageQuality type="int">90</WMSImageQuality>
+    <Measurement>
+      <DistanceUnits type="QString">km</DistanceUnits>
+      <AreaUnits type="QString">km2</AreaUnits>
+    </Measurement>
+    <WMSUrl type="QString"></WMSUrl>
   </properties>
   <visibility-presets/>
 </qgis>

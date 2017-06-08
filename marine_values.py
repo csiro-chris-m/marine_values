@@ -28,13 +28,32 @@
  *   Qt Creator 4.2.0                                                      *
  *                                                                         *
  *                                                                         *
+ *   Plugins required:                                                     *
+ *   ------------------------------------                                  *
+ *                                                                         *
+ *   Set up:                                                               *
+ *   ------------------------------------                                  *
+ *   In Options / Map Tools:                                               *
+ *   Preferred distance units: Kilometers                                  *
+ *   Preferred area units: Square kilometers                               *
+ *   Preferred angle units: Degrees                                        *
+ *                                                                         *
+ *   In Options / CRS:                                                     *
+ *   CRS for new layers: Use a default CRS: Selected CRS (EPSG:4326, WGS 84) *
  ***************************************************************************/
-/* test comment */
 
+/***************************************************************************
+ *                                                                         *
+ *   Configuration of the shapefiles and project                           *
+ *   Shapefiles and project must be in CRS "WGS84 (EPSG:4326)"             *                                  
+ *                                                                         *
+ *                                                                         *
+ ***************************************************************************/
 
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor
+from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -51,6 +70,7 @@ from qgis.core import *
 from qgis.utils import QGis
 from collections import defaultdict
 from pprint import pprint
+import processing
 
 project = QgsProject.instance()
 
@@ -97,7 +117,8 @@ class CSIROMarineValues:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'CSIROMarineValues')
         self.toolbar.setObjectName(u'CSIROMarineValues')
-        
+
+       
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -209,11 +230,17 @@ class CSIROMarineValues:
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
         self.dlg.getNameValue.clicked.connect(self.getNameValueClicked)
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
+        self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
+        QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
 
+
+        #self.iface.mapCanvas().xyCoordinates.connect(showCoordinates)
+        #myMapTool.canvasClicked.connect(manageClick)
+        #self.iface.mapCanvas().setMapTool(myMapTool)
 
     def run(self):
 
@@ -253,7 +280,30 @@ class CSIROMarineValues:
                 model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])'''
             
 
+        # Set up objectInfo table ***************************
+        self.dlg.objectInfo.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.dlg.objectInfo.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        xmodobjinf = ModelObjInfo()
+        self.dlg.objectInfo.setModel(xmodobjinf)
+        header = self.dlg.objectInfo.horizontalHeader()
+        self.dlg.objectInfo.setColumnWidth(0,50)
+        self.dlg.objectInfo.setColumnWidth(1,100)
+        self.dlg.objectInfo.setColumnWidth(2,100)
+        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
+        header.setResizeMode(QtGui.QHeaderView.Fixed)
+        self.dlg.objectInfo.verticalHeader().setMovable(True)
+        self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
 
+
+
+
+        self.RubberBandMapToolInUse = False
+
+
+
+
+
+        # Set up tableView table ****************************
 
         #self.dlg.tableView.setModel(model)
         self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -295,7 +345,13 @@ class CSIROMarineValues:
         #Load main project
         self.project_load()
 
+
+
         self.dlg.tableView.selectRow(0)
+
+        self.dlg.objectInfo.selectRow(0)
+
+
 
         ## show the dialog
         self.dlg.show()
@@ -308,6 +364,9 @@ class CSIROMarineValues:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+
+
+
 
     def unload(self):
         self.treeLayerIdx = 0
@@ -436,33 +495,84 @@ class CSIROMarineValues:
 
 
     def getNameValueClicked(self):
+
         layer = self.iface.activeLayer()
         iter = layer.getFeatures()
+        feat_count = 0
+        attx3 = []
+
+        attb = []
+
         for feature in iter:
+
+            feat_count += 1;
             # retrieve every feature with its geometry and attributes
             # fetch geometry
             geom = feature.geometry()
             #print "Feature ID %d: " % feature.id()
 
+
+
             # show some information about the feature
-            if geom.type() == QGis.Point:
-                x = geom.asPoint()
-                #print "Point: " + str(x)
-            elif geom.type() == QGis.Line:
-                x = geom.asPolyline()
-                print "Line: %d points" % len(x)
-            elif geom.type() == QGis.Polygon:
-                x = geom.asPolygon()
-                numPts = 0
-                for ring in x:
-                    numPts += len(ring)
-                #print "Polygon: %d rings with %d points" % (len(x), numPts)
-            else:
-                pass #Dummy statement so next one can be rem'ed w/o failing
+#            if geom.type() == QGis.Point:
+#                x = geom.asPoint()
+#                #print "Point: " + str(x)
+#            elif geom.type() == QGis.Line:
+#                x = geom.asPolyline()
+#                print "Line: %d points" % len(x)
+#            elif geom.type() == QGis.Polygon:
+#                x = geom.asPolygon()
+#                numPts = 0
+#                for ring in x:
+#                    numPts += len(ring)
+#                #print "Polygon: %d rings with %d points" % (len(x), numPts)
+#            else:
+#                pass #Dummy statement so next one can be rem'ed w/o failing
                 #print "Unknown"
 
-            # fetch attributes
-            attrs = feature.attributes()
+            #if feature.len() >= 3:
+            #    arear = str(feature[2])
+            #    gg = [feature[3], arear]
+
+            # Another way to fetch attributes:
+
+            if feature.attributes:
+                attrs = feature.attributes()
+                if len(attrs) > 2:
+                    arear = str(attrs[9]) #9 - column food security
+                    gg = [attrs[3],arear]
+                    attb.append(gg)
+
+            #print feat_count
+            #print attrs[3]
+            #attx3.append(attrs[3])
+
+        model = QStandardItemModel()
+        model.setColumnCount(3)
+        model.setHorizontalHeaderLabels(['Obj', 'Feature', 'Food secure'])
+
+
+        for itc in attb:
+            item = QStandardItem("1")
+            model.appendRow([item, QStandardItem(itc[0]),QStandardItem(itc[1])])
+
+        self.dlg.objectInfo.setModel(model)
+
+
+
+        #for itc in attx3:
+        #    item = QStandardItem("1")
+        #    model.appendRow([item, QStandardItem(itc)])
+        #self.dlg.objectInfo.setModel(model)
+
+
+        #item = QStandardItem("XX")
+        #item.setEditable(False)
+        #row = []
+        #row.append(item)
+        #ModelObjInfo.xappendRow(self, row)
+
+
 
             # attrs is a list. It contains all the attribute values of this feature
             #print attrs
@@ -508,6 +618,11 @@ class CSIROMarineValues:
             #print self.dlg.tableView.model()
             dta = model.data(index, QtCore.Qt.CheckStateRole)
 '''
+
+    def objectInfoClicked(self, index):
+        row = index.row()
+        model = self.dlg.objectInfo.model()
+
 
     def tableViewClicked(self, index):
         row = index.row()
@@ -638,6 +753,173 @@ class CSIROMarineValues:
         #lyr3.id = new_index
 
 
+    def rubberbandClicked(self):
+        self.RubberBandMapToolInUse = not self.RubberBandMapToolInUse # Flip state
+        if self.RubberBandMapToolInUse:
+
+            self.previousMapTool = self.iface.mapCanvas().mapTool()
+            self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
+            self.myMapTool.canvasClicked.connect(self.manageClick)
+            self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
+            color = QColor("green")
+            color.setAlpha(50)
+            self.myRubberBand.setColor(color)
+
+            self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
+            self.iface.mapCanvas().setMapTool(self.myMapTool)
+#        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
+#        r.setColor(QColor(0, 0, 255))
+#        r.setWidth(30)
+#        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
+#        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
+        #pass
+
+    def showRBCoordinates(self, currentPos):
+        if self.myRubberBand and self.myRubberBand.numberOfVertices():
+            self.myRubberBand.removeLastPoint()
+            self.myRubberBand.addPoint(currentPos)
+
+
+
+    def manageClick(self, currentPos, clickedButton):
+        if clickedButton == Qt.LeftButton:
+            self.myRubberBand.addPoint(currentPos)
+        if clickedButton == Qt.RightButton:
+            self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
+            self.iface.mapCanvas().setMapTool(self.previousMapTool)
+            self.myMapTool.deleteLater()
+
+            #print self.myRubberBand.numberOfVertices()
+            geom_rb = self.myRubberBand.asGeometry()
+            #print geom_rb.asPolygon()
+
+            #Create in-memory layer from Rubberband geometry for later processing
+            vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
+            prx = vlx.dataProvider()
+            # Enter editing mode
+            vlx.startEditing()
+            # add fields
+            prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
+            # add a feature
+            fetx = QgsFeature()
+            fetx.setGeometry(geom_rb)
+            fetx.setAttributes([0, "Feature"])
+            prx.addFeatures( [ fetx ] )
+            vlx.updateExtents()
+            # Commit changes
+            vlx.commitChanges()
+            QgsMapLayerRegistry.instance().addMapLayers([vlx])
+            
+
+
+
+            layer = self.iface.activeLayer()
+            iter = layer.getFeatures()
+            itrctr = 0
+            for feature in iter:
+                geom_feat = feature.geometry()
+
+                # create layer
+                vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
+                pr = vl.dataProvider()
+                # Enter editing mode
+                vl.startEditing()
+                # add fields
+                pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
+                # add a feature
+                fet = QgsFeature()
+                fet.setGeometry(geom_feat)
+                fet.setAttributes([itrctr, "Feature"])
+                pr.addFeatures( [ fet ] )
+                # Commit changes
+                vl.commitChanges()
+                itrctr =+ 1
+
+            print geom_rb.area()
+            print geom_feat.area()
+
+
+            if geom_rb.intersects(geom_feat):
+                print "Intersecting"
+
+                for treeLayer in project.layerTreeRoot().findLayers():                
+                    layer = treeLayer.layer()
+                    if layer.name() == "feature_valuetype_llg_two_parts":
+                        overlay_layer = layer
+                    #if layer.name() == "cut2":
+                    if layer.name() == "rubber_band":
+                        layer_to_clip = layer
+                #processing.runalg
+                
+                #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
+                #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
+                #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
+                res_lay.updateExtents()
+                res_feat = res_lay.getFeatures()
+
+                for f in res_feat:
+                    res_geom = f.geometry()
+                    #d = QgsDistanceArea()
+                    #d.setEllipsoidalMode(True)
+                    #m = d.measurePolygon(res_geom.asPolygon()[0])
+                    #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
+                    #print "New area: ", ar
+
+                    if f.attributes:
+                        attry = f.attributes()
+                        if len(attry) > 2:
+                            str2 = "Spat feat: " + attry[3]
+                            print str2
+                            str3 = "Food security: " + str(attry[9]) #9 - column food security
+                            print str3
+
+                    d = QgsDistanceArea()
+                    d.setEllipsoidalMode(True)
+                    art = res_geom.area()
+                    ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                    print "Area:", ar[0]
+
+
+
+                #print res_lay
+
+            else:
+                print "Not intersecting"
+
+            self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
+
+            #for treeLayer in project.layerTreeRoot().findLayers():                
+            #    layer = treeLayer.layer()
+            #   if layer.name() == "rubber_band":
+            #        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+            #    if layer.name() == "Clipped":
+            #        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+
+
+
+class ModelObjInfo(QStandardItemModel):
+    def __init__(self, parent=None):
+        QtGui.QStandardItemModel.__init__(self)
+        self.setColumnCount(3)
+
+        #self.setHorizontalHeaderLabels(['Object'])
+        #self.appendRow([QStandardItem('Looking good')])
+
+    def data(self, index, role):
+        if index.isValid():
+            return super(ModelObjInfo, self).data(index, QtCore.Qt.DisplayRole)
+
+    #def xappendRow(self):
+     #   self.d = QStandardItem('X')
+    #    self.d.setTextAlignment(QtCore.Qt.AlignLeft)
+    #    self.d.setText = "testing"
+    #    self.d.setCheckable(False) 
+    #    #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
+    #    self.appendRow([self.d, QStandardItem('unknown')])
+
+
 class Model(QStandardItemModel):
     def __init__(self, parent=None):
         self.filled = False
@@ -737,4 +1019,5 @@ class Model(QStandardItemModel):
             return self.checks[index]
         else:
             return QtCore.Qt.Unchecked
+
 
