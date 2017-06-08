@@ -228,7 +228,6 @@ class CSIROMarineValues:
 
         #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
-        self.dlg.getNameValue.clicked.connect(self.getNameValueClicked)
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
@@ -293,12 +292,6 @@ class CSIROMarineValues:
         header.setResizeMode(QtGui.QHeaderView.Fixed)
         self.dlg.objectInfo.verticalHeader().setMovable(True)
         self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
-
-
-
-
-        self.RubberBandMapToolInUse = False
-
 
 
 
@@ -494,90 +487,6 @@ class CSIROMarineValues:
 
 
 
-    def getNameValueClicked(self):
-
-        layer = self.iface.activeLayer()
-        iter = layer.getFeatures()
-        feat_count = 0
-        attx3 = []
-
-        attb = []
-
-        for feature in iter:
-
-            feat_count += 1;
-            # retrieve every feature with its geometry and attributes
-            # fetch geometry
-            geom = feature.geometry()
-            #print "Feature ID %d: " % feature.id()
-
-
-
-            # show some information about the feature
-#            if geom.type() == QGis.Point:
-#                x = geom.asPoint()
-#                #print "Point: " + str(x)
-#            elif geom.type() == QGis.Line:
-#                x = geom.asPolyline()
-#                print "Line: %d points" % len(x)
-#            elif geom.type() == QGis.Polygon:
-#                x = geom.asPolygon()
-#                numPts = 0
-#                for ring in x:
-#                    numPts += len(ring)
-#                #print "Polygon: %d rings with %d points" % (len(x), numPts)
-#            else:
-#                pass #Dummy statement so next one can be rem'ed w/o failing
-                #print "Unknown"
-
-            #if feature.len() >= 3:
-            #    arear = str(feature[2])
-            #    gg = [feature[3], arear]
-
-            # Another way to fetch attributes:
-
-            if feature.attributes:
-                attrs = feature.attributes()
-                if len(attrs) > 2:
-                    arear = str(attrs[9]) #9 - column food security
-                    gg = [attrs[3],arear]
-                    attb.append(gg)
-
-            #print feat_count
-            #print attrs[3]
-            #attx3.append(attrs[3])
-
-        model = QStandardItemModel()
-        model.setColumnCount(3)
-        model.setHorizontalHeaderLabels(['Obj', 'Feature', 'Food secure'])
-
-
-        for itc in attb:
-            item = QStandardItem("1")
-            model.appendRow([item, QStandardItem(itc[0]),QStandardItem(itc[1])])
-
-        self.dlg.objectInfo.setModel(model)
-
-
-
-        #for itc in attx3:
-        #    item = QStandardItem("1")
-        #    model.appendRow([item, QStandardItem(itc)])
-        #self.dlg.objectInfo.setModel(model)
-
-
-        #item = QStandardItem("XX")
-        #item.setEditable(False)
-        #row = []
-        #row.append(item)
-        #ModelObjInfo.xappendRow(self, row)
-
-
-
-            # attrs is a list. It contains all the attribute values of this feature
-            #print attrs
-
-
     def tableViewselectionChanged(self):
         getLayerInfo()        
 
@@ -588,36 +497,6 @@ class CSIROMarineValues:
         #Should close project if we close the dialog but QGIS does not have close project method
         #self.unload()
 
-
-
-    '''def tableViewClicked(self, index):
-        #rows = sorted(set(index.row() for index in self.dlg.tableView.selectedIndexes()))
-        rows = set(index.row() for index in self.dlg.tableView.selectedIndexes())
-        for row in rows:
-            #IMPORTANT
-            #print('Row %d is selected' % row)
-            model = self.dlg.tableView.model()
-            data = []
-            for row in range(model.rowCount()):
-                data.append([])
-
-                for column in range(model.columnCount()):
-                    index = model.index(row, column)
-
-                    if column == 0:
-
-                        if model.item(row,0).checkState() == QtCore.Qt.Checked:
-                            print "Checked"
-                            #self.dlg.tableView.model().item(i, 0).setCheckState(QtCore.Qt.Checked)
-                            model.item(row, 3).setText(self.tr('checked'))
-                        else:
-                            print "Not checked"
-                            model.item(row, 3).setText(self.tr('not checked'))
-                    # We suppose data are strings
-                    data[row].append(str(model.data(index)))
-            #print self.dlg.tableView.model()
-            dta = model.data(index, QtCore.Qt.CheckStateRole)
-'''
 
     def objectInfoClicked(self, index):
         row = index.row()
@@ -702,7 +581,65 @@ class CSIROMarineValues:
             if val_wo_ext == lnam:
                 self.iface.setActiveLayer(layer)
 
-        self.getNameValueClicked()
+
+
+
+        layer = self.iface.activeLayer()
+        if layer:
+            iter = layer.getFeatures()
+            feat_count = 0
+            attx3 = []
+
+            attb = []
+
+            for feature in iter:
+
+                feat_count += 1;
+                # retrieve every feature with its geometry and attributes
+                # fetch geometry
+                geom = feature.geometry()
+                #print "Feature ID %d: " % feature.id()
+
+
+
+                # show some information about the feature
+    #            if geom.type() == QGis.Point:
+    #                x = geom.asPoint()
+    #                #print "Point: " + str(x)
+    #            elif geom.type() == QGis.Line:
+    #                x = geom.asPolyline()
+    #                print "Line: %d points" % len(x)
+    #            elif geom.type() == QGis.Polygon:
+    #                x = geom.asPolygon()
+    #                numPts = 0
+    #                for ring in x:
+    #                    numPts += len(ring)
+    #                #print "Polygon: %d rings with %d points" % (len(x), numPts)
+    #            else:
+    #                pass #Dummy statement so next one can be rem'ed w/o failing
+                    #print "Unknown"
+
+                if feature.attributes:
+                    attrs = feature.attributes()
+                    if len(attrs) > 2:
+                        arear = str(attrs[9]) #9 - column food security
+                        gg = [attrs[3],arear]
+                        attb.append(gg)
+
+            model = QStandardItemModel()
+            model.setColumnCount(3)
+            model.setHorizontalHeaderLabels(['Obj', 'Feature', 'Food secure'])
+
+
+            for itc in attb:
+                item = QStandardItem("1")
+                model.appendRow([item, QStandardItem(itc[0]),QStandardItem(itc[1])])
+
+            self.dlg.objectInfo.setModel(model)
+
+
+        else:
+            self.dlg.error.setText("Layer not loaded.")
 
     def saveProjectClicked(self):
         project = QgsProject.instance()
@@ -754,9 +691,8 @@ class CSIROMarineValues:
 
 
     def rubberbandClicked(self):
-        self.RubberBandMapToolInUse = not self.RubberBandMapToolInUse # Flip state
-        if self.RubberBandMapToolInUse:
-
+        layer = self.iface.activeLayer()
+        if layer:        
             self.previousMapTool = self.iface.mapCanvas().mapTool()
             self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
             self.myMapTool.canvasClicked.connect(self.manageClick)
@@ -767,12 +703,14 @@ class CSIROMarineValues:
 
             self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
             self.iface.mapCanvas().setMapTool(self.myMapTool)
-#        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
-#        r.setColor(QColor(0, 0, 255))
-#        r.setWidth(30)
-#        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
-#        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
-        #pass
+    #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
+    #        r.setColor(QColor(0, 0, 255))
+    #        r.setWidth(30)
+    #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
+    #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
+            #pass
+        else:
+            self.dlg.error.setText("No active layer. Click a layer.")
 
     def showRBCoordinates(self, currentPos):
         if self.myRubberBand and self.myRubberBand.numberOfVertices():
@@ -814,89 +752,99 @@ class CSIROMarineValues:
 
 
             layer = self.iface.activeLayer()
-            iter = layer.getFeatures()
-            itrctr = 0
-            for feature in iter:
-                geom_feat = feature.geometry()
+            if layer:
+                clp_lay = layer.name()
+                iter = layer.getFeatures()
+                itrctr = 0
+                for feature in iter:
+                    geom_feat = feature.geometry()
 
-                # create layer
-                vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
-                pr = vl.dataProvider()
-                # Enter editing mode
-                vl.startEditing()
-                # add fields
-                pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
-                # add a feature
-                fet = QgsFeature()
-                fet.setGeometry(geom_feat)
-                fet.setAttributes([itrctr, "Feature"])
-                pr.addFeatures( [ fet ] )
-                # Commit changes
-                vl.commitChanges()
-                itrctr =+ 1
+                    # create layer
+                    vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
+                    pr = vl.dataProvider()
+                    # Enter editing mode
+                    vl.startEditing()
+                    # add fields
+                    pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
+                    # add a feature
+                    fet = QgsFeature()
+                    fet.setGeometry(geom_feat)
+                    fet.setAttributes([itrctr, "Feature"])
+                    pr.addFeatures( [ fet ] )
+                    # Commit changes
+                    vl.commitChanges()
+                    itrctr =+ 1
 
-            print geom_rb.area()
-            print geom_feat.area()
+                #print geom_rb.area()
+                #print geom_feat.area()
 
 
-            if geom_rb.intersects(geom_feat):
-                print "Intersecting"
+                if geom_rb.intersects(geom_feat):
+                    #print "Intersecting"
+
+                    for treeLayer in project.layerTreeRoot().findLayers():                
+                        layer_t6 = treeLayer.layer()
+                        #if layer_t6.name() == clp_lay:
+                        if layer_t6.name() == "feature_valuetype_llg":
+                            overlay_layer = layer_t6
+                        #if layer.name() == "cut2":
+                        if layer_t6.name() == "rubber_band":
+                            layer_to_clip = layer_t6
+                    #processing.runalg
+                    
+                    #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
+                    #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
+                    #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                    processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                    res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
+                    res_lay.updateExtents()
+                    res_feat = res_lay.getFeatures()
+
+
+                    str2 = ""
+                    str3 = ""
+
+                    for f in res_feat:
+                        res_geom = f.geometry()
+                        #d = QgsDistanceArea()
+                        #d.setEllipsoidalMode(True)
+                        #m = d.measurePolygon(res_geom.asPolygon()[0])
+                        #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
+                        #print "New area: ", ar
+
+                        if f.attributes:
+                            attry = f.attributes()
+                            if len(attry) > 2:
+                                str2 = "Spat feat: " + attry[3]
+                                str2 = str2.strip()
+                                str3 = "Food security: " + str(attry[9]) #9 - column food security
+                                str3 = str3.strip()
+                        d = QgsDistanceArea()
+                        d.setEllipsoidalMode(True)
+                        art = res_geom.area()
+                        ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                        arx = str(ar[0])
+                        ary = "Area: " + arx
+                        ary = ary.strip()
+
+                        print ary + " / " + str2 + " / " + str3
+
+
+
+                    #print res_lay
+
+                else:
+                    pass
+                    #print "Not intersecting"
+
+                self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
                 for treeLayer in project.layerTreeRoot().findLayers():                
-                    layer = treeLayer.layer()
-                    if layer.name() == "feature_valuetype_llg_two_parts":
-                        overlay_layer = layer
-                    #if layer.name() == "cut2":
-                    if layer.name() == "rubber_band":
-                        layer_to_clip = layer
-                #processing.runalg
-                
-                #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
-                #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
-                #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
-                res_lay.updateExtents()
-                res_feat = res_lay.getFeatures()
-
-                for f in res_feat:
-                    res_geom = f.geometry()
-                    #d = QgsDistanceArea()
-                    #d.setEllipsoidalMode(True)
-                    #m = d.measurePolygon(res_geom.asPolygon()[0])
-                    #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
-                    #print "New area: ", ar
-
-                    if f.attributes:
-                        attry = f.attributes()
-                        if len(attry) > 2:
-                            str2 = "Spat feat: " + attry[3]
-                            print str2
-                            str3 = "Food security: " + str(attry[9]) #9 - column food security
-                            print str3
-
-                    d = QgsDistanceArea()
-                    d.setEllipsoidalMode(True)
-                    art = res_geom.area()
-                    ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
-                    print "Area:", ar[0]
-
-
-
-                #print res_lay
-
-            else:
-                print "Not intersecting"
-
-            self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-
-            #for treeLayer in project.layerTreeRoot().findLayers():                
-            #    layer = treeLayer.layer()
-            #   if layer.name() == "rubber_band":
-            #        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
-            #    if layer.name() == "Clipped":
-            #        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
-
+                    layer_f2 = treeLayer.layer()
+                    if layer_f2.name() == "rubber_band":
+                        QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+                    elif layer_f2.name() == "Clipped":
+                        QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
 
 class ModelObjInfo(QStandardItemModel):
