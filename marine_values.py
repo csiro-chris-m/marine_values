@@ -71,6 +71,7 @@ from qgis.utils import QGis
 from collections import defaultdict
 from pprint import pprint
 import processing
+from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
 
 project = QgsProject.instance()
 
@@ -230,6 +231,9 @@ class CSIROMarineValues:
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
+
+        self.dlg.readSQLiteDB.clicked.connect(self.readSQLiteDBClicked)
+
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
@@ -338,9 +342,12 @@ class CSIROMarineValues:
         #Load main project
         self.project_load()
 
+        #Stores name of currently active layer. Need this since rubber band sets itself current
+        #so must set back
+        self.dlg.cur_lay = ""
 
 
-        self.dlg.tableView.selectRow(0)
+        #self.dlg.tableView.selectRow(0)
 
         self.dlg.objectInfo.selectRow(0)
 
@@ -504,6 +511,7 @@ class CSIROMarineValues:
 
 
     def tableViewClicked(self, index):
+
         row = index.row()
         model = self.dlg.tableView.model()
         valx = model.item(row, 0)
@@ -580,11 +588,12 @@ class CSIROMarineValues:
             lnam = layer.name()
             if val_wo_ext == lnam:
                 self.iface.setActiveLayer(layer)
-
-
+                self.dlg.cur_lay = layer.name()
+                print self.dlg.cur_lay 
 
 
         layer = self.iface.activeLayer()
+
         if layer:
             iter = layer.getFeatures()
             feat_count = 0
@@ -725,7 +734,6 @@ class CSIROMarineValues:
         if clickedButton == Qt.RightButton:
             self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
             self.iface.mapCanvas().setMapTool(self.previousMapTool)
-            self.myMapTool.deleteLater()
 
             #print self.myRubberBand.numberOfVertices()
             geom_rb = self.myRubberBand.asGeometry()
@@ -748,6 +756,19 @@ class CSIROMarineValues:
             vlx.commitChanges()
             QgsMapLayerRegistry.instance().addMapLayers([vlx])
             
+
+
+
+
+# T E S T I N G
+            #Rubber band layer is now active since it was just created
+            #so set back to previously active layer
+#            for treeLayer in project.layerTreeRoot().findLayers():                
+#                layer_t7 = treeLayer.layer()
+#                if layer_t7.name() == self.dlg.cur_lay:
+#                    self.iface.setActiveLayer(layer_t7)
+# T E S T I N G   E N D
+
 
 
 
@@ -778,15 +799,35 @@ class CSIROMarineValues:
                 #print geom_rb.area()
                 #print geom_feat.area()
 
-
                 if geom_rb.intersects(geom_feat):
                     #print "Intersecting"
+                    
+# T E S T I N G
+                    overlay_layer = QgsVectorLayer()
+                    print "Current layer: " + self.dlg.cur_lay
+# T E S T I N G   E N D
+
 
                     for treeLayer in project.layerTreeRoot().findLayers():                
                         layer_t6 = treeLayer.layer()
-                        #if layer_t6.name() == clp_lay:
-                        if layer_t6.name() == "feature_valuetype_llg":
+
+
+
+
+# T E S T I N G
+                        #if layer_t6.name() == "feature_valuetype_llg":
+                        print self.dlg.cur_lay
+                        if layer_t6.name() == self.dlg.cur_lay:
                             overlay_layer = layer_t6
+                            break
+# T E S T I N G   E N D
+
+
+
+
+
+
+
                         #if layer.name() == "cut2":
                         if layer_t6.name() == "rubber_band":
                             layer_to_clip = layer_t6
@@ -803,6 +844,12 @@ class CSIROMarineValues:
 
                     str2 = ""
                     str3 = ""
+
+                    #Clear selected objects list view
+                    model = QStandardItemModel(0,0)
+                    self.dlg.listFeatSel.setModel(model)
+                    #Set up model for selected objects list view
+                    model = QStandardItemModel(1,1)
 
                     for f in res_feat:
                         res_geom = f.geometry()
@@ -827,7 +874,13 @@ class CSIROMarineValues:
                         ary = "Area: " + arx
                         ary = ary.strip()
 
-                        print ary + " / " + str2 + " / " + str3
+                        reste = ary + " / " + str2 + " / " + str3
+                        print reste
+                    
+                    #Add items to selected objects list view
+                        item = QStandardItem(reste)
+                        model.appendRow(item)
+                    self.dlg.listFeatSel.setModel(model)
 
 
 
@@ -837,6 +890,7 @@ class CSIROMarineValues:
                     pass
                     #print "Not intersecting"
 
+                self.myMapTool.deleteLater()
                 self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
                 for treeLayer in project.layerTreeRoot().findLayers():                
@@ -845,6 +899,30 @@ class CSIROMarineValues:
                         QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
                     elif layer_f2.name() == "Clipped":
                         QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
+
+    def readSQLiteDBClicked(self):
+        db = QSqlDatabase.addDatabase("QSQLITE");
+        # Reuse the path to DB to set database name
+        #db.setDatabaseName("C:\\Users\\Default.Default-THINK\\.qgis2\\python\\plugins\\marine_values\\chinook.db")
+        db.setDatabaseName(self.plugin_dir + "\\testing.db")
+        # Open the connection
+        db.open()
+        # query the table
+        query = db.exec_("select * from species where genus = 'Aphanesthes'")
+        print " "
+
+
+        # Play with results (not efficient, just for demo)
+        while query.next():
+            values = []
+            record = query.record()
+
+            for index in range(record.count()):
+                if index == 1: #To read only second field. Change to read other fields
+                    values.append(str(record.value(index)))
+            print ';'.join(values)        
 
 
 class ModelObjInfo(QStandardItemModel):
