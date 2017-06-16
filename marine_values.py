@@ -296,6 +296,13 @@ class CSIROMarineValues:
         self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
 
 
+        #Set up table which contains the rubber band point
+        #xmodobj2 = ModelRB()
+        #self.dlg.tableViewRB.setModel(xmodobj2)
+        self.dlg.tableViewRB.setColumnWidth(0,100)
+        self.dlg.tableViewRB.setColumnWidth(1,100)
+
+
 
 
         # Set up tableView table ****************************
@@ -708,6 +715,10 @@ class CSIROMarineValues:
             layer_t8 = treeLayer.layer()
             if layer_t8.name() == self.dlg.cur_lay:
 
+                r = self.dlg.tableViewRB.rowCount()
+                for del_row in range(0, r):
+                    self.dlg.tableViewRB.removeRow(del_row)
+
 #        layer = self.iface.activeLayer()
 #        if layer:        
                 print "Set previous tool"
@@ -772,22 +783,6 @@ class CSIROMarineValues:
                 vlx.commitChanges()
                 QgsMapLayerRegistry.instance().addMapLayers([vlx])
                 
-
-
-
-
-    # T E S T I N G
-                #Rubber band layer is now active since it was just created
-                #so set back to previously active layer
-    #            for treeLayer in project.layerTreeRoot().findLayers():                
-    #                layer_t7 = treeLayer.layer()
-    #                if layer_t7.name() == self.dlg.cur_lay:
-    #                    self.iface.setActiveLayer(layer_t7)
-    # T E S T I N G   E N D
-
-
-
-
                 layer = self.iface.activeLayer()
                 if layer:
                     clp_lay = layer.name()
@@ -818,36 +813,49 @@ class CSIROMarineValues:
                     if geom_rb.intersects(geom_feat):
                         #print "Intersecting"
                         
-    # T E S T I N G
                         overlay_layer = QgsVectorLayer()
                         print "Current layer: " + self.dlg.cur_lay
-    # T E S T I N G   E N D
-
 
                         for treeLayer in project.layerTreeRoot().findLayers():                
                             layer_t6 = treeLayer.layer()
 
-
-
-
-    # T E S T I N G
                             #if layer_t6.name() == "feature_valuetype_llg":
                             print self.dlg.cur_lay
                             if layer_t6.name() == self.dlg.cur_lay:
                                 overlay_layer = layer_t6
                                 break
-    # T E S T I N G   E N D
-
-
-
-
-
-
 
                             #if layer.name() == "cut2":
                             if layer_t6.name() == "rubber_band":
                                 layer_to_clip = layer_t6
-                        #processing.runalg
+
+
+
+
+
+
+
+                                #Getting coordinates to save rubber band to tableViewRB
+                                clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
+                                cfeat = clay.getFeatures()
+                                temp_geom = []
+                                for fea in cfeat:
+                                    cgeo = fea.geometry()
+                                    multi_geom = cgeo.asPolygon()
+                                    for pp in multi_geom:
+                                        for pt in pp:
+                                        #temp_geom.extend(i)
+                                            px = str(pt.x())
+                                            py = str(pt.y())
+                                            rowPosition = self.dlg.tableViewRB.rowCount()
+                                            self.dlg.tableViewRB.insertRow(rowPosition)
+                                            self.dlg.tableViewRB.setItem(rowPosition, 0, QtGui.QTableWidgetItem(px))
+                                            self.dlg.tableViewRB.setItem(rowPosition, 1, QtGui.QTableWidgetItem(py))
+                                            self.dlg.tableViewRB.setRowHeight(rowPosition,17)
+
+
+
+
                         
                         #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
                         #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
@@ -928,20 +936,40 @@ class CSIROMarineValues:
                                                 laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
                                                 it67 = QStandardItem(laval)
                                                 model.appendRow(it67)
+
+                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
+
                                         if self.dlg.radioButtonSecurity.isChecked():
                                             if cf[6] == "Importance for food security":
                                                 laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
                                                 it67 = QStandardItem(laval)
                                                 model.appendRow(it67)
+
+                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
+
                                         if self.dlg.radioButtonIncome.isChecked():
                                             if cf[6] == "Importance for income":
                                                 laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
                                                 it67 = QStandardItem(laval)
                                                 model.appendRow(it67)
 
-
-
-
+                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
 
 
 
@@ -1015,25 +1043,28 @@ class CSIROMarineValues:
 
 
 
+#class ModelRB(QStandardItemModel):
+#    def __init__(self, parent=None):
+#        QtGui.QStandardItemModel.__init__(self)
+#       self.setColumnCount(2)
+#       #self.setHorizontalHeaderLabels(['Object'])
+#    def data(self, index, role):
+#        if index.isValid():
+#            return super(ModelRB, self).data(index, QtCore.Qt.DisplayRole)
+
+
+
+
 class ModelObjInfo(QStandardItemModel):
     def __init__(self, parent=None):
         QtGui.QStandardItemModel.__init__(self)
         self.setColumnCount(3)
-
         #self.setHorizontalHeaderLabels(['Object'])
-        #self.appendRow([QStandardItem('Looking good')])
-
     def data(self, index, role):
         if index.isValid():
             return super(ModelObjInfo, self).data(index, QtCore.Qt.DisplayRole)
 
-    #def xappendRow(self):
-     #   self.d = QStandardItem('X')
-    #    self.d.setTextAlignment(QtCore.Qt.AlignLeft)
-    #    self.d.setText = "testing"
-    #    self.d.setCheckable(False) 
-    #    #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
-    #    self.appendRow([self.d, QStandardItem('unknown')])
+
 
 
 class Model(QStandardItemModel):

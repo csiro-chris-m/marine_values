@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>643</width>
-    <height>539</height>
+    <height>696</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
      <x>340</x>
      <y>10</y>
      <width>291</width>
-     <height>261</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -284,6 +284,64 @@
      <string>...</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QTableWidget" name="tableWidgetDetail">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>550</y>
+     <width>621</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="columnCount">
+    <number>7</number>
+   </property>
+   <column/>
+   <column/>
+   <column/>
+   <column/>
+   <column/>
+   <column/>
+   <column/>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>190</y>
+     <width>121</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Rubber band geometry</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableViewRB">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>210</y>
+     <width>291</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>7</pointsize>
+    </font>
+   </property>
+   <column>
+    <property name="text">
+     <string>X</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Y</string>
+    </property>
+   </column>
   </widget>
  </widget>
  <resources/>
