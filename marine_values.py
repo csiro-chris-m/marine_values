@@ -232,8 +232,6 @@ class CSIROMarineValues:
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
 
-        self.dlg.readSQLiteDB.clicked.connect(self.readSQLiteDBClicked)
-
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
@@ -351,6 +349,12 @@ class CSIROMarineValues:
 
         self.dlg.objectInfo.selectRow(0)
 
+        self.dlg.radioButtonWellbeing.setChecked(True)
+
+        #Read database with marine value details and keep in memory for quick access.
+        #Read only required fields
+        self.dlg.list_of_values = []
+        self.readSQLiteDB()
 
 
         ## show the dialog
@@ -700,26 +704,31 @@ class CSIROMarineValues:
 
 
     def rubberbandClicked(self):
-        layer = self.iface.activeLayer()
-        if layer:        
-            self.previousMapTool = self.iface.mapCanvas().mapTool()
-            self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
-            self.myMapTool.canvasClicked.connect(self.manageClick)
-            self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
-            color = QColor("green")
-            color.setAlpha(50)
-            self.myRubberBand.setColor(color)
+        for treeLayer in project.layerTreeRoot().findLayers():                
+            layer_t8 = treeLayer.layer()
+            if layer_t8.name() == self.dlg.cur_lay:
 
-            self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
-            self.iface.mapCanvas().setMapTool(self.myMapTool)
-    #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
-    #        r.setColor(QColor(0, 0, 255))
-    #        r.setWidth(30)
-    #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
-    #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
-            #pass
-        else:
-            self.dlg.error.setText("No active layer. Click a layer.")
+#        layer = self.iface.activeLayer()
+#        if layer:        
+                print "Set previous tool"
+                self.previousMapTool = self.iface.mapCanvas().mapTool()
+                self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
+                self.myMapTool.canvasClicked.connect(self.manageClick)
+                self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
+                color = QColor("green")
+                color.setAlpha(50)
+                self.myRubberBand.setColor(color)
+
+                self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
+                self.iface.mapCanvas().setMapTool(self.myMapTool)
+        #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
+        #        r.setColor(QColor(0, 0, 255))
+        #        r.setWidth(30)
+        #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
+        #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
+                #pass
+            else:
+                self.dlg.error.setText("No active layer. Click a layer.")
 
     def showRBCoordinates(self, currentPos):
         if self.myRubberBand and self.myRubberBand.numberOfVertices():
@@ -729,200 +738,281 @@ class CSIROMarineValues:
 
 
     def manageClick(self, currentPos, clickedButton):
-        if clickedButton == Qt.LeftButton:
-            self.myRubberBand.addPoint(currentPos)
-        if clickedButton == Qt.RightButton:
-            self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
-            self.iface.mapCanvas().setMapTool(self.previousMapTool)
+        
+        if self.dlg.cur_lay == "":
+            self.dlg.error.setText("No active area for rubber band selection.")
+        else:
 
-            #print self.myRubberBand.numberOfVertices()
-            geom_rb = self.myRubberBand.asGeometry()
-            #print geom_rb.asPolygon()
-
-            #Create in-memory layer from Rubberband geometry for later processing
-            vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
-            prx = vlx.dataProvider()
-            # Enter editing mode
-            vlx.startEditing()
-            # add fields
-            prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
-            # add a feature
-            fetx = QgsFeature()
-            fetx.setGeometry(geom_rb)
-            fetx.setAttributes([0, "Feature"])
-            prx.addFeatures( [ fetx ] )
-            vlx.updateExtents()
-            # Commit changes
-            vlx.commitChanges()
-            QgsMapLayerRegistry.instance().addMapLayers([vlx])
-            
+            if clickedButton == Qt.LeftButton:
+                self.myRubberBand.addPoint(currentPos)
 
 
+            if clickedButton == Qt.RightButton:
+                self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
+                self.iface.mapCanvas().setMapTool(self.previousMapTool)
 
+                #print self.myRubberBand.numberOfVertices()
+                geom_rb = self.myRubberBand.asGeometry()
+                #print geom_rb.asPolygon()
 
-# T E S T I N G
-            #Rubber band layer is now active since it was just created
-            #so set back to previously active layer
-#            for treeLayer in project.layerTreeRoot().findLayers():                
-#                layer_t7 = treeLayer.layer()
-#                if layer_t7.name() == self.dlg.cur_lay:
-#                    self.iface.setActiveLayer(layer_t7)
-# T E S T I N G   E N D
+                #Create in-memory layer from Rubberband geometry for later processing
+                vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
+                prx = vlx.dataProvider()
+                # Enter editing mode
+                vlx.startEditing()
+                # add fields
+                prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
+                # add a feature
+                fetx = QgsFeature()
+                fetx.setGeometry(geom_rb)
+                fetx.setAttributes([0, "Feature"])
+                prx.addFeatures( [ fetx ] )
+                vlx.updateExtents()
+                # Commit changes
+                vlx.commitChanges()
+                QgsMapLayerRegistry.instance().addMapLayers([vlx])
+                
 
 
 
 
-            layer = self.iface.activeLayer()
-            if layer:
-                clp_lay = layer.name()
-                iter = layer.getFeatures()
-                itrctr = 0
-                for feature in iter:
-                    geom_feat = feature.geometry()
+    # T E S T I N G
+                #Rubber band layer is now active since it was just created
+                #so set back to previously active layer
+    #            for treeLayer in project.layerTreeRoot().findLayers():                
+    #                layer_t7 = treeLayer.layer()
+    #                if layer_t7.name() == self.dlg.cur_lay:
+    #                    self.iface.setActiveLayer(layer_t7)
+    # T E S T I N G   E N D
 
-                    # create layer
-                    vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
-                    pr = vl.dataProvider()
-                    # Enter editing mode
-                    vl.startEditing()
-                    # add fields
-                    pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
-                    # add a feature
-                    fet = QgsFeature()
-                    fet.setGeometry(geom_feat)
-                    fet.setAttributes([itrctr, "Feature"])
-                    pr.addFeatures( [ fet ] )
-                    # Commit changes
-                    vl.commitChanges()
-                    itrctr =+ 1
 
-                #print geom_rb.area()
-                #print geom_feat.area()
 
-                if geom_rb.intersects(geom_feat):
-                    #print "Intersecting"
-                    
-# T E S T I N G
-                    overlay_layer = QgsVectorLayer()
-                    print "Current layer: " + self.dlg.cur_lay
-# T E S T I N G   E N D
 
+                layer = self.iface.activeLayer()
+                if layer:
+                    clp_lay = layer.name()
+                    iter = layer.getFeatures()
+                    itrctr = 0
+                    for feature in iter:
+                        geom_feat = feature.geometry()
+
+                        # create layer
+                        vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
+                        pr = vl.dataProvider()
+                        # Enter editing mode
+                        vl.startEditing()
+                        # add fields
+                        pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
+                        # add a feature
+                        fet = QgsFeature()
+                        fet.setGeometry(geom_feat)
+                        fet.setAttributes([itrctr, "Feature"])
+                        pr.addFeatures( [ fet ] )
+                        # Commit changes
+                        vl.commitChanges()
+                        itrctr =+ 1
+
+                    #print geom_rb.area()
+                    #print geom_feat.area()
+
+                    if geom_rb.intersects(geom_feat):
+                        #print "Intersecting"
+                        
+    # T E S T I N G
+                        overlay_layer = QgsVectorLayer()
+                        print "Current layer: " + self.dlg.cur_lay
+    # T E S T I N G   E N D
+
+
+                        for treeLayer in project.layerTreeRoot().findLayers():                
+                            layer_t6 = treeLayer.layer()
+
+
+
+
+    # T E S T I N G
+                            #if layer_t6.name() == "feature_valuetype_llg":
+                            print self.dlg.cur_lay
+                            if layer_t6.name() == self.dlg.cur_lay:
+                                overlay_layer = layer_t6
+                                break
+    # T E S T I N G   E N D
+
+
+
+
+
+
+
+                            #if layer.name() == "cut2":
+                            if layer_t6.name() == "rubber_band":
+                                layer_to_clip = layer_t6
+                        #processing.runalg
+                        
+                        #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
+                        #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
+                        #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                        processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                        res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
+                        res_lay.updateExtents()
+                        res_feat = res_lay.getFeatures()
+
+
+                        str2 = ""
+                        str3 = ""
+
+                        #Clear selected objects list view
+                        model = QStandardItemModel(0,0)
+                        self.dlg.listFeatSel.setModel(model)
+                        #Set up model for selected objects list view
+                        model = QStandardItemModel(1,1)
+
+                        for f in res_feat:
+                            spat_feat_qry = ""
+                            llg_qry = ''
+                            res_geom = f.geometry()
+                            #d = QgsDistanceArea()
+                            #d.setEllipsoidalMode(True)
+                            #m = d.measurePolygon(res_geom.asPolygon()[0])
+                            #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
+                            #print "New area: ", ar
+
+                            if f.attributes:
+                                attry = f.attributes()
+                                if len(attry) > 2:
+                                    str2 = "Spat feat: " + attry[3]
+                                    str2 = str2.strip()
+                                    spat_feat_qry = attry[3]
+
+                                    str3 = "Food security: " + str(attry[9]) #9 - column food security
+                                    str3 = str3.strip()
+
+                                    str7 = "Llg: " + attry[6]
+                                    str7 = str7.strip()
+                                    llg_qry = attry[6]
+
+                            d = QgsDistanceArea()
+                            d.setEllipsoidalMode(True)
+                            art = res_geom.area()
+                            ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                            arx = str(ar[0])
+                            ary = "Area: " + arx
+                            ary = ary.strip()
+
+                            reste = ary + " / " + str2 + " / " + str3 + " / " + str7
+                            #print reste
+                        
+                        #Add items to selected objects list view
+                            item = QStandardItem(reste)
+                            model.appendRow(item)
+
+
+
+
+                            #self.dlg.list_of_values
+                            #[0]: 17 - spatial_feature_name
+                            #[1]:  8 - scale_name
+                            #[2]:  7 - scale_id
+                            #[3]:  1 - value_name
+                            #[4]: 12 - value_metric_score
+                            #[5]:  4 - value_type
+                            #[6]: 10 - value_metric_description
+                            for cf in self.dlg.list_of_values:
+                                #Looking for all that are in the same spatial_feature category
+                                if cf[0] == spat_feat_qry: 
+                                    #Looking for all that are in the same LLG
+                                    if cf[1] == llg_qry: 
+
+                                        if self.dlg.radioButtonWellbeing.isChecked():
+                                            if cf[6] == "Importance for human wellbeing":
+                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
+                                                it67 = QStandardItem(laval)
+                                                model.appendRow(it67)
+                                        if self.dlg.radioButtonSecurity.isChecked():
+                                            if cf[6] == "Importance for food security":
+                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
+                                                it67 = QStandardItem(laval)
+                                                model.appendRow(it67)
+                                        if self.dlg.radioButtonIncome.isChecked():
+                                            if cf[6] == "Importance for income":
+                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
+                                                it67 = QStandardItem(laval)
+                                                model.appendRow(it67)
+
+
+
+
+
+
+
+
+
+                        self.dlg.listFeatSel.setModel(model)
+
+
+
+                        #print res_lay
+
+                    else:
+                        pass
+                        #print "Not intersecting"
+
+                    self.myMapTool.deleteLater()
+                    self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
                     for treeLayer in project.layerTreeRoot().findLayers():                
-                        layer_t6 = treeLayer.layer()
+                        layer_f2 = treeLayer.layer()
+                        if layer_f2.name() == "rubber_band":
+                            QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+                        elif layer_f2.name() == "Clipped":
+                            QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
 
 
-
-# T E S T I N G
-                        #if layer_t6.name() == "feature_valuetype_llg":
-                        print self.dlg.cur_lay
-                        if layer_t6.name() == self.dlg.cur_lay:
-                            overlay_layer = layer_t6
-                            break
-# T E S T I N G   E N D
-
-
-
-
-
-
-
-                        #if layer.name() == "cut2":
-                        if layer_t6.name() == "rubber_band":
-                            layer_to_clip = layer_t6
-                    #processing.runalg
-                    
-                    #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
-                    #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
-                    #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                    processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                    res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
-                    res_lay.updateExtents()
-                    res_feat = res_lay.getFeatures()
-
-
-                    str2 = ""
-                    str3 = ""
-
-                    #Clear selected objects list view
-                    model = QStandardItemModel(0,0)
-                    self.dlg.listFeatSel.setModel(model)
-                    #Set up model for selected objects list view
-                    model = QStandardItemModel(1,1)
-
-                    for f in res_feat:
-                        res_geom = f.geometry()
-                        #d = QgsDistanceArea()
-                        #d.setEllipsoidalMode(True)
-                        #m = d.measurePolygon(res_geom.asPolygon()[0])
-                        #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
-                        #print "New area: ", ar
-
-                        if f.attributes:
-                            attry = f.attributes()
-                            if len(attry) > 2:
-                                str2 = "Spat feat: " + attry[3]
-                                str2 = str2.strip()
-                                str3 = "Food security: " + str(attry[9]) #9 - column food security
-                                str3 = str3.strip()
-                        d = QgsDistanceArea()
-                        d.setEllipsoidalMode(True)
-                        art = res_geom.area()
-                        ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
-                        arx = str(ar[0])
-                        ary = "Area: " + arx
-                        ary = ary.strip()
-
-                        reste = ary + " / " + str2 + " / " + str3
-                        print reste
-                    
-                    #Add items to selected objects list view
-                        item = QStandardItem(reste)
-                        model.appendRow(item)
-                    self.dlg.listFeatSel.setModel(model)
-
-
-
-                    #print res_lay
-
-                else:
-                    pass
-                    #print "Not intersecting"
-
-                self.myMapTool.deleteLater()
-                self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-
-                for treeLayer in project.layerTreeRoot().findLayers():                
-                    layer_f2 = treeLayer.layer()
-                    if layer_f2.name() == "rubber_band":
-                        QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
-                    elif layer_f2.name() == "Clipped":
-                        QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
-
-
-
-    def readSQLiteDBClicked(self):
+    def readSQLiteDB(self):
         db = QSqlDatabase.addDatabase("QSQLITE");
         # Reuse the path to DB to set database name
         #db.setDatabaseName("C:\\Users\\Default.Default-THINK\\.qgis2\\python\\plugins\\marine_values\\chinook.db")
-        db.setDatabaseName(self.plugin_dir + "\\testing.db")
+        db.setDatabaseName(self.plugin_dir + "\\marine_values.db")
         # Open the connection
         db.open()
         # query the table
-        query = db.exec_("select * from species where genus = 'Aphanesthes'")
+        query = db.exec_("select * from marine_values_all")
         print " "
+
+
+
 
 
         # Play with results (not efficient, just for demo)
         while query.next():
-            values = []
             record = query.record()
+            #Getting these fields:
+            # 17 - spatial_feature_name  * used to query
+            #  8 - scale_name            * used to query
+            #  7 - scale_id              * used to query
+            #  1 - value_name
+            # 12 - value_metric_score
+            #  4 - value_type
+            # 10 - value_metric_description
 
-            for index in range(record.count()):
-                if index == 1: #To read only second field. Change to read other fields
-                    values.append(str(record.value(index)))
-            print ';'.join(values)        
+            listv = [str(record.value(17)), str(record.value(8)), str(record.value(7)), str(record.value(1)), str(record.value(12)), str(record.value(4)), str(record.value(10))]
+            self.dlg.list_of_values.append(listv)
+
+
+#            for index in range(record.count()):
+#                lst = [1,2,3,4,5,6]
+#                if index in lst: #To read only second field. Change to read other fields
+#                    values.append(str(record.value(index)))
+#            print ';'.join(values)        
+
+
+
+#        self.dlg.list_of_values = []
+
+#        line = np.genfromtxt('temp.txt', usecols=3, dtype=[('floatname','float')], skip_header=1)
+#        list_of_values.append(line)
+
 
 
 class ModelObjInfo(QStandardItemModel):

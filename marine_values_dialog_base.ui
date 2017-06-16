@@ -184,25 +184,12 @@
     <string>Select area</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="readSQLiteDB">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>510</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Read SQLite</string>
-   </property>
-  </widget>
   <widget class="QListView" name="listFeatSel">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>290</y>
-     <width>621</width>
+     <width>491</width>
      <height>171</height>
     </rect>
    </property>
@@ -219,6 +206,84 @@
    <property name="text">
     <string>Selected objects:</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>290</y>
+     <width>120</width>
+     <height>151</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Importance for...</string>
+   </property>
+   <widget class="QRadioButton" name="radioButtonWellbeing">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>human wellbeing</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonSecurity">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>food security</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonIncome">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>income</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>82</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>82</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>
