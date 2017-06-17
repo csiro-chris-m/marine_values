@@ -303,10 +303,12 @@ class CSIROMarineValues:
         self.dlg.tableViewRB.setColumnWidth(1,100)
 
 
-
+        self.dlg.tableWidgetDetail.setColumnWidth(0,120)
+        self.dlg.tableWidgetDetail.setColumnWidth(1,80)
+        #This may not actually work...
+        self.dlg.tableWidgetDetail.horizontalHeader().sizeHint().setHeight(17)
 
         # Set up tableView table ****************************
-
         #self.dlg.tableView.setModel(model)
         self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.dlg.tableView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -347,6 +349,7 @@ class CSIROMarineValues:
         #Load main project
         self.project_load()
 
+
         #Stores name of currently active layer. Need this since rubber band sets itself current
         #so must set back
         self.dlg.cur_lay = ""
@@ -364,8 +367,14 @@ class CSIROMarineValues:
         self.readSQLiteDB()
 
 
+        px = self.dlg.geometry().x = 10
+        py = self.dlg.geometry().y = 30
+        dw = self.dlg.width = 350
+        dh = self.dlg.height = 850
+        self.dlg.setGeometry( px, py, dw, dh )
         ## show the dialog
         self.dlg.show()
+
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
@@ -711,6 +720,8 @@ class CSIROMarineValues:
 
 
     def rubberbandClicked(self):
+        self.dlg.tableViewRB.setRowCount(0)
+
         for treeLayer in project.layerTreeRoot().findLayers():                
             layer_t8 = treeLayer.layer()
             if layer_t8.name() == self.dlg.cur_lay:
@@ -888,10 +899,18 @@ class CSIROMarineValues:
                             if f.attributes:
                                 attry = f.attributes()
                                 if len(attry) > 2:
+
+
+
+
                                     str2 = "Spat feat: " + attry[3]
                                     str2 = str2.strip()
                                     spat_feat_qry = attry[3]
 
+                                    if attry[9]:
+                                        foodsec = attry[9]
+                                    else:
+                                        foodsec = ""
                                     str3 = "Food security: " + str(attry[9]) #9 - column food security
                                     str3 = str3.strip()
 
@@ -899,20 +918,27 @@ class CSIROMarineValues:
                                     str7 = str7.strip()
                                     llg_qry = attry[6]
 
-                            d = QgsDistanceArea()
-                            d.setEllipsoidalMode(True)
-                            art = res_geom.area()
-                            ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
-                            arx = str(ar[0])
-                            ary = "Area: " + arx
-                            ary = ary.strip()
+                                    d = QgsDistanceArea()
+                                    d.setEllipsoidalMode(True)
+                                    art = res_geom.area()
+                                    ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                                    arx = str(ar[0])
+                                    ary = "Area: " + arx
+                                    ary = ary.strip()
 
-                            reste = ary + " / " + str2 + " / " + str3 + " / " + str7
-                            #print reste
-                        
-                        #Add items to selected objects list view
-                            item = QStandardItem(reste)
-                            model.appendRow(item)
+                                    reste = ary + " / " + str2 + " / " + str3 + " / " + str7
+                                    #print reste
+                                
+                                    #Add items to selected objects list view
+#                                    item = QStandardItem(reste)
+#                                    model.appendRow(item)
+
+                                    rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                    self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[3]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(foodsec))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(attry[6]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
 
 
 
@@ -935,15 +961,17 @@ class CSIROMarineValues:
                                             if cf[6] == "Importance for human wellbeing":
                                                 laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
                                                 it67 = QStandardItem(laval)
-                                                model.appendRow(it67)
+#                                                model.appendRow(it67)
 
                                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                                 self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+                                                self.dlg.tableWidgetDetail.setSectionResizeMode(QHeaderView.Fixed)
 
                                         if self.dlg.radioButtonSecurity.isChecked():
                                             if cf[6] == "Importance for food security":
@@ -952,11 +980,12 @@ class CSIROMarineValues:
                                                 model.appendRow(it67)
 
                                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
                                         if self.dlg.radioButtonIncome.isChecked():
                                             if cf[6] == "Importance for income":
@@ -965,17 +994,18 @@ class CSIROMarineValues:
                                                 model.appendRow(it67)
 
                                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
+                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
 
 
 
 
-                        self.dlg.listFeatSel.setModel(model)
+#                        self.dlg.listFeatSel.setModel(model)
 
 
 
