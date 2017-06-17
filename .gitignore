@@ -1,1 +1,2 @@
-/marine_values.pyc
+*.pyc
+*.db

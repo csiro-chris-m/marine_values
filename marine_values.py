@@ -51,7 +51,7 @@
  ***************************************************************************/
 
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
 from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas
 # Initialize Qt resources from file resources.py
@@ -370,7 +370,7 @@ class CSIROMarineValues:
         px = self.dlg.geometry().x = 10
         py = self.dlg.geometry().y = 30
         dw = self.dlg.width = 350
-        dh = self.dlg.height = 850
+        dh = self.dlg.height = 1000
         self.dlg.setGeometry( px, py, dw, dh )
         ## show the dialog
         self.dlg.show()
@@ -721,6 +721,7 @@ class CSIROMarineValues:
 
     def rubberbandClicked(self):
         self.dlg.tableViewRB.setRowCount(0)
+        self.dlg.tableWidgetDetail.setRowCount(0)
 
         for treeLayer in project.layerTreeRoot().findLayers():                
             layer_t8 = treeLayer.layer()
@@ -882,7 +883,7 @@ class CSIROMarineValues:
 
                         #Clear selected objects list view
                         model = QStandardItemModel(0,0)
-                        self.dlg.listFeatSel.setModel(model)
+#                        self.dlg.listFeatSel.setModel(model)
                         #Set up model for selected objects list view
                         model = QStandardItemModel(1,1)
 
@@ -903,30 +904,45 @@ class CSIROMarineValues:
 
 
 
-                                    str2 = "Spat feat: " + attry[3]
-                                    str2 = str2.strip()
-                                    spat_feat_qry = attry[3]
+ #                                   str2 = "Spat feat: " + attry[3]
+ #                                   str2 = str2.strip()
+ #                                   spat_feat_qry = attry[3]
 
-                                    if attry[9]:
-                                        foodsec = attry[9]
-                                    else:
-                                        foodsec = ""
-                                    str3 = "Food security: " + str(attry[9]) #9 - column food security
-                                    str3 = str3.strip()
+#                                    if attry[9]:
+ ###                                       foodsec = attry[9]
+  #                                  else:
+  #                                      foodsec = ""
+  #                                  str3 = "Food security: " + str(attry[9]) #9 - column food security
+  #                                  str3 = str3.strip()
 
-                                    str7 = "Llg: " + attry[6]
-                                    str7 = str7.strip()
-                                    llg_qry = attry[6]
+#                                    str7 = "Llg: " + attry[6]
+#                                    str7 = str7.strip()
+#                                    llg_qry = attry[6]
 
                                     d = QgsDistanceArea()
                                     d.setEllipsoidalMode(True)
                                     art = res_geom.area()
                                     ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
-                                    arx = str(ar[0])
-                                    ary = "Area: " + arx
-                                    ary = ary.strip()
+ 
 
-                                    reste = ary + " / " + str2 + " / " + str3 + " / " + str7
+                                    dis_val = ""
+                                    if self.dlg.radioButtonWellbeing.isChecked():
+                                        dis_val = attry[10]
+                                    if self.dlg.radioButtonSecurity.isChecked():
+                                        dis_val = attry[9]
+                                    if self.dlg.radioButtonIncome.isChecked():
+                                        dis_val = attry[11]
+#                                        print bool(dis_val)
+ #                                       dis_val = ""
+
+
+
+
+                                    arx = str(ar[0])
+#                                    ary = "Area: " + arx
+#                                    ary = ary.strip()
+
+#                                    reste = ary + " / " + str2 + " / " + str3 + " / " + str7
                                     #print reste
                                 
                                     #Add items to selected objects list view
@@ -936,7 +952,8 @@ class CSIROMarineValues:
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                     self.dlg.tableWidgetDetail.insertRow(rowPosition)
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[3]))
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(foodsec))
+                                    if dis_val:
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(dis_val))
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(attry[6]))
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
 
@@ -953,62 +970,34 @@ class CSIROMarineValues:
                             #[6]: 10 - value_metric_description
                             for cf in self.dlg.list_of_values:
                                 #Looking for all that are in the same spatial_feature category
-                                if cf[0] == spat_feat_qry: 
+                                if cf[0] == attry[3]: 
                                     #Looking for all that are in the same LLG
-                                    if cf[1] == llg_qry: 
-
+                                    if cf[1] == attry[6]: 
+                                        doInsert = False
                                         if self.dlg.radioButtonWellbeing.isChecked():
                                             if cf[6] == "Importance for human wellbeing":
-                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
-                                                it67 = QStandardItem(laval)
-#                                                model.appendRow(it67)
-
-                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
-                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
-                                                self.dlg.tableWidgetDetail.setSectionResizeMode(QHeaderView.Fixed)
-
+                                                doInsert = True
                                         if self.dlg.radioButtonSecurity.isChecked():
                                             if cf[6] == "Importance for food security":
-                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
-                                                it67 = QStandardItem(laval)
-                                                model.appendRow(it67)
-
-                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
-                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
-
+                                                doInsert = True
                                         if self.dlg.radioButtonIncome.isChecked():
                                             if cf[6] == "Importance for income":
-                                                laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
-                                                it67 = QStandardItem(laval)
-                                                model.appendRow(it67)
-
-                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
-                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
-
-
-
-
+                                                doInsert = True
+                                        if doInsert:
+                                            laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
+                                            it67 = QStandardItem(laval)
+                                            model.appendRow(it67)
+                                            
+                                            rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                            self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
+                                            self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
 #                        self.dlg.listFeatSel.setModel(model)
-
-
-
                         #print res_lay
 
                     else:

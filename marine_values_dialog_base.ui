@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>883</height>
+    <height>955</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -171,16 +171,6 @@
     <string>Select area</string>
    </property>
   </widget>
-  <widget class="QListView" name="listFeatSel">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>520</y>
-     <width>331</width>
-     <height>41</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
@@ -263,9 +253,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>570</y>
+     <y>520</y>
      <width>331</width>
-     <height>301</height>
+     <height>431</height>
     </rect>
    </property>
    <property name="sizePolicy">
