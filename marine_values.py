@@ -7,7 +7,7 @@
                               -------------------
         begin                : 2016-12-25
         git sha              : $Format:%H$
-        copyright            : (C) 2016 by CSIRO Oceans and Atmosphere
+        copyright            : (C) 2017 by CSIRO Oceans and Atmosphere
         email                : chris.moeseneder@csiro.au
  ***************************************************************************/
 
@@ -24,6 +24,7 @@
  *                                                                         *
  *   Environment Versions                                                  *
  *   ------------------------------------                                  *
+ *   Python 2.7.5                                                          *
  *   QGIS 2.18.2 Las Palmas                                                *
  *   Qt Creator 4.2.0                                                      *
  *                                                                         *
@@ -52,7 +53,7 @@
 
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas
 # Initialize Qt resources from file resources.py
 import resources
@@ -72,6 +73,7 @@ from collections import defaultdict
 from pprint import pprint
 import processing
 from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
+
 
 project = QgsProject.instance()
 
@@ -229,8 +231,32 @@ class CSIROMarineValues:
 
         #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\save.png");
+        self.dlg.saveProject.setIcon(QtGui.QIcon(rMyIcon))
+
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\end.png");
+        self.dlg.endButton.setIcon(QtGui.QIcon(rMyIcon))
+
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\sel_area.png");
+        self.dlg.rubberband.setIcon(QtGui.QIcon(rMyIcon))
+
+
+        
+        self.dlg.pushButtonPan.clicked.connect(self.pushButtonPanClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\pan.png");
+        self.dlg.pushButtonPan.setIcon(QtGui.QIcon(rMyIcon))
+
+        self.dlg.pushButtonZoomPlus.clicked.connect(self.pushButtonZoomPlusClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomin.png");
+        self.dlg.pushButtonZoomPlus.setIcon(QtGui.QIcon(rMyIcon))
+
+        self.dlg.pushButtonZoomMinus.clicked.connect(self.pushButtonZoomMinusClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomout.png");
+        self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(rMyIcon))
+
+
 
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
@@ -299,14 +325,15 @@ class CSIROMarineValues:
         #Set up table which contains the rubber band point
         #xmodobj2 = ModelRB()
         #self.dlg.tableViewRB.setModel(xmodobj2)
-        self.dlg.tableViewRB.setColumnWidth(0,100)
-        self.dlg.tableViewRB.setColumnWidth(1,100)
+        self.dlg.tableViewRB.setColumnWidth(0,50)
+        self.dlg.tableViewRB.setColumnWidth(1,50)
 
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
-        self.dlg.tableWidgetDetail.setColumnWidth(1,80)
-        #This may not actually work...
-        self.dlg.tableWidgetDetail.horizontalHeader().sizeHint().setHeight(17)
+        self.dlg.tableWidgetDetail.setColumnWidth(1,120)
+        self.dlg.tableWidgetDetail.setColumnWidth(2,120)
+        self.dlg.tableWidgetDetail.setColumnWidth(3,120)
+        self.dlg.tableWidgetDetail.setColumnWidth(4,120)
 
         # Set up tableView table ****************************
         #self.dlg.tableView.setModel(model)
@@ -366,11 +393,10 @@ class CSIROMarineValues:
         self.dlg.list_of_values = []
         self.readSQLiteDB()
 
-
         px = self.dlg.geometry().x = 10
         py = self.dlg.geometry().y = 30
         dw = self.dlg.width = 350
-        dh = self.dlg.height = 1000
+        dh = self.dlg.height = 960
         self.dlg.setGeometry( px, py, dw, dh )
         ## show the dialog
         self.dlg.show()
@@ -621,6 +647,21 @@ class CSIROMarineValues:
 
             attb = []
 
+
+            imporval = None #Do not declare a type
+            col_choice = None
+            headi = ""
+            if self.dlg.radioButtonWellbeing.isChecked():
+                headi = "Human wellbeing"
+                col_choice = 10
+            if self.dlg.radioButtonSecurity.isChecked():
+                headi = "Food security"
+                col_choice = 9
+            if self.dlg.radioButtonIncome.isChecked():
+                headi = "Income"
+                col_choice = 11
+
+
             for feature in iter:
 
                 feat_count += 1;
@@ -651,18 +692,30 @@ class CSIROMarineValues:
                 if feature.attributes:
                     attrs = feature.attributes()
                     if len(attrs) > 2:
-                        arear = str(attrs[9]) #9 - column food security
+                        arear = str(attrs[col_choice])
                         gg = [attrs[3],arear]
                         attb.append(gg)
 
+
+
+
             model = QStandardItemModel()
             model.setColumnCount(3)
-            model.setHorizontalHeaderLabels(['Obj', 'Feature', 'Food secure'])
+            model.setHorizontalHeaderLabels(['Obj', 'Spatial feature', headi])
 
 
             for itc in attb:
                 item = QStandardItem("1")
-                model.appendRow([item, QStandardItem(itc[0]),QStandardItem(itc[1])])
+                vals = itc[1]
+
+                if vals == "NULL":
+                    model.appendRow([item, QStandardItem(itc[0]),QStandardItem("")])
+                else:
+                    valf = float(vals)
+                    valr = round(valf,4)
+                    valo = "{0:.4f}".format(valr)
+                    model.appendRow([item, QStandardItem(itc[0]),QStandardItem(valo)])
+
 
             self.dlg.objectInfo.setModel(model)
 
@@ -718,40 +771,56 @@ class CSIROMarineValues:
         #lyr3 = root.findLayer(layid).layer()
         #lyr3.id = new_index
 
+    def pushButtonPanClicked(self):
+        self.iface.actionPan().trigger()
+
+    def pushButtonZoomPlusClicked(self):
+        self.iface.actionZoomIn().trigger()
+
+    def pushButtonZoomMinusClicked(self):
+        self.iface.actionZoomOut().trigger()
 
     def rubberbandClicked(self):
-        self.dlg.tableViewRB.setRowCount(0)
-        self.dlg.tableWidgetDetail.setRowCount(0)
 
-        for treeLayer in project.layerTreeRoot().findLayers():                
-            layer_t8 = treeLayer.layer()
-            if layer_t8.name() == self.dlg.cur_lay:
+        print self.iface.activeLayer()
+        if self.iface.activeLayer():
+            self.dlg.tableViewRB.setRowCount(0)
+            self.dlg.tableWidgetDetail.setRowCount(0)
 
-                r = self.dlg.tableViewRB.rowCount()
-                for del_row in range(0, r):
-                    self.dlg.tableViewRB.removeRow(del_row)
+            for treeLayer in project.layerTreeRoot().findLayers():                
+                layer_t8 = treeLayer.layer()
+                if layer_t8.name() == self.dlg.cur_lay:
 
-#        layer = self.iface.activeLayer()
-#        if layer:        
-                print "Set previous tool"
-                self.previousMapTool = self.iface.mapCanvas().mapTool()
-                self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
-                self.myMapTool.canvasClicked.connect(self.manageClick)
-                self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
-                color = QColor("green")
-                color.setAlpha(50)
-                self.myRubberBand.setColor(color)
+                    r = self.dlg.tableViewRB.rowCount()
+                    for del_row in range(0, r):
+                        self.dlg.tableViewRB.removeRow(del_row)
 
-                self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
-                self.iface.mapCanvas().setMapTool(self.myMapTool)
-        #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
-        #        r.setColor(QColor(0, 0, 255))
-        #        r.setWidth(30)
-        #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
-        #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
-                #pass
+    #        layer = self.iface.activeLayer()
+    #        if layer:        
+                    print "Set previous tool"
+                    self.previousMapTool = self.iface.mapCanvas().mapTool()
+                    self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
+                    self.myMapTool.canvasClicked.connect(self.manageClick)
+                    self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
+                    color = QColor("green")
+                    color.setAlpha(50)
+                    self.myRubberBand.setColor(color)
+
+                    self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
+                    self.iface.mapCanvas().setMapTool(self.myMapTool)
+            #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
+            #        r.setColor(QColor(0, 0, 255))
+            #        r.setWidth(30)
+            #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
+            #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
+                    #pass
+                else:
+                    self.dlg.error.setText("No active layer. Click a layer.")
             else:
-                self.dlg.error.setText("No active layer. Click a layer.")
+                self.dlg.error.setText("Click a layer to make it active.")
+                #messagebox("Layer", "Click a layer to make it active.")
+
+
 
     def showRBCoordinates(self, currentPos):
         if self.myRubberBand and self.myRubberBand.numberOfVertices():
@@ -763,7 +832,8 @@ class CSIROMarineValues:
     def manageClick(self, currentPos, clickedButton):
         
         if self.dlg.cur_lay == "":
-            self.dlg.error.setText("No active area for rubber band selection.")
+            self.dlg.error.setText("Click a layer to make it active.")
+            #messagebox("Layer", "Click a layer to make it active.")
         else:
 
             if clickedButton == Qt.LeftButton:
@@ -857,14 +927,13 @@ class CSIROMarineValues:
                                     for pp in multi_geom:
                                         for pt in pp:
                                         #temp_geom.extend(i)
-                                            px = str(pt.x())
-                                            py = str(pt.y())
+                                            px = "{0:.5f}".format(round(float(str(pt.x())),5))
+                                            py = "{0:.5f}".format(round(float(str(pt.y())),5))
                                             rowPosition = self.dlg.tableViewRB.rowCount()
                                             self.dlg.tableViewRB.insertRow(rowPosition)
                                             self.dlg.tableViewRB.setItem(rowPosition, 0, QtGui.QTableWidgetItem(px))
                                             self.dlg.tableViewRB.setItem(rowPosition, 1, QtGui.QTableWidgetItem(py))
                                             self.dlg.tableViewRB.setRowHeight(rowPosition,17)
-
 
 
 
@@ -883,11 +952,11 @@ class CSIROMarineValues:
 
                         #Clear selected objects list view
                         model = QStandardItemModel(0,0)
-#                        self.dlg.listFeatSel.setModel(model)
-                        #Set up model for selected objects list view
                         model = QStandardItemModel(1,1)
-
+                        
                         for f in res_feat:
+                            rub = None
+                            shapar = None #shape area
                             spat_feat_qry = ""
                             llg_qry = ''
                             res_geom = f.geometry()
@@ -900,30 +969,10 @@ class CSIROMarineValues:
                             if f.attributes:
                                 attry = f.attributes()
                                 if len(attry) > 2:
-
-
-
-
- #                                   str2 = "Spat feat: " + attry[3]
- #                                   str2 = str2.strip()
- #                                   spat_feat_qry = attry[3]
-
-#                                    if attry[9]:
- ###                                       foodsec = attry[9]
-  #                                  else:
-  #                                      foodsec = ""
-  #                                  str3 = "Food security: " + str(attry[9]) #9 - column food security
-  #                                  str3 = str3.strip()
-
-#                                    str7 = "Llg: " + attry[6]
-#                                    str7 = str7.strip()
-#                                    llg_qry = attry[6]
-
                                     d = QgsDistanceArea()
                                     d.setEllipsoidalMode(True)
                                     art = res_geom.area()
                                     ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
- 
 
                                     dis_val = ""
                                     if self.dlg.radioButtonWellbeing.isChecked():
@@ -932,30 +981,43 @@ class CSIROMarineValues:
                                         dis_val = attry[9]
                                     if self.dlg.radioButtonIncome.isChecked():
                                         dis_val = attry[11]
-#                                        print bool(dis_val)
- #                                       dis_val = ""
-
-
-
 
                                     arx = str(ar[0])
-#                                    ary = "Area: " + arx
-#                                    ary = ary.strip()
-
-#                                    reste = ary + " / " + str2 + " / " + str3 + " / " + str7
-                                    #print reste
-                                
-                                    #Add items to selected objects list view
-#                                    item = QStandardItem(reste)
-#                                    model.appendRow(item)
+                                    rub = ar[0] #rub is used further down where each sub area is retrieved from list
+                                    shapar = attry[2] #shapar (feature area) is used further down where each sub area is retrieved from list
 
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                     self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[3]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[6]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[3]))
+                                    
                                     if dis_val:
-                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(dis_val))
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(attry[6]))
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
+                                        # Round to four digits and display with four digits
+                                        dis_vald = "{0:.4f}".format(round(float(dis_val),4))
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(dis_vald))
+                                    else:
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+
+
+                                    if arx:
+                                        # Round to four digits and display with four digits
+                                        arx = "{0:.4f}".format(round(float(arx),4))
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
+                                    else:
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
+
+
+                                    #shape area
+                                    if shapar:
+                                        # Round to four digits and display with four digits
+                                        shapar = "{0:.4f}".format(round(float(shapar),4))
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(shapar))
+                                    else:
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(""))
+
+
+                                    for col in range(0,5):
+                                        self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
 
 
 
@@ -984,18 +1046,22 @@ class CSIROMarineValues:
                                             if cf[6] == "Importance for income":
                                                 doInsert = True
                                         if doInsert:
-                                            laval = "     " + cf[3] + "   |  " + cf[0] + "   |   " + cf[1] + "   |   " + cf[2] + "   |   " + cf[4]
-                                            it67 = QStandardItem(laval)
-                                            model.appendRow(it67)
                                             
+
+                                            csom = float(cf[4]) * rub / float(shapar)
+                                            csom = "{0:.4f}".format(round(csom,4))
+
                                             rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                             self.dlg.tableWidgetDetail.insertRow(rowPosition)
                                             self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[0]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cf[1]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
                                             self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[4]))
-                                            self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
+                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
+                                            self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+
+                                            #self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
 #                        self.dlg.listFeatSel.setModel(model)
                         #print res_lay
@@ -1059,19 +1125,6 @@ class CSIROMarineValues:
 
 #        line = np.genfromtxt('temp.txt', usecols=3, dtype=[('floatname','float')], skip_header=1)
 #        list_of_values.append(line)
-
-
-
-#class ModelRB(QStandardItemModel):
-#    def __init__(self, parent=None):
-#        QtGui.QStandardItemModel.__init__(self)
-#       self.setColumnCount(2)
-#       #self.setHorizontalHeaderLabels(['Object'])
-#    def data(self, index, role):
-#        if index.isValid():
-#            return super(ModelRB, self).data(index, QtCore.Qt.DisplayRole)
-
-
 
 
 class ModelObjInfo(QStandardItemModel):

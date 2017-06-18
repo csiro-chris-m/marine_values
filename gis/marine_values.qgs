@@ -5,7 +5,7 @@
   <evaluateDefaultValues active="0"/>
   <layer-tree-group expanded="1" checked="Qt::Checked" name="">
     <customproperties/>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="feature_valuetype_llg_two_parts20170608090118383" name="feature_valuetype_llg_two_parts">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="feature_valuetype_llg20170618075533531" name="feature_valuetype_llg">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -13,10 +13,10 @@
   <mapcanvas>
     <units>degrees</units>
     <extent>
-      <xmin>147.59677900778478943</xmin>
-      <ymin>-5.1843591684459609</ymin>
-      <xmax>149.79404300889996193</xmax>
-      <ymax>-4.30440911690012573</ymax>
+      <xmin>147.93971449043650068</xmin>
+      <ymin>-6.62325695086504673</ymin>
+      <xmax>152.7973543897882962</xmax>
+      <ymax>-3.3822597770495495</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -34,39 +34,49 @@
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
     <layer_coordinate_transform_info>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg20170617184826243"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_one_part20170607045401341"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170608021002038"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170617184833471"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170607231647803"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170607231647663"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_two_parts20170608090118383"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg20170618075533531"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg_one_part20170607045404476"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170608015044332"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170608015044462"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="hillshade_new_brittain_small20170607044941277"/>
+      <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="rubber_band20170617191840354"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="Clipped20170608021002211"/>
       <layer_coordinate_transform destAuthId="EPSG:4326" srcAuthId="EPSG:4326" srcDatumTransform="-1" destDatumTransform="-1" layerid="feature_valuetype_llg20170606101412904"/>
     </layer_coordinate_transform_info>
   </mapcanvas>
   <layer-tree-canvas>
     <custom-order enabled="0">
-      <item>feature_valuetype_llg_two_parts20170608090118383</item>
+      <item>feature_valuetype_llg20170618075533531</item>
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="feature_valuetype_llg_two_parts" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="feature_valuetype_llg" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="feature_valuetype_llg_two_parts20170608090118383" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="feature_valuetype_llg20170618075533531" visible="1"/>
       </filegroup>
     </legendlayer>
   </legend>
   <projectlayers>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-      <id>feature_valuetype_llg_two_parts20170608090118383</id>
-      <datasource>./feature_valuetype_llg_two_parts.shp</datasource>
+      <extent>
+        <xmin>148.05537258327819927</xmin>
+        <ymin>-6.54609035148848761</ymin>
+        <xmax>152.68169629694659761</xmax>
+        <ymax>-3.45942637642610862</ymax>
+      </extent>
+      <id>feature_valuetype_llg20170618075533531</id>
+      <datasource>./feature_valuetype_llg.shp</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>feature_valuetype_llg_two_parts</layername>
+      <layername>feature_valuetype_llg</layername>
       <srs>
         <spatialrefsys>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
@@ -165,10 +175,10 @@
       </edittypes>
       <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol alpha="0.454902" clip_to_extent="1" type="fill" name="0">
+          <symbol alpha="1" clip_to_extent="1" type="fill" name="0">
             <layer pass="0" class="SimpleFill" locked="0">
               <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="color" v="205,221,156,255"/>
+              <prop k="color" v="191,109,239,255"/>
               <prop k="joinstyle" v="bevel"/>
               <prop k="offset" v="0,0"/>
               <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -328,9 +338,9 @@
         <property key="variableNames"/>
         <property key="variableValues"/>
       </customproperties>
-      <blendMode>0</blendMode>
-      <featureBlendMode>0</featureBlendMode>
-      <layerTransparency>0</layerTransparency>
+      <blendMode>6</blendMode>
+      <featureBlendMode>6</featureBlendMode>
+      <layerTransparency>50</layerTransparency>
       <displayfield>OBJECTID</displayfield>
       <label>0</label>
       <labelattributes>
@@ -356,7 +366,6 @@
       <SingleCategoryDiagramRenderer diagramType="Histogram" sizeLegend="0" attributeLegend="1">
         <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="1e+08" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
           <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
         <symbol alpha="1" clip_to_extent="1" type="marker" name="sizeSymbol">
           <layer pass="0" class="SimpleMarker" locked="0">
@@ -382,7 +391,7 @@
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="-1" showColumn="-1" linePlacementFlags="10" placement="0" dist="0" xPosColumn="-1" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform>.</annotationform>
+      <annotationform></annotationform>
       <aliases>
         <alias field="OBJECTID" index="0" name=""/>
         <alias field="Shape_Leng" index="1" name=""/>
@@ -406,7 +415,7 @@
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="457490368">
         <columns>
           <column width="-1" hidden="0" type="field" name="OBJECTID"/>
           <column width="-1" hidden="0" type="field" name="Shape_Leng"/>
@@ -429,10 +438,10 @@
           <column width="-1" hidden="1" type="actions"/>
         </columns>
       </attributetableconfig>
-      <editform>.</editform>
+      <editform></editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath>.</editforminitfilepath>
+      <editforminitfilepath></editforminitfilepath>
       <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
 """
 QGIS forms can have a Python function that is called when the form is
@@ -512,25 +521,15 @@ def my_form_open(dialog, layer, feature):
     </Gui>
     <Digitizing>
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
-      <LayerSnappingList type="QStringList">
-        <value>feature_valuetype_llg_two_parts20170608090118383</value>
-      </LayerSnappingList>
-      <LayerSnappingEnabledList type="QStringList">
-        <value>disabled</value>
-      </LayerSnappingEnabledList>
+      <LayerSnappingList type="QStringList"/>
+      <LayerSnappingEnabledList type="QStringList"/>
       <SnappingMode type="QString">current_layer</SnappingMode>
       <AvoidIntersectionsList type="QStringList"/>
-      <LayerSnappingToleranceUnitList type="QStringList">
-        <value>2</value>
-      </LayerSnappingToleranceUnitList>
-      <LayerSnapToList type="QStringList">
-        <value>to_vertex_and_segment</value>
-      </LayerSnapToList>
+      <LayerSnappingToleranceUnitList type="QStringList"/>
+      <LayerSnapToList type="QStringList"/>
       <DefaultSnapType type="QString">off</DefaultSnapType>
       <DefaultSnapTolerance type="double">0</DefaultSnapTolerance>
-      <LayerSnappingToleranceList type="QStringList">
-        <value>0.000000</value>
-      </LayerSnappingToleranceList>
+      <LayerSnappingToleranceList type="QStringList"/>
     </Digitizing>
     <Identify>
       <disabledLayers type="QStringList"/>
