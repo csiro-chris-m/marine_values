@@ -313,7 +313,7 @@ class CSIROMarineValues:
         xmodobjinf = ModelObjInfo()
         self.dlg.objectInfo.setModel(xmodobjinf)
         header = self.dlg.objectInfo.horizontalHeader()
-        self.dlg.objectInfo.setColumnWidth(0,50)
+        self.dlg.objectInfo.setColumnWidth(0,100)
         self.dlg.objectInfo.setColumnWidth(1,100)
         self.dlg.objectInfo.setColumnWidth(2,100)
         #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
@@ -345,8 +345,8 @@ class CSIROMarineValues:
         header = self.dlg.tableView.horizontalHeader()
         #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
         header.setResizeMode(QtGui.QHeaderView.Fixed)
-        self.dlg.tableView.setColumnWidth(0,200)
-        self.dlg.tableView.setColumnWidth(1,100)
+        self.dlg.tableView.setColumnWidth(0,230)
+        self.dlg.tableView.setColumnWidth(1,80)
         self.dlg.tableView.setColumnWidth(2,0)
         self.dlg.tableView.setColumnWidth(3,0)
 
@@ -632,11 +632,11 @@ class CSIROMarineValues:
         for treeLayer in project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             lnam = layer.name()
+
             if val_wo_ext == lnam:
                 self.iface.setActiveLayer(layer)
                 self.dlg.cur_lay = layer.name()
                 print self.dlg.cur_lay 
-
 
         layer = self.iface.activeLayer()
 
@@ -646,7 +646,6 @@ class CSIROMarineValues:
             attx3 = []
 
             attb = []
-
 
             imporval = None #Do not declare a type
             col_choice = None
@@ -693,7 +692,7 @@ class CSIROMarineValues:
                     attrs = feature.attributes()
                     if len(attrs) > 2:
                         arear = str(attrs[col_choice])
-                        gg = [attrs[3],arear]
+                        gg = [attrs[3],arear,attrs[6]]
                         attb.append(gg)
 
 
@@ -701,7 +700,7 @@ class CSIROMarineValues:
 
             model = QStandardItemModel()
             model.setColumnCount(3)
-            model.setHorizontalHeaderLabels(['Obj', 'Spatial feature', headi])
+            model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
 
 
             for itc in attb:
@@ -709,12 +708,12 @@ class CSIROMarineValues:
                 vals = itc[1]
 
                 if vals == "NULL":
-                    model.appendRow([item, QStandardItem(itc[0]),QStandardItem("")])
+                    model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
                 else:
                     valf = float(vals)
                     valr = round(valf,4)
                     valo = "{0:.4f}".format(valr)
-                    model.appendRow([item, QStandardItem(itc[0]),QStandardItem(valo)])
+                    model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
 
 
             self.dlg.objectInfo.setModel(model)
