@@ -52,17 +52,18 @@
  ***************************************************************************/
 
 """
+import resources
+import os.path
+import json
+import os
+import processing
+import ntpath
+
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
 from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas
-# Initialize Qt resources from file resources.py
-import resources
-# Import the code for the dialog
 from marine_values_dialog import CSIROMarineValuesDialog
-import os.path
-import json
-from os.path import expanduser
-import os
+from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from os import listdir
@@ -71,9 +72,7 @@ from qgis.core import *
 from qgis.utils import QGis
 from collections import defaultdict
 from pprint import pprint
-import processing
-from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
-
+from os.path import expanduser
 
 project = QgsProject.instance()
 
@@ -242,8 +241,6 @@ class CSIROMarineValues:
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\sel_area.png");
         self.dlg.rubberband.setIcon(QtGui.QIcon(rMyIcon))
 
-
-        
         self.dlg.pushButtonPan.clicked.connect(self.pushButtonPanClicked)
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\pan.png");
         self.dlg.pushButtonPan.setIcon(QtGui.QIcon(rMyIcon))
@@ -255,8 +252,6 @@ class CSIROMarineValues:
         self.dlg.pushButtonZoomMinus.clicked.connect(self.pushButtonZoomMinusClicked)
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomout.png");
         self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(rMyIcon))
-
-
 
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
@@ -373,10 +368,8 @@ class CSIROMarineValues:
         #self.dlg.tableView.dropEvent = lambda event: pprint(event)
         #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
 
-        #Load main project
+#Load main project
         self.project_load()
-
-
         #Stores name of currently active layer. Need this since rubber band sets itself current
         #so must set back
         self.dlg.cur_lay = ""
@@ -407,8 +400,6 @@ class CSIROMarineValues:
 
         #if result:
         if result == 1:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
             pass
 
 
@@ -455,26 +446,37 @@ class CSIROMarineValues:
         qset = QSettings()
         defpath = qset.value("marine_values/default_path", "")
         
-
         #tryCount is an attempt at solving loading problems. Probalby not needed anymore since
         #end of plugin will terminate QGIS. This is in keeping with QGIS functionality
         #that an application instance cannot exist without an open project file.
         #tryCount = 0
         #while tryCount < 2:
 
-        #print project.fileName()
 
-        if not project.read(QFileInfo(defpath + '\marine_values.qgs')):
-            self.dlg.error.setText("Could not load marine_values.qgs")
-        elif len(project.layerTreeRoot().findLayers()) < 1:
-            self.dlg.error.setText("No layers found")
-        else:
-            pass
-            #tryCount = 9999
-            #tryCount += 1
+        project = QgsProject.instance()
+        project.fileName()
+        filen = os.path.splitext(ntpath.basename(project.fileName()))[0]
+        print filen
+
+        if filen != "marine_values":
+
+            if not project.read(QFileInfo(defpath + '\marine_values.qgs')):
+                self.dlg.error.setText("Could not load marine_values.qgs")
+            elif len(project.layerTreeRoot().findLayers()) < 1:
+                self.dlg.error.setText("No layers found")
+            else:
+                pass
 
 
 
+#DELETE LATER WHEN PROBLEM WITH RELOAD MAKING MAP DISAPPEAR IS DEFNITELY SOLVED
+        #if not project.read(QFileInfo(defpath + '\marine_values.qgs')):
+        #    self.dlg.error.setText("Could not load marine_values.qgs")
+        #elif len(project.layerTreeRoot().findLayers()) < 1:
+        #    self.dlg.error.setText("No layers found")
+        #else:
+        #    pass
+#END DELETE
 
 
         #self.dlg.tableView.model().itemChanged.connect(lambda x: self.manageLayer(self, x))
@@ -510,11 +512,6 @@ class CSIROMarineValues:
             self.treeLayerIdx += 1
         #print self.layerInfo
         self.dlg.tableView.model().sort(2)
-        
-
-
-
-
 
     def getLayerInfo(self, layer):
         layerInfo = []
@@ -642,9 +639,17 @@ class CSIROMarineValues:
 
         if layer:
             iter = layer.getFeatures()
+
+            #Using column names (to find index of column) rather than column ids.
+            #so can change column order but not names
+            idx_spatfeat = layer.fieldNameIndex('spat_feat')
+            idx_llg = layer.fieldNameIndex('llg')
+            idx_foodsec = layer.fieldNameIndex('food_secur')
+            idx_wellbeing = layer.fieldNameIndex('well_being')
+            idx_income = layer.fieldNameIndex('income')
+
             feat_count = 0
             attx3 = []
-
             attb = []
 
             imporval = None #Do not declare a type
@@ -652,24 +657,22 @@ class CSIROMarineValues:
             headi = ""
             if self.dlg.radioButtonWellbeing.isChecked():
                 headi = "Human wellbeing"
-                col_choice = 10
+                col_choice = idx_wellbeing
+                col_choicex = "well_being"
             if self.dlg.radioButtonSecurity.isChecked():
                 headi = "Food security"
-                col_choice = 9
+                col_choice = idx_foodsec
+                col_choicex = "food_secur"
             if self.dlg.radioButtonIncome.isChecked():
                 headi = "Income"
-                col_choice = 11
+                col_choice = idx_income
+                col_choicex = "income"
 
 
             for feature in iter:
 
                 feat_count += 1;
-                # retrieve every feature with its geometry and attributes
-                # fetch geometry
                 geom = feature.geometry()
-                #print "Feature ID %d: " % feature.id()
-
-
 
                 # show some information about the feature
     #            if geom.type() == QGis.Point:
@@ -691,17 +694,14 @@ class CSIROMarineValues:
                 if feature.attributes:
                     attrs = feature.attributes()
                     if len(attrs) > 2:
+
                         arear = str(attrs[col_choice])
-                        gg = [attrs[3],arear,attrs[6]]
+                        gg = [attrs[idx_spatfeat],arear,attrs[idx_llg]]
                         attb.append(gg)
-
-
-
 
             model = QStandardItemModel()
             model.setColumnCount(3)
             model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
-
 
             for itc in attb:
                 item = QStandardItem("1")
@@ -715,9 +715,7 @@ class CSIROMarineValues:
                     valo = "{0:.4f}".format(valr)
                     model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
 
-
             self.dlg.objectInfo.setModel(model)
-
 
         else:
             self.dlg.error.setText("Layer not loaded.")
@@ -911,11 +909,6 @@ class CSIROMarineValues:
                                 layer_to_clip = layer_t6
 
 
-
-
-
-
-
                                 #Getting coordinates to save rubber band to tableViewRB
                                 clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
                                 cfeat = clay.getFeatures()
@@ -938,8 +931,6 @@ class CSIROMarineValues:
 
                         
                         #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
-                        #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, "tmp_output.shp")
-                        #processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
                         processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
                         res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
                         res_lay.updateExtents()
@@ -953,6 +944,13 @@ class CSIROMarineValues:
                         model = QStandardItemModel(0,0)
                         model = QStandardItemModel(1,1)
                         
+                        idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
+                        idx_llg = res_lay.fieldNameIndex('llg')
+                        idx_shapar = res_lay.fieldNameIndex('shape_area')
+                        idx_foodsec = res_lay.fieldNameIndex('food_secur')
+                        idx_wellbeing = res_lay.fieldNameIndex('well_being')
+                        idx_income = res_lay.fieldNameIndex('income')
+
                         for f in res_feat:
                             rub = None
                             shapar = None #shape area
@@ -975,20 +973,20 @@ class CSIROMarineValues:
 
                                     dis_val = ""
                                     if self.dlg.radioButtonWellbeing.isChecked():
-                                        dis_val = attry[10]
+                                        dis_val = attry[idx_wellbeing]
                                     if self.dlg.radioButtonSecurity.isChecked():
-                                        dis_val = attry[9]
+                                        dis_val = attry[idx_foodsec]
                                     if self.dlg.radioButtonIncome.isChecked():
-                                        dis_val = attry[11]
+                                        dis_val = attry[idx_income]
 
                                     arx = str(ar[0])
                                     rub = ar[0] #rub is used further down where each sub area is retrieved from list
-                                    shapar = attry[2] #shapar (feature area) is used further down where each sub area is retrieved from list
+                                    shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
 
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                     self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[6]))
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[3]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
                                     
                                     if dis_val:
                                         # Round to four digits and display with four digits
@@ -1031,9 +1029,9 @@ class CSIROMarineValues:
                             #[6]: 10 - value_metric_description
                             for cf in self.dlg.list_of_values:
                                 #Looking for all that are in the same spatial_feature category
-                                if cf[0] == attry[3]: 
+                                if cf[0] == attry[idx_spatfeat]: 
                                     #Looking for all that are in the same LLG
-                                    if cf[1] == attry[6]: 
+                                    if cf[1] == attry[idx_llg]: 
                                         doInsert = False
                                         if self.dlg.radioButtonWellbeing.isChecked():
                                             if cf[6] == "Importance for human wellbeing":
@@ -1092,10 +1090,6 @@ class CSIROMarineValues:
         query = db.exec_("select * from marine_values_all")
         print " "
 
-
-
-
-
         # Play with results (not efficient, just for demo)
         while query.next():
             record = query.record()
@@ -1108,7 +1102,16 @@ class CSIROMarineValues:
             #  4 - value_type
             # 10 - value_metric_description
 
-            listv = [str(record.value(17)), str(record.value(8)), str(record.value(7)), str(record.value(1)), str(record.value(12)), str(record.value(4)), str(record.value(10))]
+            idx_spatfeatnam = query.record().indexOf('spatial_feature_name')
+            idx_scalenam = query.record().indexOf('scale_name')
+            idx_scaleid = query.record().indexOf('scale_id')
+            idx_valnam = query.record().indexOf('value_name')
+            idx_valmetscore = query.record().indexOf('value_metric_score')
+            idx_valtype = query.record().indexOf('value_type')
+            idx_valmetdesc = query.record().indexOf('value_metric_description')
+
+            #listv = [str(record.value(17)), str(record.value(8)), str(record.value(7)), str(record.value(1)), str(record.value(12)), str(record.value(4)), str(record.value(10))]
+            listv = [str(record.value(idx_spatfeatnam)), str(record.value(idx_scalenam)), str(record.value(idx_scaleid)), str(record.value(idx_valnam)), str(record.value(idx_valmetscore)), str(record.value(idx_valtype)), str(record.value(idx_valmetdesc))]
             self.dlg.list_of_values.append(listv)
 
 
