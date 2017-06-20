@@ -2,19 +2,14 @@
 """
 /***************************************************************************
  CSIROMarineValues
-                                 A QGIS plugin
- MARVIN - CSIRO Marine values tool. Management of marine value layers
-                              -------------------
+ A QGIS plugin
+ MARVIN - CSIRO Marine values tool. Management of marine value information
+ ---------------------------------------------------------------------------
         begin                : 2016-12-25
         git sha              : $Format:%H$
         copyright            : (C) 2017 by CSIRO Oceans and Atmosphere
+        author               : Chris Moeseneder
         email                : chris.moeseneder@csiro.au
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is copyright protected                                   *
- *                                                                         *
  ***************************************************************************/
 
 /***************************************************************************
@@ -40,13 +35,24 @@
  *   Preferred angle units: Degrees                                        *
  *                                                                         *
  *   In Options / CRS:                                                     *
- *   CRS for new layers: Use a default CRS: Selected CRS (EPSG:4326, WGS 84) *
+ *   CRS for new layers: Use a default CRS: Selected CRS                   *
+ *                                          (EPSG:4326, WGS 84)            *
  ***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
  *   Configuration of the shapefiles and project                           *
  *   Shapefiles and project must be in CRS "WGS84 (EPSG:4326)"             *                                  
+ *   -------------------------------------------------------------------   *
+ *   Default project shapefile is '/gis/Marine Values New Britain LLG.shp' *
+ *   which should be write-protected so user can not make changes.         *
+ *   -------------------------------------------------------------------   *
+ *   Shapefile naming convention:                                          *
+ *      'Marine Values'         - A layer for which values and value       *
+ *                                metric scores are processed.             *
+ *      ending in '...LLG       - Processing as per LLGs                   *
+ *      ending in '...Districts - Processing as per Disctrics              *
+ *                                                                         *
  *                                                                         *
  *                                                                         *
  ***************************************************************************/
@@ -58,6 +64,8 @@ import json
 import os
 import processing
 import ntpath
+import csv
+import datetime
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
 from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush
@@ -253,6 +261,10 @@ class CSIROMarineValues:
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomout.png");
         self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(rMyIcon))
 
+        self.dlg.pushButtonExport.clicked.connect(self.pushButtonExportClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\export.png");
+        self.dlg.pushButtonExport.setIcon(QtGui.QIcon(rMyIcon))
+
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
@@ -372,7 +384,7 @@ class CSIROMarineValues:
         self.project_load()
         #Stores name of currently active layer. Need this since rubber band sets itself current
         #so must set back
-        self.dlg.cur_lay = ""
+        self.cur_lay = ""
 
 
         #self.dlg.tableView.selectRow(0)
@@ -456,7 +468,6 @@ class CSIROMarineValues:
         project = QgsProject.instance()
         project.fileName()
         filen = os.path.splitext(ntpath.basename(project.fileName()))[0]
-        print filen
 
         if filen != "marine_values":
 
@@ -632,8 +643,13 @@ class CSIROMarineValues:
 
             if val_wo_ext == lnam:
                 self.iface.setActiveLayer(layer)
-                self.dlg.cur_lay = layer.name()
-                print self.dlg.cur_lay 
+                self.cur_lay = layer.name()
+
+                if self.cur_lay.endswith('LLG'):
+                    self.cur_scale_id = "LLG"
+                if self.cur_lay.endswith('Districts'):
+                    self.cur_scale_id = "Districts"
+                    print self.cur_scale_id
 
         layer = self.iface.activeLayer()
 
@@ -643,7 +659,10 @@ class CSIROMarineValues:
             #Using column names (to find index of column) rather than column ids.
             #so can change column order but not names
             idx_spatfeat = layer.fieldNameIndex('spat_feat')
-            idx_llg = layer.fieldNameIndex('llg')
+            if self.cur_scale_id == "LLG":
+                idx_llg_dist = layer.fieldNameIndex('llg')
+            if self.cur_scale_id == "Districts":
+                idx_llg_dist = layer.fieldNameIndex('district')
             idx_foodsec = layer.fieldNameIndex('food_secur')
             idx_wellbeing = layer.fieldNameIndex('well_being')
             idx_income = layer.fieldNameIndex('income')
@@ -696,7 +715,7 @@ class CSIROMarineValues:
                     if len(attrs) > 2:
 
                         arear = str(attrs[col_choice])
-                        gg = [attrs[idx_spatfeat],arear,attrs[idx_llg]]
+                        gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
                         attb.append(gg)
 
             model = QStandardItemModel()
@@ -768,6 +787,60 @@ class CSIROMarineValues:
         #lyr3 = root.findLayer(layid).layer()
         #lyr3.id = new_index
 
+    def pushButtonExportClicked(self):
+        path = QtGui.QFileDialog.getSaveFileName(None,"Export data",self.plugin_dir,"Comma Separated Values Spreadsheet (*.csv);;""All Files (*)")
+        if not path:
+            return
+        else:
+
+            with open(unicode(path), 'wb') as stream:
+                writer = csv.writer(stream, delimiter=',')
+                ndate = datetime.date.today()
+                n_day = "%02d" % (ndate.day,) 
+                n_mon = "%02d" % (ndate.month,) 
+                n_yea = "%04d" % (ndate.year,) 
+                ntime = datetime.datetime.now()
+                n_hou = "%02d" % (ntime.hour,) 
+                n_min = "%02d" % (ntime.minute,) 
+                n_sec = "%02d" % (ntime.second,) 
+                dt = n_day + "/" + n_mon + "/" + n_yea +  " " + n_hou + ":" + n_min + ":" + n_sec
+                f = ["Output created:", dt]
+                writer.writerow(f)
+                scalet = "Scale type: " + self.cur_scale_id
+                f = [scalet]
+                writer.writerow(f)
+                f = ["Selection coordinates:"]
+                writer.writerow(f)
+                f = ["Longitude", "Latitude"]
+                writer.writerow(f)
+                for row in range(self.dlg.tableViewRB.rowCount()):
+                    rowdata = []
+                    for column in range(self.dlg.tableViewRB.columnCount()):
+                        item = self.dlg.tableViewRB.item(row, column)
+                        if item is not None:
+                            rowdata.append(
+                                unicode(item.text()).encode('utf8'))
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+                writer.writerow("")
+                f = ["Values:"]
+                writer.writerow(f)
+                f = ["Scale name","Spatial feature/Value","Value metric score","Selected km2/Calc","Area km2"]
+                writer.writerow(f)
+                for row in range(self.dlg.tableWidgetDetail.rowCount()):
+                    rowdata = []
+                    for column in range(self.dlg.tableWidgetDetail.columnCount()):
+                        item = self.dlg.tableWidgetDetail.item(row, column)
+                        if item is not None:
+                            rowdata.append(
+                                unicode(item.text()).encode('utf8'))
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+
     def pushButtonPanClicked(self):
         self.iface.actionPan().trigger()
 
@@ -786,7 +859,7 @@ class CSIROMarineValues:
 
             for treeLayer in project.layerTreeRoot().findLayers():                
                 layer_t8 = treeLayer.layer()
-                if layer_t8.name() == self.dlg.cur_lay:
+                if layer_t8.name() == self.cur_lay:
 
                     r = self.dlg.tableViewRB.rowCount()
                     for del_row in range(0, r):
@@ -828,7 +901,7 @@ class CSIROMarineValues:
 
     def manageClick(self, currentPos, clickedButton):
         
-        if self.dlg.cur_lay == "":
+        if self.cur_lay == "":
             self.dlg.error.setText("Click a layer to make it active.")
             #messagebox("Layer", "Click a layer to make it active.")
         else:
@@ -893,14 +966,14 @@ class CSIROMarineValues:
                         #print "Intersecting"
                         
                         overlay_layer = QgsVectorLayer()
-                        print "Current layer: " + self.dlg.cur_lay
+                        print "Current layer: " + self.cur_lay
 
                         for treeLayer in project.layerTreeRoot().findLayers():                
                             layer_t6 = treeLayer.layer()
 
                             #if layer_t6.name() == "feature_valuetype_llg":
-                            print self.dlg.cur_lay
-                            if layer_t6.name() == self.dlg.cur_lay:
+                            print self.cur_lay
+                            if layer_t6.name() == self.cur_lay:
                                 overlay_layer = layer_t6
                                 break
 
@@ -944,8 +1017,12 @@ class CSIROMarineValues:
                         model = QStandardItemModel(0,0)
                         model = QStandardItemModel(1,1)
                         
+                        idx_llg_dist = ""
                         idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
-                        idx_llg = res_lay.fieldNameIndex('llg')
+                        if self.cur_scale_id == "LLG":
+                            idx_llg_dist = res_lay.fieldNameIndex('llg')
+                        if self.cur_scale_id == "Districts":
+                            idx_llg_dist = res_lay.fieldNameIndex('district')
                         idx_shapar = res_lay.fieldNameIndex('shape_area')
                         idx_foodsec = res_lay.fieldNameIndex('food_secur')
                         idx_wellbeing = res_lay.fieldNameIndex('well_being')
@@ -953,7 +1030,9 @@ class CSIROMarineValues:
 
                         for f in res_feat:
                             rub = None
-                            shapar = None #shape area
+                            shapar = 0.0
+                            csomt = 0.0
+                            csomtot = 0.0
                             spat_feat_qry = ""
                             llg_qry = ''
                             res_geom = f.geometry()
@@ -966,32 +1045,65 @@ class CSIROMarineValues:
                             if f.attributes:
                                 attry = f.attributes()
                                 if len(attry) > 2:
-                                    d = QgsDistanceArea()
-                                    d.setEllipsoidalMode(True)
-                                    art = res_geom.area()
-                                    ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
 
-                                    dis_val = ""
-                                    if self.dlg.radioButtonWellbeing.isChecked():
-                                        dis_val = attry[idx_wellbeing]
-                                    if self.dlg.radioButtonSecurity.isChecked():
-                                        dis_val = attry[idx_foodsec]
-                                    if self.dlg.radioButtonIncome.isChecked():
-                                        dis_val = attry[idx_income]
+                                    if res_geom != None:
+                                        d = QgsDistanceArea()
+                                        d.setEllipsoidalMode(True)
+                                        art = res_geom.area()
+                                        ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                                        arx = str(ar[0])
+                                        rub = ar[0] #rub is used further down where each sub area is retrieved from list
+                                        shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
+                                    
+                                        for cfs in self.dlg.list_of_values:
+                                            if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
+                                                if cfs[0] == attry[idx_spatfeat]:
+                                                    if cfs[1] == attry[idx_llg_dist]:
+                                                        doInsert = False
+                                                        if self.dlg.radioButtonWellbeing.isChecked():
+                                                            if cfs[6] == "Importance for human wellbeing":
+                                                                doInsert = True
+                                                        if self.dlg.radioButtonSecurity.isChecked():
+                                                            if cfs[6] == "Importance for food security":
+                                                                doInsert = True
+                                                        if self.dlg.radioButtonIncome.isChecked():
+                                                            if cfs[6] == "Importance for income":
+                                                                doInsert = True
+                                                        if doInsert:
+                                                            csomt = float(cfs[4])
+                                                            csomtot = csomtot + csomt
 
-                                    arx = str(ar[0])
-                                    rub = ar[0] #rub is used further down where each sub area is retrieved from list
-                                    shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
+
+
+#                                    dis_val = ""
+#                                    if self.dlg.radioButtonWellbeing.isChecked():
+#                                        if attry[idx_wellbeing]:
+#                                            dis_val = attry[idx_wellbeing]
+
+#                                    if self.dlg.radioButtonSecurity.isChecked():
+#                                        if attry[idx_foodsec]:
+#                                            dis_val = attry[idx_foodsec]
+
+#                                    if self.dlg.radioButtonIncome.isChecked():
+#                                        if attry[idx_income]:
+#                                            dis_val = attry[idx_income]
 
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                     self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg]))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg_dist]))
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
                                     
-                                    if dis_val:
+#                                    if dis_val:
+#                                        # Round to four digits and display with four digits
+#                                        dis_vald = "{0:.4f}".format(round(float(dis_val),4))
+#                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(dis_vald))
+#                                    else:
+#                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+
+                                    if csomtot:
                                         # Round to four digits and display with four digits
-                                        dis_vald = "{0:.4f}".format(round(float(dis_val),4))
-                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(dis_vald))
+                                        csomtot = "{0:.4f}".format(round(float(csomtot),4))
+                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
                                     else:
                                         self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
 
@@ -1013,11 +1125,9 @@ class CSIROMarineValues:
                                         self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(""))
 
 
+
                                     for col in range(0,5):
                                         self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
-
-
-
 
                             #self.dlg.list_of_values
                             #[0]: 17 - spatial_feature_name
@@ -1027,42 +1137,46 @@ class CSIROMarineValues:
                             #[4]: 12 - value_metric_score
                             #[5]:  4 - value_type
                             #[6]: 10 - value_metric_description
-                            for cf in self.dlg.list_of_values:
-                                #Looking for all that are in the same spatial_feature category
-                                if cf[0] == attry[idx_spatfeat]: 
-                                    #Looking for all that are in the same LLG
-                                    if cf[1] == attry[idx_llg]: 
-                                        doInsert = False
-                                        if self.dlg.radioButtonWellbeing.isChecked():
-                                            if cf[6] == "Importance for human wellbeing":
-                                                doInsert = True
-                                        if self.dlg.radioButtonSecurity.isChecked():
-                                            if cf[6] == "Importance for food security":
-                                                doInsert = True
-                                        if self.dlg.radioButtonIncome.isChecked():
-                                            if cf[6] == "Importance for income":
-                                                doInsert = True
-                                        if doInsert:
-                                            
 
-                                            csom = float(cf[4]) * rub / float(shapar)
-                                            csom = "{0:.4f}".format(round(csom,4))
 
-                                            rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                            self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
-                                            self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
 
-                                            #self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
-#                        self.dlg.listFeatSel.setModel(model)
-                        #print res_lay
 
+
+                                for cf in self.dlg.list_of_values:
+
+                                    if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
+                                        #Looking for all that are in the same spatial_feature category
+                                        if cf[0] == attry[idx_spatfeat]:
+                                            #Looking for all that are in the same LLG/District
+                                            if cf[1] == attry[idx_llg_dist]:
+
+                                                doInsert = False
+                                                if self.dlg.radioButtonWellbeing.isChecked():
+                                                    if cf[6] == "Importance for human wellbeing":
+                                                        doInsert = True
+                                                if self.dlg.radioButtonSecurity.isChecked():
+                                                    if cf[6] == "Importance for food security":
+                                                        doInsert = True
+                                                if self.dlg.radioButtonIncome.isChecked():
+                                                    if cf[6] == "Importance for income":
+                                                        doInsert = True
+                                                if doInsert:
+                                                    
+                                                    csom = float(cf[4]) * rub / float(shapar)
+                                                    csom = "{0:.4f}".format(round(csom,4))
+
+                                                    rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                    self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
+                                                    #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                                    #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
+                                                    #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
+                                                    self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+
+                                                    #self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
                     else:
                         pass
                         #print "Not intersecting"

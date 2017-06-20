@@ -5,10 +5,10 @@
   <evaluateDefaultValues active="0"/>
   <layer-tree-group expanded="1" checked="Qt::Checked" name="">
     <customproperties/>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="Marine_Values_New_Brittain_LLG20170618201718529" name="Marine Values New Brittain LLG">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="Marine_Values_New_Brittain_LLG20170618201718529" name="Marine Values New Britain LLG">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="hillshade_new_brittain_small20170618194845432" name="hillshade_new_brittain_small">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="hillshade_new_brittain_small20170618194845432" name="Hillshade New Britain Low Res">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -16,10 +16,10 @@
   <mapcanvas>
     <units>degrees</units>
     <extent>
-      <xmin>147.93971449043650068</xmin>
-      <ymin>-6.62325695086504673</ymin>
-      <xmax>152.7973543897882962</xmax>
-      <ymax>-3.3822597770495495</ymax>
+      <xmin>147.84556066553795972</xmin>
+      <ymin>-6.60122473786069275</ymin>
+      <xmax>152.83725032982482617</xmax>
+      <ymax>-3.42506091114913414</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -65,12 +65,12 @@
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Marine Values New Brittain LLG" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Marine Values New Britain LLG" showFeatureCount="0">
       <filegroup open="true" hidden="false">
         <legendlayerfile isInOverview="0" layerid="Marine_Values_New_Brittain_LLG20170618201718529" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="hillshade_new_brittain_small" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Hillshade New Britain Low Res" showFeatureCount="0">
       <filegroup open="true" hidden="false">
         <legendlayerfile isInOverview="0" layerid="hillshade_new_brittain_small20170618194845432" visible="1"/>
       </filegroup>
@@ -78,12 +78,18 @@
   </legend>
   <projectlayers>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+      <extent>
+        <xmin>148.05537258327819927</xmin>
+        <ymin>-6.54609035148848761</ymin>
+        <xmax>152.68169629694659761</xmax>
+        <ymax>-3.45942637642610862</ymax>
+      </extent>
       <id>Marine_Values_New_Brittain_LLG20170618201718529</id>
-      <datasource>./Marine Values New Brittain LLG.shp</datasource>
+      <datasource>./Marine Values New Britain LLG.shp</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>Marine Values New Brittain LLG</layername>
+      <layername>Marine Values New Britain LLG</layername>
       <srs>
         <spatialrefsys>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
@@ -97,7 +103,7 @@
         </spatialrefsys>
       </srs>
       <provider encoding="System">ogr</provider>
-      <previewExpression></previewExpression>
+      <previewExpression>COALESCE( "OBJECTID", '&lt;NULL>' )</previewExpression>
       <vectorjoins/>
       <layerDependencies/>
       <expressionfields/>
@@ -347,7 +353,7 @@
       </customproperties>
       <blendMode>6</blendMode>
       <featureBlendMode>6</featureBlendMode>
-      <layerTransparency>50</layerTransparency>
+      <layerTransparency>60</layerTransparency>
       <displayfield>OBJECTID</displayfield>
       <label>0</label>
       <labelattributes>
@@ -475,7 +481,7 @@ def my_form_open(dialog, layer, feature):
         <fieldstyles/>
       </conditionalstyles>
     </maplayer>
-    <maplayer minimumScale="0" maximumScale="1e+08" type="raster" hasScaleBasedVisibilityFlag="0">
+    <maplayer minimumScale="inf" maximumScale="1e+08" type="raster" hasScaleBasedVisibilityFlag="0">
       <extent>
         <xmin>140.84230963035776085</xmin>
         <ymin>-11.65520259451267293</ymin>
@@ -483,11 +489,11 @@ def my_form_open(dialog, layer, feature):
         <ymax>-0.75770714119857896</ymax>
       </extent>
       <id>hillshade_new_brittain_small20170618194845432</id>
-      <datasource>./hillshade_new_brittain_small.tif</datasource>
+      <datasource>./hillshade_new_britain_small.tif</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>hillshade_new_brittain_small</layername>
+      <layername>Hillshade New Britain Low Res</layername>
       <srs>
         <spatialrefsys>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
@@ -501,6 +507,7 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <customproperties>
+        <property key="embeddedWidgets/count" value="0"/>
         <property key="identify/format" value="Value"/>
       </customproperties>
       <provider>gdal</provider>
@@ -511,11 +518,11 @@ def my_form_open(dialog, layer, feature):
         <map-layer-style name=""/>
       </map-layer-style-manager>
       <pipe>
-        <rasterrenderer gradient="BlackToWhite" opacity="1" alphaBand="-1" type="singlebandgray" grayBand="1">
+        <rasterrenderer gradient="BlackToWhite" opacity="0.498039" alphaBand="0" type="singlebandgray" grayBand="1">
           <rasterTransparency/>
           <contrastEnhancement>
             <minValue>98.923</minValue>
-            <maxValue>225.67600000000002</maxValue>
+            <maxValue>225.676</maxValue>
             <algorithm>StretchToMinimumMaximum</algorithm>
           </contrastEnhancement>
         </rasterrenderer>

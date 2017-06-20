@@ -8,7 +8,7 @@
     <layer-tree-layer expanded="1" checked="Qt::Checked" id="Marine_Values_New_Brittain_LLG20170618201718529" name="Marine Values New Britain LLG">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="hillshade_new_brittain_small20170618194845432" name="hillshade_new_britain_small">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="hillshade_new_brittain_small20170618194845432" name="Hillshade New Britain Low Res">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -16,10 +16,10 @@
   <mapcanvas>
     <units>degrees</units>
     <extent>
-      <xmin>147.93971449043650068</xmin>
-      <ymin>-6.62325695086504673</ymin>
-      <xmax>152.7973543897882962</xmax>
-      <ymax>-3.3822597770495495</ymax>
+      <xmin>147.84556066553795972</xmin>
+      <ymin>-6.60122473786069275</ymin>
+      <xmax>152.83725032982482617</xmax>
+      <ymax>-3.42506091114913414</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -70,7 +70,7 @@
         <legendlayerfile isInOverview="0" layerid="Marine_Values_New_Brittain_LLG20170618201718529" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="hillshade_new_britain_small" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Hillshade New Britain Low Res" showFeatureCount="0">
       <filegroup open="true" hidden="false">
         <legendlayerfile isInOverview="0" layerid="hillshade_new_brittain_small20170618194845432" visible="1"/>
       </filegroup>
@@ -103,7 +103,7 @@
         </spatialrefsys>
       </srs>
       <provider encoding="System">ogr</provider>
-      <previewExpression></previewExpression>
+      <previewExpression>COALESCE( "OBJECTID", '&lt;NULL>' )</previewExpression>
       <vectorjoins/>
       <layerDependencies/>
       <expressionfields/>
@@ -353,7 +353,7 @@
       </customproperties>
       <blendMode>6</blendMode>
       <featureBlendMode>6</featureBlendMode>
-      <layerTransparency>50</layerTransparency>
+      <layerTransparency>60</layerTransparency>
       <displayfield>OBJECTID</displayfield>
       <label>0</label>
       <labelattributes>
@@ -489,11 +489,11 @@ def my_form_open(dialog, layer, feature):
         <ymax>-0.75770714119857896</ymax>
       </extent>
       <id>hillshade_new_brittain_small20170618194845432</id>
-      <datasource>./hillshade_new_britain_small.tif</datasource>
+      <datasource>./Hillshade New Britain Low Res.tif</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>hillshade_new_britain_small</layername>
+      <layername>Hillshade New Britain Low Res</layername>
       <srs>
         <spatialrefsys>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
@@ -518,7 +518,7 @@ def my_form_open(dialog, layer, feature):
         <map-layer-style name=""/>
       </map-layer-style-manager>
       <pipe>
-        <rasterrenderer gradient="BlackToWhite" opacity="1" alphaBand="0" type="singlebandgray" grayBand="1">
+        <rasterrenderer gradient="BlackToWhite" opacity="0.498039" alphaBand="0" type="singlebandgray" grayBand="1">
           <rasterTransparency/>
           <contrastEnhancement>
             <minValue>98.923</minValue>
