@@ -343,6 +343,10 @@ class CSIROMarineValues:
         self.dlg.tableWidgetDetail.setColumnWidth(3,120)
         self.dlg.tableWidgetDetail.setColumnWidth(4,120)
 
+        self.dlg.tableWidgetDetailCounts.setColumnWidth(0,230)
+        self.dlg.tableWidgetDetailCounts.setColumnWidth(1,80)
+
+
         # Set up tableView table ****************************
         #self.dlg.tableView.setModel(model)
         self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -831,14 +835,30 @@ class CSIROMarineValues:
                     writer.writerow(rowdata)
 
                 writer.writerow("")
-                f = ["Values:"]
-                writer.writerow(f)
-                f = ["Scale name","Spatial feature/Value","Value metric score","Selected km2/Calc","Area km2"]
-                writer.writerow(f)
+                h = ["Area values:"]
+                writer.writerow(h)
+                h = ["Scale name","Spatial feature/Value","Value metric score","Selected km2/Calc","Area km2"]
+                writer.writerow(h)
                 for row in range(self.dlg.tableWidgetDetail.rowCount()):
                     rowdata = []
                     for column in range(self.dlg.tableWidgetDetail.columnCount()):
                         item = self.dlg.tableWidgetDetail.item(row, column)
+                        if item is not None:
+                            rowdata.append(
+                                unicode(item.text()).encode('utf8'))
+                        else:
+                            rowdata.append('')
+                    writer.writerow(rowdata)
+
+                writer.writerow("")
+                g = ["Countable values:"]
+                writer.writerow(g)
+                g = ["Value type","Count"]
+                writer.writerow(g)
+                for row in range(self.dlg.tableWidgetDetailCounts.rowCount()):
+                    rowdata = []
+                    for column in range(self.dlg.tableWidgetDetailCounts.columnCount()):
+                        item = self.dlg.tableWidgetDetailCounts.item(row, column)
                         if item is not None:
                             rowdata.append(
                                 unicode(item.text()).encode('utf8'))
@@ -861,7 +881,6 @@ class CSIROMarineValues:
         print self.iface.activeLayer()
         if self.iface.activeLayer():
             self.dlg.tableViewRB.setRowCount(0)
-            self.dlg.tableWidgetDetail.setRowCount(0)
 
             for treeLayer in project.layerTreeRoot().findLayers():                
                 layer_t8 = treeLayer.layer()
@@ -1026,6 +1045,7 @@ class CSIROMarineValues:
 
                         #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
                         if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
+                            self.dlg.tableWidgetDetail.setRowCount(0)
                             idx_llg_dist = ""
                             idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
                             if self.cur_scale_id == "LLG":
@@ -1203,15 +1223,24 @@ class CSIROMarineValues:
                             for f in res_feat:
                                 res_geom = f.geometry()
                                 idx_poly_id = res_lay.fieldNameIndex('poly_id')
+                                idx_point_id = res_lay.fieldNameIndex('point_1')                                
+                                proc_type = ""
                                 if f.attributes:
+                                    poly_id = ""
+                                    point_id = ""
                                     attry = f.attributes()
-                                    poly_id = "POLY_" + str(attry[idx_poly_id])
+                                    if attry[idx_poly_id] == None:
+                                        proc_type = "POINT"
+                                        point_id = "PNT_" + str(attry[idx_point_id])
+                                    else:
+                                        proc_type = "POLY"
+                                        poly_id = "POLY_" + str(attry[idx_poly_id])
                                     count_detail = 0
                                     for cfs in self.dlg.list_of_values:
                                         if cfs[5] in ["Carbon sequestration","Hazard reduction","Water regulation","Biological diversity","Importance for ETP species or habitats","Naturalness","Productivity or nutrient cycling","Rarity/uniqueness","Vulnerability, sensitivity or slow recovery","Natural resources","Cultural heritage importance","Recreational, tourism or aesthetic importance","Spiritual importance"]:
                                             
                                             cc = str(cfs[7])
-                                            if poly_id == cc:
+                                            if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
                                                 count_detail = count_detail + 1
 
                                                 if len(lstValueTypes) > 0:
