@@ -489,7 +489,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>-0.75770714119857896</ymax>
       </extent>
       <id>hillshade_new_brittain_small20170618194845432</id>
-      <datasource>./hillshade_new_britain_small.tif</datasource>
+      <datasource>./Hillshade New Britain Low Res.tif</datasource>
       <keywordList>
         <value></value>
       </keywordList>
