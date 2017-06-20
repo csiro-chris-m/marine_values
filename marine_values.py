@@ -238,31 +238,31 @@ class CSIROMarineValues:
 
         #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\save.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\save.png");
         self.dlg.saveProject.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\end.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\end.png");
         self.dlg.endButton.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\sel_area.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\sel_area.png");
         self.dlg.rubberband.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonPan.clicked.connect(self.pushButtonPanClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\pan.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\pan.png");
         self.dlg.pushButtonPan.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonZoomPlus.clicked.connect(self.pushButtonZoomPlusClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomin.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\zoomin.png");
         self.dlg.pushButtonZoomPlus.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonZoomMinus.clicked.connect(self.pushButtonZoomMinusClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\zoomout.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\zoomout.png");
         self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonExport.clicked.connect(self.pushButtonExportClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\export.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\export.png");
         self.dlg.pushButtonExport.setIcon(QtGui.QIcon(rMyIcon))
 
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
