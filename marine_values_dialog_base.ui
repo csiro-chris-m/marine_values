@@ -429,6 +429,16 @@
      <height>221</height>
     </rect>
    </property>
+   <column>
+    <property name="text">
+     <string>Value type</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Count</string>
+    </property>
+   </column>
   </widget>
  </widget>
  <resources/>
