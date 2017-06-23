@@ -22,9 +22,9 @@
   <widget class="QLabel" name="error">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>112</x>
      <y>410</y>
-     <width>241</width>
+     <width>228</width>
      <height>21</height>
     </rect>
    </property>
@@ -70,8 +70,8 @@
   <widget class="QPushButton" name="endButton">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>380</y>
+     <x>250</x>
+     <y>370</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -135,8 +135,8 @@
   <widget class="QPushButton" name="saveProject">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>355</y>
+     <x>250</x>
+     <y>345</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -156,19 +156,19 @@
     <rect>
      <x>10</x>
      <y>413</y>
-     <width>91</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Messages/Errors:</string>
+    <string>Last message/error:</string>
    </property>
   </widget>
   <widget class="QPushButton" name="rubberband">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>295</y>
+     <x>150</x>
+     <y>345</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -183,8 +183,8 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>145</x>
-     <y>272</y>
+     <x>10</x>
+     <y>270</y>
      <width>111</width>
      <height>131</height>
     </rect>
@@ -318,52 +318,11 @@
    <column/>
    <column/>
   </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>270</y>
-     <width>121</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Area selection geometry</string>
-   </property>
-  </widget>
-  <widget class="QTableWidget" name="tableViewRB">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>290</y>
-     <width>131</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>7</pointsize>
-    </font>
-   </property>
-   <property name="horizontalScrollBarPolicy">
-    <enum>Qt::ScrollBarAlwaysOff</enum>
-   </property>
-   <column>
-    <property name="text">
-     <string>X</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Y</string>
-    </property>
-   </column>
-  </widget>
   <widget class="QPushButton" name="pushButtonPan">
    <property name="geometry">
     <rect>
-     <x>310</x>
-     <y>270</y>
+     <x>200</x>
+     <y>320</y>
      <width>21</width>
      <height>23</height>
     </rect>
@@ -378,8 +337,8 @@
   <widget class="QPushButton" name="pushButtonZoomPlus">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>270</y>
+     <x>160</x>
+     <y>320</y>
      <width>21</width>
      <height>23</height>
     </rect>
@@ -394,8 +353,8 @@
   <widget class="QPushButton" name="pushButtonZoomMinus">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>270</y>
+     <x>180</x>
+     <y>320</y>
      <width>21</width>
      <height>23</height>
     </rect>
@@ -410,8 +369,8 @@
   <widget class="QPushButton" name="pushButtonExport">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>330</y>
+     <x>250</x>
+     <y>320</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -429,6 +388,12 @@
      <height>221</height>
     </rect>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>70</height>
+    </size>
+   </property>
    <column>
     <property name="text">
      <string>Value type</string>
@@ -439,6 +404,19 @@
      <string>Count</string>
     </property>
    </column>
+  </widget>
+  <widget class="QPushButton" name="pushButtonOrigExtent">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>370</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset map</string>
+   </property>
   </widget>
  </widget>
  <resources/>
