@@ -50,6 +50,9 @@
  *   Shapefile naming convention:                                          *
  *      'Marine Values'         - A layer for which values and value       *
  *                                metric scores are processed.             *
+ *      'MarineValues'          - A WFS layer for which values and value   *
+ *                                 metric scores are processed. Entire     *
+ *                                 name may not contain any spaces         *
  *      ending in ...LLG       - Processing as per LLGs                    *
  *      ending in ...Districts - Processing as per Disctrics               *
  *      ending in ...Features  - Processing as per countable features      *
@@ -78,6 +81,7 @@ from PyQt4 import QtCore
 from os import listdir
 from os.path import isfile, join
 from qgis.core import *
+from qgis.core import QgsMapLayer
 from qgis.utils import QGis
 from collections import defaultdict
 from pprint import pprint
@@ -274,7 +278,7 @@ class CSIROMarineValues:
 
 
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
-        QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
+        #QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
@@ -323,18 +327,18 @@ class CSIROMarineValues:
             
 
         # Set up objectInfo table ***************************
-        self.dlg.objectInfo.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.dlg.objectInfo.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        xmodobjinf = ModelObjInfo()
-        self.dlg.objectInfo.setModel(xmodobjinf)
-        header = self.dlg.objectInfo.horizontalHeader()
-        self.dlg.objectInfo.setColumnWidth(0,100)
-        self.dlg.objectInfo.setColumnWidth(1,100)
-        self.dlg.objectInfo.setColumnWidth(2,100)
+        #self.dlg.objectInfo.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        #self.dlg.objectInfo.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        #xmodobjinf = ModelObjInfo()
+        #self.dlg.objectInfo.setModel(xmodobjinf)
+        #header = self.dlg.objectInfo.horizontalHeader()
+        #self.dlg.objectInfo.setColumnWidth(0,100)
+        #self.dlg.objectInfo.setColumnWidth(1,100)
+        #self.dlg.objectInfo.setColumnWidth(2,100)
         #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
-        header.setResizeMode(QtGui.QHeaderView.Fixed)
-        self.dlg.objectInfo.verticalHeader().setMovable(True)
-        self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
+        #header.setResizeMode(QtGui.QHeaderView.Fixed)
+        #self.dlg.objectInfo.verticalHeader().setMovable(True)
+        #self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
         self.dlg.tableWidgetDetail.setColumnWidth(1,120)
@@ -396,7 +400,7 @@ class CSIROMarineValues:
 
         #self.dlg.tableView.selectRow(0)
 
-        self.dlg.objectInfo.selectRow(0)
+        #self.dlg.objectInfo.selectRow(0)
 
         self.dlg.radioButtonWellbeing.setChecked(True)
 
@@ -461,7 +465,6 @@ class CSIROMarineValues:
             x.append(stp)
             qset = QSettings()
             defpath = qset.value("marine_values/default_path", "")
-            print defpath
             layer = self.iface.addVectorLayer(defpath, "layer name you like", "ogr")
 
     def manageLayer(self, x, index):
@@ -471,24 +474,11 @@ class CSIROMarineValues:
         except IOError:
             pass
 
-    #def loadProjectClicked(self):
-    #    return
-
     def project_load(self):
         project = QgsProject.instance()
-        #if project.fileName():
-            #self.dlg.error.setText("Please close any currently open projects")
-            #return
         qset = QSettings()
         defpath = qset.value("marine_values/default_path", "")
         
-        #tryCount is an attempt at solving loading problems. Probalby not needed anymore since
-        #end of plugin will terminate QGIS. This is in keeping with QGIS functionality
-        #that an application instance cannot exist without an open project file.
-        #tryCount = 0
-        #while tryCount < 2:
-
-
         project = QgsProject.instance()
         project.fileName()
         filen = os.path.splitext(ntpath.basename(project.fileName()))[0]
@@ -504,6 +494,7 @@ class CSIROMarineValues:
 
 
 #TESTTEST WFS
+        #Note that the name of a WFS layer may not contain any spaces or it will fail to load
 #        uri = "http://cmar-geo.bne.marine.csiro.au:8080/geoserver/mqcfr/wfs?service=WFS&typename=mqcfr:MarineValuesNewBritainTestLLG"
 #        vlayer = QgsVectorLayer(uri, "MarineValuesNewBritainTestLLG", "WFS")
 #        QgsMapLayerRegistry.instance().addMapLayer(vlayer)
@@ -516,7 +507,6 @@ class CSIROMarineValues:
         self.layerInfo = {}
         for treeLayer in project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
-            print layer.name()
             for i in range(self.dlg.tableView.model().rowCount()):
 
                 item = self.dlg.tableView.model().item(i, 0)
@@ -551,27 +541,21 @@ class CSIROMarineValues:
 
 
 
-    def getLayerInfo(self, layer):
-        layerInfo = []
-        request = QgsFeatureRequest()
-        request.setSubsetOfAttributes(['name','id'],layer.pendingFields())
-        # Don't return geometry objects
-        request.setFlags(QgsFeatureRequest.NoGeometry)
-        for feature in layer.getFeatures(request):
-            geom = feature.geometry()
-            #layerInfo.append("Feature ID %d: " % feature.id())
-            if len(feature.attributes()) > 3:
-                layerInfo.append(feature.attributes()[3])
-        #return "\n".join(layerInfo)
-                #print "**** LayerInfo in getLayerInfo"
-                #print layerInfo
-
-                model = QStandardItemModel()
-                model.setColumnCount(3)
-                model.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key', 'Chk ind'])
-                item = QStandardItem("\n".join(layerInfo[0]))
-                model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
-                self.dlg.objectInfo.setModel(model)
+#    def getLayerInfo(self, layer):
+        #layerInfo = []
+        #request = QgsFeatureRequest()
+        #request.setSubsetOfAttributes(['name','id'],layer.pendingFields())
+        #request.setFlags(QgsFeatureRequest.NoGeometry)
+        #for feature in layer.getFeatures(request):
+        #    geom = feature.geometry()
+        #    if len(feature.attributes()) > 3:
+        #        layerInfo.append(feature.attributes()[3])
+        #        model = QStandardItemModel()
+        #        model.setColumnCount(3)
+        #        model.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key', 'Chk ind'])
+        #        item = QStandardItem("\n".join(layerInfo[0]))
+        #        model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
+        #        self.dlg.objectInfo.setModel(model)
 
 
 
@@ -586,9 +570,9 @@ class CSIROMarineValues:
         #self.unload()
 
 
-    def objectInfoClicked(self, index):
-        row = index.row()
-        model = self.dlg.objectInfo.model()
+#    def objectInfoClicked(self, index):
+#        row = index.row()
+#        model = self.dlg.objectInfo.model()
 
 
     def tableViewClicked(self, index):
@@ -738,38 +722,38 @@ class CSIROMarineValues:
             #                pass #Dummy statement so next one can be rem'ed w/o failing
                             #print "Unknown"
 
-                        if feature.attributes:
-                            attrs = feature.attributes()
-                            if len(attrs) > 2:
+#                        if feature.attributes:
+#                            attrs = feature.attributes()
+#                            if len(attrs) > 2:
 
-                                arear = str(attrs[col_choice])
-                                gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
-                                attb.append(gg)
+#                                arear = str(attrs[col_choice])
+#                               gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
+#                                attb.append(gg)
 
-                    model = QStandardItemModel()
-                    model.setColumnCount(3)
-                    model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
+#                    model = QStandardItemModel()
+#                    model.setColumnCount(3)
+#                    model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
 
-                    for itc in attb:
-                        item = QStandardItem("1")
-                        vals = itc[1]
+#                    for itc in attb:
+#                        item = QStandardItem("1")
+#                        vals = itc[1]
 
-                        if vals == "NULL":
-                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
-                        else:
-                            valf = float(vals)
-                            valr = round(valf,4)
-                            valo = "{0:.4f}".format(valr)
-                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
+#                        if vals == "NULL":
+#                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
+#                        else:
+#                            valf = float(vals)
+#                            valr = round(valf,4)
+#                            valo = "{0:.4f}".format(valr)
+#                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
 
-                    self.dlg.objectInfo.setModel(model)
+#                    self.dlg.objectInfo.setModel(model)
 
                 else:
                     self.dlg.error.setText("Layer not loaded.")
-            else:
-                model = QStandardItemModel()
-                self.dlg.objectInfo.setModel(model)
-                model.clear()
+#            else:
+#                model = QStandardItemModel()
+#                self.dlg.objectInfo.setModel(model)
+#                model.clear()
         else:
             self.dlg.error.setText("No map layers.")
 
@@ -901,39 +885,16 @@ class CSIROMarineValues:
         self.iface.actionZoomOut().trigger()
 
     def rubberbandClicked(self):
-
-        print self.iface.activeLayer()
-        if self.iface.activeLayer():
-            self.rubberbandPoints = []
-
-            for treeLayer in project.layerTreeRoot().findLayers():                
-                layer_t8 = treeLayer.layer()
-                if layer_t8.name() == self.cur_lay:
-
-    #        layer = self.iface.activeLayer()
-    #        if layer:        
-                    print "Set previous tool"
-                    self.previousMapTool = self.iface.mapCanvas().mapTool()
-                    self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
-                    self.myMapTool.canvasClicked.connect(self.manageClick)
-                    self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
-                    color = QColor("green")
-                    color.setAlpha(50)
-                    self.myRubberBand.setColor(color)
-
-                    self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
-                    self.iface.mapCanvas().setMapTool(self.myMapTool)
-            #        r = QgsRubberBand(self.iface.mapCanvas(), True)  # True = a polygon
-            #        r.setColor(QColor(0, 0, 255))
-            #        r.setWidth(30)
-            #        points = [[QgsPoint(0, 0), QgsPoint(200, 200), QgsPoint(450, 76)]]
-            #        r.setToGeometry(QgsGeometry.fromPolygon(points), None)
-                    #pass
-                else:
-                    self.dlg.error.setText("No active layer. Click a layer.")
-        else:
-            self.dlg.error.setText("Click a layer to make it active before using rubberband.")
-    
+        self.rubberbandPoints = []
+        self.previousMapTool = self.iface.mapCanvas().mapTool()
+        self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
+        self.myMapTool.canvasClicked.connect(self.manageClick)
+        self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(), QGis.Polygon)
+        color = QColor("green")
+        color.setAlpha(50)
+        self.myRubberBand.setColor(color)
+        self.iface.mapCanvas().xyCoordinates.connect(self.showRBCoordinates)
+        self.iface.mapCanvas().setMapTool(self.myMapTool)
 
 
     def showRBCoordinates(self, currentPos):
@@ -945,347 +906,359 @@ class CSIROMarineValues:
 
     def manageClick(self, currentPos, clickedButton):
         
-        if self.cur_lay == "":
-            self.dlg.error.setText("Click a layer to make it active.")
-            #messagebox("Layer", "Click a layer to make it active.")
-        else:
-
-            if clickedButton == Qt.LeftButton:
-                self.myRubberBand.addPoint(currentPos)
+        if clickedButton == Qt.LeftButton:
+            self.myRubberBand.addPoint(currentPos)
 
 
-            if clickedButton == Qt.RightButton:
-                self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
-                self.iface.mapCanvas().setMapTool(self.previousMapTool)
+        if clickedButton == Qt.RightButton:
+            self.dlg.tableWidgetDetail.setRowCount(0)
+            self.dlg.tableWidgetDetailCounts.setRowCount(0)
 
-                #print self.myRubberBand.numberOfVertices()
-                geom_rb = self.myRubberBand.asGeometry()
-                #print geom_rb.asPolygon()
+            self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
+            self.iface.mapCanvas().setMapTool(self.previousMapTool)
 
-                #Create in-memory layer from Rubberband geometry for later processing
-                vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
-                prx = vlx.dataProvider()
-                # Enter editing mode
-                vlx.startEditing()
-                # add fields
-                prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
-                # add a feature
-                fetx = QgsFeature()
-                fetx.setGeometry(geom_rb)
-                fetx.setAttributes([0, "Feature"])
-                prx.addFeatures( [ fetx ] )
-                vlx.updateExtents()
-                # Commit changes
-                vlx.commitChanges()
-                QgsMapLayerRegistry.instance().addMapLayers([vlx])
-                
-                layer = self.iface.activeLayer()
-                if layer:
-                    clp_lay = layer.name()
-                    iter = layer.getFeatures()
-                    itrctr = 0
-                    for feature in iter:
-                        geom_feat = feature.geometry()
+            geom_rb = self.myRubberBand.asGeometry()
 
-                        # create layer
-                        vl = QgsVectorLayer("Polygon?crs=epsg:4326", "temporary_points", "memory")
-                        pr = vl.dataProvider()
-                        # Enter editing mode
-                        vl.startEditing()
-                        # add fields
-                        pr.addAttributes( [ QgsField("id", QVariant.Int), QgsField("Description", QVariant.String) ] )
-                        # add a feature
-                        fet = QgsFeature()
-                        fet.setGeometry(geom_feat)
-                        fet.setAttributes([itrctr, "Feature"])
-                        pr.addFeatures( [ fet ] )
-                        # Commit changes
-                        vl.commitChanges()
-                        itrctr =+ 1
-
-                    #print geom_rb.area()
-                    #print geom_feat.area()
-
-                    if geom_rb.intersects(geom_feat):
-                        #print "Intersecting"
-                        
-                        overlay_layer = QgsVectorLayer()
-                        print "Current layer: " + self.cur_lay
-
-                        for treeLayer in project.layerTreeRoot().findLayers():                
-                            layer_t6 = treeLayer.layer()
-
-                            #if layer_t6.name() == "feature_valuetype_llg":
-                            print self.cur_lay
-                            if layer_t6.name() == self.cur_lay:
-                                overlay_layer = layer_t6
-                                break
-
-                            #if layer.name() == "cut2":
-                            if layer_t6.name() == "rubber_band":
-                                layer_to_clip = layer_t6
+            #Create in-memory layer from Rubberband geometry for later processing
+            vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
+            prx = vlx.dataProvider()
+            # Enter editing mode
+            vlx.startEditing()
+            # add fields
+            prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
+            # add a feature
+            fetx = QgsFeature()
+            fetx.setGeometry(geom_rb)
+            fetx.setAttributes([0, "Feature"])
+            prx.addFeatures( [ fetx ] )
+            vlx.updateExtents()
+            # Commit changes
+            vlx.commitChanges()
+            QgsMapLayerRegistry.instance().addMapLayers([vlx])
 
 
-                                #Getting coordinates to save rubber band to tableViewRB
-                                clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
-                                cfeat = clay.getFeatures()
-                                temp_geom = []
-                                for fea in cfeat:
-                                    cgeo = fea.geometry()
-                                    multi_geom = cgeo.asPolygon()
-                                    for pp in multi_geom:
-                                        for pt in pp:
-                                        #temp_geom.extend(i)
-                                            px = "{0:.5f}".format(round(float(str(pt.x())),5))
-                                            py = "{0:.5f}".format(round(float(str(pt.y())),5))
-                                            new_pt = (px,py)
-                                            self.rubberbandPoints.append(new_pt)
+            #Getting coordinates to save rubber band to tableViewRB
+            clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
 
 
 
-                        
-                        #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
-                        processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                        res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
-                        res_lay.updateExtents()
-                        res_feat = res_lay.getFeatures()
+
+            #symbol = QgsMarkerSymbolV2.createSimple({'name': 'square', 'color': 'red'})
+            
+            symbol = QgsSymbolV2.defaultSymbol(clay.geometryType())
+            symbol.setColor(QColor("transparent"))
+            clay.rendererV2().setSymbol(symbol)
 
 
-                        str2 = ""
-                        str3 = ""
+            cfeat = clay.getFeatures()
+            temp_geom = []
+            for fea in cfeat:
+                cgeo = fea.geometry()
+                multi_geom = cgeo.asPolygon()
+                for pp in multi_geom:
+                    for pt in pp:
+                    #temp_geom.extend(i)
+                        px = "{0:.5f}".format(round(float(str(pt.x())),5))
+                        py = "{0:.5f}".format(round(float(str(pt.y())),5))
+                        new_pt = (px,py)
+                        self.rubberbandPoints.append(new_pt)
 
-                        #Clear selected objects list view
-                        model = QStandardItemModel(0,0)
-                        model = QStandardItemModel(1,1)
-                        
-#***** AREA PERCENTAGES *************************************************************************************************
-                        #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
-                        if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-                            self.dlg.tableWidgetDetail.setRowCount(0)
-                            idx_llg_dist = ""
-                            idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
-                            if self.cur_scale_id == "LLG":
-                                idx_llg_dist = res_lay.fieldNameIndex('llg')
-                            if self.cur_scale_id == "Districts":
-                                idx_llg_dist = res_lay.fieldNameIndex('district')
-                            idx_shapar = res_lay.fieldNameIndex('shape_area')
-                            idx_foodsec = res_lay.fieldNameIndex('food_secur')
-                            idx_wellbeing = res_lay.fieldNameIndex('well_being')
-                            idx_income = res_lay.fieldNameIndex('income')
 
-                            for f in res_feat:
-                                rub = None
-                                shapar = 0.0
-                                csomt = 0.0
-                                csomtot = 0.0
-                                spat_feat_qry = ""
-                                llg_qry = ''
-                                res_geom = f.geometry()
-                                #d = QgsDistanceArea()
-                                #d.setEllipsoidalMode(True)
-                                #m = d.measurePolygon(res_geom.asPolygon()[0])
-                                #ar = d.convertMeasurement(m, QGis.Degrees, QGis.Kilometers, True)     
-                                #print "New area: ", ar
+            ql = QgsMapLayerRegistry.instance().mapLayers().values()
+            for layerIterator in ql:
+                layname = layerIterator.name()
+                #Only processing vector layers
+                if layerIterator.type() == QgsMapLayer.VectorLayer:
+                    if layerIterator.geometryType() == 2:
+                        #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
+                        if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
 
-                                if f.attributes:
-                                    attry = f.attributes()
-                                    if len(attry) > 2:
+#DO NOT remove but rather append to output written to tableWidgetDetail and tableWidgetDetailCounts
 
-                                        if res_geom != None:
-                                            d = QgsDistanceArea()
-                                            d.setEllipsoidalMode(True)
-                                            art = res_geom.area()
-                                            ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
-                                            arx = str(ar[0])
-                                            rub = ar[0] #rub is used further down where each sub area is retrieved from list
-                                            shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
-                                        
-                                            for cfs in self.dlg.list_of_values:
-                                                if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
-                                                    if cfs[0] == attry[idx_spatfeat]:
-                                                        if cfs[1] == attry[idx_llg_dist]:
+                            layer = layerIterator
+                            if layer:
+                                if layname.endswith('LLG'):
+                                    self.cur_scale_id = "LLG"
+                                if layname.endswith('Districts'):
+                                    self.cur_scale_id = "Districts"
+                                if layname.endswith('Features'):
+                                    self.cur_scale_id = "Features"
+
+                                clp_lay = layer.name()
+
+                                iter = layer.getFeatures()
+
+                                for feature in iter:
+                                    geom_feat = feature.geometry()
+                                
+                                #No sure why this test was here. There are problems using it (no feature selected with smaller rubberband area)
+                                #if geom_rb.intersects(geom_feat):
+                                overlay_layer = QgsVectorLayer()
+
+                                for treeLayer in project.layerTreeRoot().findLayers():                
+                                    layer_t6 = treeLayer.layer()
+
+                                    if layer_t6.name() == layname:
+                                        overlay_layer = layer_t6
+                                        break
+
+                                    if layer_t6.name() == "rubber_band":
+                                        layer_to_clip = layer_t6
+
+                                #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
+                                processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                                res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
+                                res_lay.updateExtents()
+                                res_feat = res_lay.getFeatures()
+
+                                #Clear selected objects list view
+                                model = QStandardItemModel(0,0)
+                                model = QStandardItemModel(1,1)
+
+        #***** AREA PERCENTAGES *************************************************************************************************
+                                #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
+                                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
+
+# H E A D E R
+                                    #Red header for each layer
+                                    rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                    self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(""))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+                                    self.dlg.tableWidgetDetail.setSpan(rowPosition, 0, 1, 3)
+                                    for col in range(0,3):
+                                        self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor(188,69,57)))
+                                    self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+                                    self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+
+
+
+                                    idx_llg_dist = ""
+                                    idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
+                                    if self.cur_scale_id == "LLG":
+                                        idx_llg_dist = res_lay.fieldNameIndex('llg')
+                                    if self.cur_scale_id == "Districts":
+                                        idx_llg_dist = res_lay.fieldNameIndex('district')
+                                    idx_shapar = res_lay.fieldNameIndex('shape_area')
+                                    idx_foodsec = res_lay.fieldNameIndex('food_secur')
+                                    idx_wellbeing = res_lay.fieldNameIndex('well_being')
+                                    idx_income = res_lay.fieldNameIndex('income')
+
+                                    for f in res_feat:
+                                        rub = None
+                                        shapar = 0.0
+                                        csomt = 0.0
+                                        csomtot = 0.0
+                                        spat_feat_qry = ""
+                                        llg_qry = ''
+                                        res_geom = f.geometry()
+
+                                        if f.attributes:
+                                            attry = f.attributes()
+                                            if len(attry) > 2:
+
+                                                if res_geom != None:
+                                                    d = QgsDistanceArea()
+                                                    d.setEllipsoidalMode(True)
+                                                    art = res_geom.area()
+                                                    ar = d.convertMeasurement(art, QGis.Degrees, QGis.Kilometers, True)     
+                                                    arx = str(ar[0])
+                                                    rub = ar[0] #rub is used further down where each sub area is retrieved from list
+                                                    shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
+                                                    
+                                                    for cfs in self.dlg.list_of_values:
+                                                        if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
+                                                            if cfs[0] == attry[idx_spatfeat]:
+                                                                if cfs[1] == attry[idx_llg_dist]:
+                                                                    doInsert = False
+                                                                    if self.dlg.radioButtonWellbeing.isChecked():
+                                                                        if cfs[6] == "Importance for human wellbeing":
+                                                                            doInsert = True
+                                                                    if self.dlg.radioButtonSecurity.isChecked():
+                                                                        if cfs[6] == "Importance for food security":
+                                                                            doInsert = True
+                                                                    if self.dlg.radioButtonIncome.isChecked():
+                                                                        if cfs[6] == "Importance for income":
+                                                                            doInsert = True
+                                                                    if doInsert:
+                                                                        csomt = float(cfs[4])
+                                                                        csomtot = csomtot + csomt
+
+
+
+            #                                    dis_val = ""
+            #                                    if self.dlg.radioButtonWellbeing.isChecked():
+            #                                        if attry[idx_wellbeing]:
+            #                                            dis_val = attry[idx_wellbeing]
+
+            #                                    if self.dlg.radioButtonSecurity.isChecked():
+            #                                        if attry[idx_foodsec]:
+            #                                            dis_val = attry[idx_foodsec]
+
+            #                                    if self.dlg.radioButtonIncome.isChecked():
+            #                                        if attry[idx_income]:
+            #                                            dis_val = attry[idx_income]
+
+                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg_dist]))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
+
+                                                if csomtot:
+                                                    # Round to four digits and display with four digits
+                                                    csomtot = "{0:.4f}".format(round(float(csomtot),4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
+                                                else:
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+
+
+                                                if arx:
+                                                    # Round to four digits and display with four digits
+                                                    arx = "{0:.4f}".format(round(float(arx),4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
+                                                else:
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
+
+                                                #shape area
+                                                if shapar:
+                                                    # Round to four digits and display with four digits
+                                                    shapar = "{0:.4f}".format(round(float(shapar),4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(shapar))
+                                                else:
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(""))
+
+
+
+                                                for col in range(0,5):
+                                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+
+                                        #self.dlg.list_of_values
+                                        #[0]: 17 - spatial_feature_name
+                                        #[1]:  8 - scale_name
+                                        #[2]:  7 - scale_id
+                                        #[3]:  1 - value_name
+                                        #[4]: 12 - value_metric_score
+                                        #[5]:  4 - value_type
+                                        #[6]: 10 - value_metric_description
+                                        #[7]:      spatial_feature_id
+
+
+                                            for cf in self.dlg.list_of_values:
+
+                                                if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
+                                                    #Looking for all that are in the same spatial_feature category
+                                                    if cf[0] == attry[idx_spatfeat]:
+                                                        #Looking for all that are in the same LLG/District
+                                                        if cf[1] == attry[idx_llg_dist]:
+
                                                             doInsert = False
                                                             if self.dlg.radioButtonWellbeing.isChecked():
-                                                                if cfs[6] == "Importance for human wellbeing":
+                                                                if cf[6] == "Importance for human wellbeing":
                                                                     doInsert = True
                                                             if self.dlg.radioButtonSecurity.isChecked():
-                                                                if cfs[6] == "Importance for food security":
+                                                                if cf[6] == "Importance for food security":
                                                                     doInsert = True
                                                             if self.dlg.radioButtonIncome.isChecked():
-                                                                if cfs[6] == "Importance for income":
+                                                                if cf[6] == "Importance for income":
                                                                     doInsert = True
                                                             if doInsert:
-                                                                csomt = float(cfs[4])
-                                                                csomtot = csomtot + csomt
+                                                                
+                                                                csom = float(cf[4]) * rub / float(shapar)
+                                                                csom = "{0:.4f}".format(round(csom,4))
+
+                                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
+                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
+                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
+                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
+                                                                self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+                                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+
+        #****COUNTS************************************************************************
+
+                                #For layers which are processed in counts: Features
+
+                                if self.cur_scale_id == "Features":
+# H E A D E R
+                                    #Red header for each layer
+                                    rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
+                                    self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname))
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
+                                    self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 2)
+                                    for colc in range(0,2):
+                                        self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setBackground(QBrush(QColor.fromRgb(188,69,57)))
+                                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+                                    self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+
+                                    lstValueTypes = []
+                                    for f in res_feat:
+                                        res_geom = f.geometry()
+                                        idx_poly_id = res_lay.fieldNameIndex('poly_id')
+                                        idx_point_id = res_lay.fieldNameIndex('point_1')                                
+                                        proc_type = ""
+                                        if f.attributes:
+                                            poly_id = ""
+                                            point_id = ""
+                                            attry = f.attributes()
+
+                                            if attry[idx_poly_id] == None:
+                                                proc_type = "POINT"
+                                                point_id = "PNT_" + str(attry[idx_point_id])
+                                            else:
+                                                proc_type = "POLY"
+                                                poly_id = "POLY_" + str(attry[idx_poly_id])
+                                            count_detail = 0
+                                            for cfs in self.dlg.list_of_values:
+                                                if cfs[5] in ["Carbon sequestration","Hazard reduction","Water regulation","Biological diversity","Importance for ETP species or habitats","Naturalness","Productivity or nutrient cycling","Rarity/uniqueness","Vulnerability, sensitivity or slow recovery","Natural resources","Cultural heritage importance","Recreational, tourism or aesthetic importance","Spiritual importance"]:
+                                                    
+                                                    cc = str(cfs[7])
+                                                    if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                        count_detail = count_detail + 1
+
+                                                        if len(lstValueTypes) > 0:
+                                                            founda = False
+                                                            for elem in lstValueTypes:
+                                                                if elem[0] == cfs[5]:
+                                                                    elem[1] = elem[1] + 1
+                                                                    founda = True
+                                                            if not founda:
+                                                                ladd1 = [cfs[5],1]
+                                                                lstValueTypes.append(ladd1)
+                                                        else:
+                                                            ladd2 = [cfs[5],1]
+                                                            lstValueTypes.append(ladd2)
+
+                                    for elem70 in lstValueTypes:
+                                        rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                                        self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                                        self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(elem70[0]))
+                                        self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem70[1])))
+                                        self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+
+            #**********************************************************************************
+
+                                else:
+                                    pass
+
+                                for treeLayer in project.layerTreeRoot().findLayers():                
+                                    layer_f2 = treeLayer.layer()
+                                    if layer_f2.name() == "Clipped":
+                                        QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
 
+            self.myMapTool.deleteLater()
+            self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
-    #                                    dis_val = ""
-    #                                    if self.dlg.radioButtonWellbeing.isChecked():
-    #                                        if attry[idx_wellbeing]:
-    #                                            dis_val = attry[idx_wellbeing]
-
-    #                                    if self.dlg.radioButtonSecurity.isChecked():
-    #                                        if attry[idx_foodsec]:
-    #                                            dis_val = attry[idx_foodsec]
-
-    #                                    if self.dlg.radioButtonIncome.isChecked():
-    #                                        if attry[idx_income]:
-    #                                            dis_val = attry[idx_income]
-
-                                        rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                        self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg_dist]))
-                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
-                                        
-    #                                    if dis_val:
-    #                                        # Round to four digits and display with four digits
-    #                                        dis_vald = "{0:.4f}".format(round(float(dis_val),4))
-    #                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(dis_vald))
-    #                                    else:
-    #                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
-
-                                        if csomtot:
-                                            # Round to four digits and display with four digits
-                                            csomtot = "{0:.4f}".format(round(float(csomtot),4))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
-                                        else:
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
-
-
-                                        if arx:
-                                            # Round to four digits and display with four digits
-                                            arx = "{0:.4f}".format(round(float(arx),4))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
-                                        else:
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
-
-
-                                        #shape area
-                                        if shapar:
-                                            # Round to four digits and display with four digits
-                                            shapar = "{0:.4f}".format(round(float(shapar),4))
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(shapar))
-                                        else:
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(""))
-
-
-
-                                        for col in range(0,5):
-                                            self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
-
-                                #self.dlg.list_of_values
-                                #[0]: 17 - spatial_feature_name
-                                #[1]:  8 - scale_name
-                                #[2]:  7 - scale_id
-                                #[3]:  1 - value_name
-                                #[4]: 12 - value_metric_score
-                                #[5]:  4 - value_type
-                                #[6]: 10 - value_metric_description
-                                #[7]:      spatial_feature_id
-
-
-                                    for cf in self.dlg.list_of_values:
-
-                                        if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
-                                            #Looking for all that are in the same spatial_feature category
-                                            if cf[0] == attry[idx_spatfeat]:
-                                                #Looking for all that are in the same LLG/District
-                                                if cf[1] == attry[idx_llg_dist]:
-
-                                                    doInsert = False
-                                                    if self.dlg.radioButtonWellbeing.isChecked():
-                                                        if cf[6] == "Importance for human wellbeing":
-                                                            doInsert = True
-                                                    if self.dlg.radioButtonSecurity.isChecked():
-                                                        if cf[6] == "Importance for food security":
-                                                            doInsert = True
-                                                    if self.dlg.radioButtonIncome.isChecked():
-                                                        if cf[6] == "Importance for income":
-                                                            doInsert = True
-                                                    if doInsert:
-                                                        
-                                                        csom = float(cf[4]) * rub / float(shapar)
-                                                        csom = "{0:.4f}".format(round(csom,4))
-
-                                                        rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                        self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
-                                                        self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
-                                                        #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                                        #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
-                                                        #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
-                                                        self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
-
-                                                        #self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
-
-#****COUNTS************************************************************************
-
-                        #For layers which are processed in counts: Features
-
-                        if self.cur_scale_id == "Features":
-                            self.dlg.tableWidgetDetailCounts.setRowCount(0)
-                            lstValueTypes = []
-                            for f in res_feat:
-                                res_geom = f.geometry()
-                                idx_poly_id = res_lay.fieldNameIndex('poly_id')
-                                idx_point_id = res_lay.fieldNameIndex('point_1')                                
-                                proc_type = ""
-                                if f.attributes:
-                                    poly_id = ""
-                                    point_id = ""
-                                    attry = f.attributes()
-                                    if attry[idx_poly_id] == None:
-                                        proc_type = "POINT"
-                                        point_id = "PNT_" + str(attry[idx_point_id])
-                                    else:
-                                        proc_type = "POLY"
-                                        poly_id = "POLY_" + str(attry[idx_poly_id])
-                                    count_detail = 0
-                                    for cfs in self.dlg.list_of_values:
-                                        if cfs[5] in ["Carbon sequestration","Hazard reduction","Water regulation","Biological diversity","Importance for ETP species or habitats","Naturalness","Productivity or nutrient cycling","Rarity/uniqueness","Vulnerability, sensitivity or slow recovery","Natural resources","Cultural heritage importance","Recreational, tourism or aesthetic importance","Spiritual importance"]:
-                                            
-                                            cc = str(cfs[7])
-                                            if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                count_detail = count_detail + 1
-
-                                                if len(lstValueTypes) > 0:
-                                                    founda = False
-                                                    for elem in lstValueTypes:
-                                                        #print "E " + str(elem[0]) + "  " + "C " + str(cfs[5])
-                                                        if elem[0] == cfs[5]:
-                                                            elem[1] = elem[1] + 1
-                                                            founda = True
-                                                    if not founda:
-                                                        ladd1 = [cfs[5],1]
-                                                        lstValueTypes.append(ladd1)
-                                                else:
-                                                    ladd2 = [cfs[5],1]
-                                                    lstValueTypes.append(ladd2)
-
-                            for elem70 in lstValueTypes:
-                                rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
-                                self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
-                                self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(elem70[0]))
-                                self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem70[1])))
-                                self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
-
-#**********************************************************************************
-
-                    else:
-                        pass
-                        #print "Not intersecting"
-
-                    self.myMapTool.deleteLater()
-                    self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-
-                    for treeLayer in project.layerTreeRoot().findLayers():                
-                        layer_f2 = treeLayer.layer()
-                        if layer_f2.name() == "rubber_band":
-                            QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
-                        elif layer_f2.name() == "Clipped":
-                            QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+            for treeLayer in project.layerTreeRoot().findLayers():                
+                layer_f2 = treeLayer.layer()
+                if layer_f2.name() == "rubber_band":
+                    QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
 
 
@@ -1298,7 +1271,6 @@ class CSIROMarineValues:
         db.open()
         # query the table
         query = db.exec_("select * from marine_values_all")
-        print " "
 
         # Play with results (not efficient, just for demo)
         while query.next():
@@ -1338,11 +1310,7 @@ class CSIROMarineValues:
         mc = self.iface.mapCanvas() 
         mc.setExtent(mapExtentRect)
         self.iface.mapCanvas().zoomScale(1600000)
-
-
-
 #        self.dlg.list_of_values = []
-
 #        line = np.genfromtxt('temp.txt', usecols=3, dtype=[('floatname','float')], skip_header=1)
 #        list_of_values.append(line)
 
@@ -1410,7 +1378,6 @@ class Model(QStandardItemModel):
         #self.d.setFlags(Qt.ItemIsUserCheckable| Qt.ItemIsEnabled)
         #self.appendRow(self.d)
 
-
                 #item = QStandardItem(fil)
                 #item.setCheckable(True)
                 #self.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
@@ -1418,10 +1385,7 @@ class Model(QStandardItemModel):
 
     def data(self, index, role):
         if index.isValid():
-            #print "Index valid"
             if role == QtCore.Qt.CheckStateRole:
-            #    print "******* CheckStateRole"
-            #    #if role == Qt.DisplayRole:
                 return super(Model, self).data(index, QtCore.Qt.CheckStateRole)
 
 
