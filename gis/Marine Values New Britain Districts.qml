@@ -220,7 +220,7 @@
   </customproperties>
   <blendMode>6</blendMode>
   <featureBlendMode>6</featureBlendMode>
-  <layerTransparency>50</layerTransparency>
+  <layerTransparency>70</layerTransparency>
   <displayfield>OBJECTID</displayfield>
   <label>0</label>
   <labelattributes>

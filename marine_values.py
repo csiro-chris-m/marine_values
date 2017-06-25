@@ -253,11 +253,11 @@ class CSIROMarineValues:
         self.dlg.endButton.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\sel_area.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\sel_area2.png");
         self.dlg.rubberband.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonPan.clicked.connect(self.pushButtonPanClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\pan.png");
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\hand.png");
         self.dlg.pushButtonPan.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonZoomPlus.clicked.connect(self.pushButtonZoomPlusClicked)
@@ -579,183 +579,189 @@ class CSIROMarineValues:
         if QgsMapLayerRegistry.instance().mapLayers():
             row = index.row()
             model = self.dlg.tableView.model()
+
+
+
+
             valx = model.item(row, 0)
             val = valx.text()
-            val_wo_ext = os.path.splitext(val)[0]
+            if val != "Unloaded layers:":
+                val_wo_ext = os.path.splitext(val)[0]
 
-            qset = QSettings()
-            defpath = qset.value("marine_values/default_path", "")
-            sfile = os.path.join(defpath, val)
+                qset = QSettings()
+                defpath = qset.value("marine_values/default_path", "")
+                sfile = os.path.join(defpath, val)
 
-            ##############################################################
-            #This is how to read cell content of tableView
-            #it = model.item(row, 3)
-            #print it.text()
-            ##############################################################
+                ##############################################################
+                #This is how to read cell content of tableView
+                #it = model.item(row, 3)
+                #print it.text()
+                ##############################################################
 
-            #Since mouse click on tableView row cannot determine if the checkbox
-            #was clicked (which controls loading/unloading of layers) or if the 
-            #row was clicked elsewhere (which makes a layer active) we store the click
-            #status in column 3 and check the checkbox state against it to see if
-            #the checkbox was clicked.
-            v2 = model.item(row, 3)
-            v2a = v2.text()
+                #Since mouse click on tableView row cannot determine if the checkbox
+                #was clicked (which controls loading/unloading of layers) or if the 
+                #row was clicked elsewhere (which makes a layer active) we store the click
+                #status in column 3 and check the checkbox state against it to see if
+                #the checkbox was clicked.
+                v2 = model.item(row, 3)
+                v2a = v2.text()
 
-            #Was unchecked and has now been checked
-            if v2a == "not checked" and model.item(row,0).checkState() == QtCore.Qt.Checked: 
-            #if model.item(row,0).checkState() == QtCore.Qt.Checked:
-                layer = self.iface.addVectorLayer(sfile, val_wo_ext, "ogr")
-                lid = layer.id()
+                #Was unchecked and has now been checked
+                if v2a == "not checked" and model.item(row,0).checkState() == QtCore.Qt.Checked: 
+                #if model.item(row,0).checkState() == QtCore.Qt.Checked:
+                    layer = self.iface.addVectorLayer(sfile, val_wo_ext, "ogr")
+                    lid = layer.id()
 
-                #Add map to layer registry
-                QgsMapLayerRegistry.instance().addMapLayer(layer)
+                    #Add map to layer registry
+                    QgsMapLayerRegistry.instance().addMapLayer(layer)
 
-                #Previously loaded items are reordered starting with value 2
-                neworder = 2
-                for i in range(self.dlg.tableView.model().rowCount()):
-                    it4 = self.dlg.tableView.model().item(i, 2)
-                    it5 = it4.text()
-                    if it5 == '90000': #Arrived at divider between loaded and unloaded layers
-                        break
-                    model.item(i, 2).setText('{:05d}'.format(neworder))
-                    neworder += 1
-
-
-                model.item(row, 3).setText(self.tr('checked'))
-                #Newly loaded layer gets order 1, which is default QGIS behavious, set it on top
-                model.item(row, 2).setText('{:05d}'.format(1)) 
-                #self.treeLayerIdx += 1
-
-                #Look up layer geometry type
-                root = QgsProject.instance().layerTreeRoot()
-                lyr3 = root.findLayer(lid).layer()
-                geot = self.geometryTypes[lyr3.geometryType()]
-                model.item(row, 1).setText(self.tr(geot))
+                    #Previously loaded items are reordered starting with value 2
+                    neworder = 2
+                    for i in range(self.dlg.tableView.model().rowCount()):
+                        it4 = self.dlg.tableView.model().item(i, 2)
+                        it5 = it4.text()
+                        if it5 == '90000': #Arrived at divider between loaded and unloaded layers
+                            break
+                        model.item(i, 2).setText('{:05d}'.format(neworder))
+                        neworder += 1
 
 
-                self.dlg.tableView.model().sort(2)
-                return
+                    model.item(row, 3).setText(self.tr('checked'))
+                    #Newly loaded layer gets order 1, which is default QGIS behavious, set it on top
+                    model.item(row, 2).setText('{:05d}'.format(1)) 
+                    #self.treeLayerIdx += 1
 
-            #Was checked and has now been unchecked
-            if v2a == "checked" and model.item(row,0).checkState() == QtCore.Qt.Unchecked:
-                model.item(row, 3).setText(self.tr('not checked'))
-                for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-                    if val_wo_ext == layer.name():
-                        QgsMapLayerRegistry.instance().removeMapLayer(layer)
-                        self.treeLayerIdx -= 1
-                        model.item(row, 2).setText(self.tr('99999'))
-                        self.dlg.tableView.model().sort(2)
-                        return
-            
-            #Checkbox has not been clicked. Process as set layer active   
-            for treeLayer in project.layerTreeRoot().findLayers():
-                layer = treeLayer.layer()
-                lnam = layer.name()
+                    #Look up layer geometry type
+                    root = QgsProject.instance().layerTreeRoot()
+                    lyr3 = root.findLayer(lid).layer()
+                    geot = self.geometryTypes[lyr3.geometryType()]
+                    model.item(row, 1).setText(self.tr(geot))
 
-                if val_wo_ext == lnam:
-                    self.iface.setActiveLayer(layer)
-                    self.cur_lay = layer.name()
 
-                    if self.cur_lay.endswith('LLG'):
-                        self.cur_scale_id = "LLG"
-                    if self.cur_lay.endswith('Districts'):
-                        self.cur_scale_id = "Districts"
-                    if self.cur_lay.endswith('Features'):
-                        self.cur_scale_id = "Features"
+                    self.dlg.tableView.model().sort(2)
+                    return
 
-            layer = self.iface.activeLayer()
+                #Was checked and has now been unchecked
+                if v2a == "checked" and model.item(row,0).checkState() == QtCore.Qt.Unchecked:
+                    model.item(row, 3).setText(self.tr('not checked'))
+                    for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+                        if val_wo_ext == layer.name():
+                            QgsMapLayerRegistry.instance().removeMapLayer(layer)
+                            self.treeLayerIdx -= 1
+                            model.item(row, 2).setText(self.tr('99999'))
+                            self.dlg.tableView.model().sort(2)
+                            return
+                
+                #Checkbox has not been clicked. Process as set layer active   
+                for treeLayer in project.layerTreeRoot().findLayers():
+                    pass
+                    #layer = treeLayer.layer()
+                    #lnam = layer.name()
 
-            if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-                if layer:
-                    iter = layer.getFeatures()
+                    #if val_wo_ext == lnam:
+                    #    self.iface.setActiveLayer(layer)
+                    #    self.cur_lay = layer.name()
 
-                    #Using column names (to find index of column) rather than column ids.
-                    #so can change column order but not names
-                    idx_spatfeat = layer.fieldNameIndex('spat_feat')
-                    if self.cur_scale_id == "LLG":
-                        idx_llg_dist = layer.fieldNameIndex('llg')
-                    if self.cur_scale_id == "Districts":
-                        idx_llg_dist = layer.fieldNameIndex('district')
-                    idx_foodsec = layer.fieldNameIndex('food_secur')
-                    idx_wellbeing = layer.fieldNameIndex('well_being')
-                    idx_income = layer.fieldNameIndex('income')
+                    #    if self.cur_lay.endswith('LLG'):
+                    #        self.cur_scale_id = "LLG"
+                    #    if self.cur_lay.endswith('Districts'):
+                    #        self.cur_scale_id = "Districts"
+                    #    if self.cur_lay.endswith('Features'):
+                    #        self.cur_scale_id = "Features"
 
-                    feat_count = 0
-                    attx3 = []
-                    attb = []
+                layer = self.iface.activeLayer()
 
-                    imporval = None #Do not declare a type
-                    col_choice = None
-                    headi = ""
-                    if self.dlg.radioButtonWellbeing.isChecked():
-                        headi = "Human wellbeing"
-                        col_choice = idx_wellbeing
-                        col_choicex = "well_being"
-                    if self.dlg.radioButtonSecurity.isChecked():
-                        headi = "Food security"
-                        col_choice = idx_foodsec
-                        col_choicex = "food_secur"
-                    if self.dlg.radioButtonIncome.isChecked():
-                        headi = "Income"
-                        col_choice = idx_income
-                        col_choicex = "income"
+                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
+                    if layer:
+                        iter = layer.getFeatures()
 
-                    for feature in iter:
+                        #Using column names (to find index of column) rather than column ids.
+                        #so can change column order but not names
+                        idx_spatfeat = layer.fieldNameIndex('spat_feat')
+                        if self.cur_scale_id == "LLG":
+                            idx_llg_dist = layer.fieldNameIndex('llg')
+                        if self.cur_scale_id == "Districts":
+                            idx_llg_dist = layer.fieldNameIndex('district')
+                        idx_foodsec = layer.fieldNameIndex('food_secur')
+                        idx_wellbeing = layer.fieldNameIndex('well_being')
+                        idx_income = layer.fieldNameIndex('income')
 
-                        feat_count += 1;
-                        geom = feature.geometry()
+                        feat_count = 0
+                        attx3 = []
+                        attb = []
 
-                        # show some information about the feature
-            #            if geom.type() == QGis.Point:
-            #                x = geom.asPoint()
-            #                #print "Point: " + str(x)
-            #            elif geom.type() == QGis.Line:
-            #                x = geom.asPolyline()
-            #                print "Line: %d points" % len(x)
-            #            elif geom.type() == QGis.Polygon:
-            #                x = geom.asPolygon()
-            #                numPts = 0
-            #                for ring in x:
-            #                    numPts += len(ring)
-            #                #print "Polygon: %d rings with %d points" % (len(x), numPts)
-            #            else:
-            #                pass #Dummy statement so next one can be rem'ed w/o failing
-                            #print "Unknown"
+                        imporval = None #Do not declare a type
+                        col_choice = None
+                        headi = ""
+                        if self.dlg.radioButtonWellbeing.isChecked():
+                            headi = "Human wellbeing"
+                            col_choice = idx_wellbeing
+                            col_choicex = "well_being"
+                        if self.dlg.radioButtonSecurity.isChecked():
+                            headi = "Food security"
+                            col_choice = idx_foodsec
+                            col_choicex = "food_secur"
+                        if self.dlg.radioButtonIncome.isChecked():
+                            headi = "Income"
+                            col_choice = idx_income
+                            col_choicex = "income"
 
-#                        if feature.attributes:
-#                            attrs = feature.attributes()
-#                            if len(attrs) > 2:
+                        for feature in iter:
 
-#                                arear = str(attrs[col_choice])
-#                               gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
-#                                attb.append(gg)
+                            feat_count += 1;
+                            geom = feature.geometry()
 
-#                    model = QStandardItemModel()
-#                    model.setColumnCount(3)
-#                    model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
+                            # show some information about the feature
+                #            if geom.type() == QGis.Point:
+                #                x = geom.asPoint()
+                #                #print "Point: " + str(x)
+                #            elif geom.type() == QGis.Line:
+                #                x = geom.asPolyline()
+                #                print "Line: %d points" % len(x)
+                #            elif geom.type() == QGis.Polygon:
+                #                x = geom.asPolygon()
+                #                numPts = 0
+                #                for ring in x:
+                #                    numPts += len(ring)
+                #                #print "Polygon: %d rings with %d points" % (len(x), numPts)
+                #            else:
+                #                pass #Dummy statement so next one can be rem'ed w/o failing
+                                #print "Unknown"
 
-#                    for itc in attb:
-#                        item = QStandardItem("1")
-#                        vals = itc[1]
+    #                        if feature.attributes:
+    #                            attrs = feature.attributes()
+    #                            if len(attrs) > 2:
 
-#                        if vals == "NULL":
-#                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
-#                        else:
-#                            valf = float(vals)
-#                            valr = round(valf,4)
-#                            valo = "{0:.4f}".format(valr)
-#                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
+    #                                arear = str(attrs[col_choice])
+    #                               gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
+    #                                attb.append(gg)
 
-#                    self.dlg.objectInfo.setModel(model)
+    #                    model = QStandardItemModel()
+    #                    model.setColumnCount(3)
+    #                    model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
 
-                else:
-                    self.dlg.error.setText("Layer not loaded.")
-#            else:
-#                model = QStandardItemModel()
-#                self.dlg.objectInfo.setModel(model)
-#                model.clear()
-        else:
-            self.dlg.error.setText("No map layers.")
+    #                    for itc in attb:
+    #                        item = QStandardItem("1")
+    #                        vals = itc[1]
+
+    #                        if vals == "NULL":
+    #                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
+    #                        else:
+    #                            valf = float(vals)
+    #                            valr = round(valf,4)
+    #                            valo = "{0:.4f}".format(valr)
+    #                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
+
+    #                    self.dlg.objectInfo.setModel(model)
+
+                    else:
+                        self.dlg.error.setText("Layer not loaded.")
+    #            else:
+    #                model = QStandardItemModel()
+    #                self.dlg.objectInfo.setModel(model)
+    #                model.clear()
+            else:
+                self.dlg.error.setText("No map layers.")
 
     def saveProjectClicked(self):
         project = QgsProject.instance()
@@ -1023,7 +1029,7 @@ class CSIROMarineValues:
                                     #Red header for each layer
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                     self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname + " ---------------------------------"))
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(""))
                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
                                     self.dlg.tableWidgetDetail.setSpan(rowPosition, 0, 1, 3)
@@ -1112,13 +1118,17 @@ class CSIROMarineValues:
                                                 else:
                                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
 
-
-                                                if arx:
+#                                                try:
+#                                                 arx
+#                                                except (TypeError, UnboundLocalError) as e:
+#                                                else:
                                                     # Round to four digits and display with four digits
+                                                try:
                                                     arx = "{0:.4f}".format(round(float(arx),4))
                                                     self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
-                                                else:
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
+                                                except (TypeError, UnboundLocalError):
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem("Error"))
+                                                    self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
 
                                                 #shape area
                                                 if shapar:
@@ -1163,9 +1173,12 @@ class CSIROMarineValues:
                                                                 if cf[6] == "Importance for income":
                                                                     doInsert = True
                                                             if doInsert:
-                                                                
-                                                                csom = float(cf[4]) * rub / float(shapar)
-                                                                csom = "{0:.4f}".format(round(csom,4))
+                                                                try:
+                                                                    csom = float(cf[4]) * rub / float(shapar)
+                                                                    csom = "{0:.4f}".format(round(csom,4))
+                                                                except TypeError:
+                                                                    csom = "Error"
+                                                                    self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
 
                                                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                                                 self.dlg.tableWidgetDetail.insertRow(rowPosition)
@@ -1187,7 +1200,7 @@ class CSIROMarineValues:
                                     #Red header for each layer
                                     rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
                                     self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
-                                    self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname))
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname + " ----------------------------------"))
                                     self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
                                     self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
                                     self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 2)
@@ -1368,7 +1381,9 @@ class Model(QStandardItemModel):
                     self.d.setText = "testing"
                     self.d.setCheckable(True) 
                     #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
-                    self.appendRow([self.d, QStandardItem('unknown'), QStandardItem('99999'), QStandardItem('not checked')])
+                    qsi = QStandardItem('unknown')
+                    qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                    self.appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
                 #Add row which is the divider between loaded and unloaded layers
                 self.appendRow([QStandardItem('Unloaded layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
 
