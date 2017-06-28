@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- CSIROMarineValues
- A QGIS plugin
- MARVIN - CSIRO Marine values tool. Management of marine value information
- ---------------------------------------------------------------------------
-        begin                : 2016-12-25
-        git sha              : $Format:%H$
-        copyright            : (C) 2017 by CSIRO Oceans and Atmosphere
-        author               : Chris Moeseneder
-        email                : chris.moeseneder@csiro.au
- ***************************************************************************/
+*    CSIRO Marine Values                                                   *
+*    marine_values.py                                                      *
+*    A QGIS plugin                                                         *
+*    MARVIN - CSIRO Marine values tool. Management of marine value         *
+*             information.                                                 *
+* ------------------------------------------------------------------------ *
+*        begin                : 2016-12-25                                 *
+*        git sha              : $Format:%H$                                *
+*        copyright            : (C) 2017 by CSIRO Oceans and Atmosphere    *
+*        author               : Chris Moeseneder                           *
+*        email                : chris.moeseneder@csiro.au                  *
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
  *   Help file for this app is in the plugin directory                     *
- *   and called "marine values help.txt"                                   *                                  
+ *   called "marine values help.txt"                                       * 
  *                                                                         *
  *   Environment Versions                                                  *
  *   ------------------------------------                                  *
@@ -27,16 +29,14 @@
  *   Plugins required:                                                     *
  *   ------------------------------------                                  *
  *                                                                         *
- *   Set up:                                                               *
+ *   QGIS:                                                                 *
  *   ------------------------------------                                  *
  *   In Options / Map Tools:                                               *
  *   Preferred distance units: Kilometers                                  *
  *   Preferred area units: Square kilometers                               *
  *   Preferred angle units: Degrees                                        *
- *                                                                         *
- *   In Options / CRS:                                                     *
- *   CRS for new layers: Use a default CRS: Selected CRS                   *
- *                                          (EPSG:4326, WGS 84)            *
+ *   Settings / Options / CRS / CRS for new layers: Use a default CRS:     *
+ *                              Selected CRS (EPSG:4326, WGS 84)           *
  ***************************************************************************/
 
 /***************************************************************************
@@ -48,19 +48,17 @@
  *   which should be write-protected so user can not make changes.         *
  *   -------------------------------------------------------------------   *
  *   Shapefile naming convention:                                          *
- *      'Marine Values'         - A layer for which values and value       *
+ *      'Marine Values...'      - A layer for which values and value       *
  *                                metric scores are processed.             *
- *      'MarineValues'          - A WFS layer for which values and value   *
+ *      'MarineValues...'       - A WFS layer for which values and value   *
  *                                 metric scores are processed. Entire     *
  *                                 name may not contain any spaces         *
- *      ending in ...LLG       - Processing as per LLGs                    *
- *      ending in ...Districts - Processing as per Disctrics               *
- *      ending in ...Features  - Processing as per countable features      *
+ *      ending in ... .LLG       - Processing as per LLGs                  *
+ *      ending in ... .Districts - Processing as per Disctrics             *
+ *      ending in ... .Features  - Processing as per countable features    *
  *                               without scale                             *
  *                                                                         *
- *                                                                         *
  ***************************************************************************/
-
 """
 import resources
 import os.path
@@ -89,14 +87,21 @@ from os.path import expanduser
 
 from win32api import GetSystemMetrics
 
-project = QgsProject.instance()
 
 class CSIROMarineValues:
     """QGIS Plugin Implementation."""
 
-
     def __init__(self, iface):
         #Constructor.
+
+
+#CHECKTIME
+#        self.dlg.checktime = []
+#        chktime_time = datetime.datetime.now()
+#        chktime_step = 1
+#        chk = [chktime_time, chktime_step]
+#        self.checktime.dlg.append(chk)
+        self.project = QgsProject.instance()
 
         # Have we filled the list widget with the shps yet?
         self.filled = False
@@ -111,7 +116,6 @@ class CSIROMarineValues:
         #  'prod'- production. End command ends QGIS.
         self.opmode = 'dev'
         self.geometryTypes = defaultdict(lambda: 'unknown', {QGis.Polygon: 'polygon', QGis.Point: 'point'})
-
 
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
@@ -134,6 +138,11 @@ class CSIROMarineValues:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'CSIROMarineValues')
         self.toolbar.setObjectName(u'CSIROMarineValues')
+
+#        chktime_time = datetime.datetime.now()
+#        chktime_step = 20
+#        chk = [chktime_time, chktime_step]
+#        self.checktime.dlg.append(chk)
 
        
 
@@ -203,13 +212,11 @@ class CSIROMarineValues:
         :rtype: QAction
         """
 
-        # Create the dialog (after translation) and keep reference
-        self.dlg = CSIROMarineValuesDialog()
-
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
         action.setEnabled(enabled_flag)
+        action.triggered.connect(self.closeEvent)
 
         if status_tip is not None:
             action.setStatusTip(status_tip)
@@ -222,16 +229,19 @@ class CSIROMarineValues:
 
         if add_to_menu:
             self.iface.addPluginToMenu(
-                self.menu,
-                action)
+                self.menu, action)
 
         self.actions.append(action)
 
         return action
 
     def initGui(self):
-        """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # Create the dialog (after translation) and keep reference
+        self.dlg = CSIROMarineValuesDialog()
+
+
+        """Create the menu entries and toolbar icons inside the QGIS GUI."""
         icon_path = ':/plugins/CSIROMarineValues/mv_icon32x32.png'
         self.add_action(
             icon_path,
@@ -239,6 +249,7 @@ class CSIROMarineValues:
             callback=self.run,
             parent=self.iface.mainWindow())
 
+        # Define Set signal only in iniGui
         # connect to signal renderComplete which is emitted when canvas
         # rendering is done
         QtCore.QObject.connect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
@@ -276,6 +287,44 @@ class CSIROMarineValues:
         #rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\export.png");
         #self.dlg.pushButtonOrigExtent.setIcon(QtGui.QIcon(rMyIcon))
 
+        # Set up tableView table ****************************
+        #self.dlg.tableView.setModel(model)
+        self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.dlg.tableView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        xmod = Model()
+        self.dlg.tableView.setModel(xmod)
+
+        header = self.dlg.tableView.horizontalHeader()
+        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
+        header.setResizeMode(QtGui.QHeaderView.Fixed)
+        self.dlg.tableView.setColumnWidth(0,230)
+        self.dlg.tableView.setColumnWidth(1,80)
+        self.dlg.tableView.setColumnWidth(2,0)
+        self.dlg.tableView.setColumnWidth(3,0)
+
+        #self.dlg.tableView.model().clicked.connect(self.tableViewselectionChanged)
+
+        self.dlg.tableView.verticalHeader().setMovable(True)
+        self.dlg.tableView.verticalHeader().setDragEnabled(True)
+        self.dlg.tableView.verticalHeader().setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+
+        QtCore.QObject.connect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
+
+        #self.dlg.tableView.setDropIndicatorShown(True)
+        #self.dlg.tableView.setAcceptDrops(True)
+        #self.dlg.tableView.setDragEnabled(True)
+        #self.dlg.tableView.dropOn = lambda event: pprint(event)
+        #self.dlg.tableView.droppingOnItself = lambda event: pprint(event)
+
+        #self.dlg.tableView.model().selectionChanged = lambda x, y: pprint([self, x, y])
+        #self.dlg.tableView.stateChanged = lambda x, y: pprint([self, x, y])
+        #self.dlg.tableView.itemChanged.connect(self.s_changed)
+        self.dlg.tableView.clicked.connect(self.tableViewClicked)
+
+        #self.dlg.tableView.mousePressEvent = lambda event: pprint(event)
+        #self.dlg.tableView.dropEvent = lambda event: pprint(event)
+        #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
+
 
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         #QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
@@ -283,6 +332,17 @@ class CSIROMarineValues:
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
 
+        self.dlg.checktime = []
+        chktime_time = "***"
+        chktime_step = "***"
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
+
+
+        chktime_time = datetime.datetime.now()
+        chktime_step = 30
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
 
         #self.iface.mapCanvas().xyCoordinates.connect(showCoordinates)
         #myMapTool.canvasClicked.connect(manageClick)
@@ -290,6 +350,12 @@ class CSIROMarineValues:
 
     def run(self):
 
+        # Should not connect signals in the run function
+
+        chktime_time = datetime.datetime.now()
+        chktime_step = 50
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
         #Check if there is a default path in QGIS settings 
         # (are stored persistently). If not ask
         # user to choose a directory and write that to settings.
@@ -350,44 +416,6 @@ class CSIROMarineValues:
         self.dlg.tableWidgetDetailCounts.setColumnWidth(1,80)
 
 
-        # Set up tableView table ****************************
-        #self.dlg.tableView.setModel(model)
-        self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.dlg.tableView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        xmod = Model()
-        self.dlg.tableView.setModel(xmod)
-
-        header = self.dlg.tableView.horizontalHeader()
-        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
-        header.setResizeMode(QtGui.QHeaderView.Fixed)
-        self.dlg.tableView.setColumnWidth(0,230)
-        self.dlg.tableView.setColumnWidth(1,80)
-        self.dlg.tableView.setColumnWidth(2,0)
-        self.dlg.tableView.setColumnWidth(3,0)
-
-        #self.dlg.tableView.model().clicked.connect(self.tableViewselectionChanged)
-
-        self.dlg.tableView.verticalHeader().setMovable(True)
-        self.dlg.tableView.verticalHeader().setDragEnabled(True)
-        self.dlg.tableView.verticalHeader().setDragDropMode(QtGui.QAbstractItemView.InternalMove)
-
-        QtCore.QObject.connect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
-
-        #self.dlg.tableView.setDropIndicatorShown(True)
-        #self.dlg.tableView.setAcceptDrops(True)
-        #self.dlg.tableView.setDragEnabled(True)
-        #self.dlg.tableView.dropOn = lambda event: pprint(event)
-        #self.dlg.tableView.droppingOnItself = lambda event: pprint(event)
-
-        #self.dlg.tableView.model().selectionChanged = lambda x, y: pprint([self, x, y])
-        #self.dlg.tableView.stateChanged = lambda x, y: pprint([self, x, y])
-        #self.dlg.tableView.itemChanged.connect(self.s_changed)
-        self.dlg.tableView.clicked.connect(self.tableViewClicked)
-
-        #self.dlg.tableView.mousePressEvent = lambda event: pprint(event)
-        #self.dlg.tableView.dropEvent = lambda event: pprint(event)
-        #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
-
 #Load main project
         self.project_load()
 
@@ -409,12 +437,22 @@ class CSIROMarineValues:
         self.dlg.list_of_values = []
         self.readSQLiteDB()
 
+        chktime_time = datetime.datetime.now()
+        chktime_step = 70
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
+
         #Set MARVIN's position and size
         px = self.dlg.geometry().x = 10
         py = self.dlg.geometry().y = 30
         dw = self.dlg.width = 350
         #dh = self.dlg.height = 960
         sh = GetSystemMetrics(1) #Determine screen height
+
+        chktime_time = datetime.datetime.now()
+        chktime_step = 75
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
 
         if sh > 780:
             twh = sh - self.dlg.tableWidgetDetailCounts.y() - 80
@@ -426,13 +464,33 @@ class CSIROMarineValues:
             dh = 810
         self.dlg.setGeometry( px, py, dw, dh )
 
+        chktime_time = datetime.datetime.now()
+        chktime_step = 80
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
+
         #Set mouse pointer in case we crashed and pointer was still in rubberband mode
         #Does not work
         self.iface.actionPan().trigger()
         #self.iface.mapCanvas.actionZoomIn()
 
+        chktime_time = datetime.datetime.now()
+        chktime_step = 90
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
+
         ## show the dialog
         self.dlg.show()
+
+        chktime_time = datetime.datetime.now()
+        chktime_step = 100
+        chk = [chktime_time, chktime_step]
+        self.dlg.checktime.append(chk)
+
+        for tt in self.dlg.checktime:
+            print tt
+
+        self.OrigExtent()
 
         # Run the dialog event loop
         result = self.dlg.exec_()
@@ -446,16 +504,35 @@ class CSIROMarineValues:
 
 
     def unload(self):
-        self.treeLayerIdx = 0
-        QtCore.QObject.disconnect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
-        print "MARVIN unloading..."
+        pass
         """Removes the plugin menu item and icon from QGIS GUI."""
-        for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&CSIRO Marine Values'), action)
-            self.iface.removeToolBarIcon(action)
+#        for action in self.actions:
+#            self.iface.removePluginMenu(
+#                self.tr(u'&CSIRO Marine Values'), action)
+#            self.iface.removeToolBarIcon(action)
         # remove the toolbar
+#        del self.toolbar
+
+    def endButtonClicked(self):
+        self.xclosing()
+
+    def closeEvent(self, event):
+        self.xclosing()
+
+    def xclosing(self):
+        print "MARVIN unloading..."
+        self.treeLayerIdx = 0
+        """Removes the Marine Values plugin icon from QGIS GUI."""
+        for action in self.actions:
+            self.iface.removeToolBarIcon(action)
         del self.toolbar
+        QtCore.QObject.disconnect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
+        QtCore.QObject.disconnect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
+        QtCore.QObject.disconnect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
+        self._want_to_close = True
+        self.dlg.close()
+#        self = None
+
 
     def pushButtonClicked(self):
         items = self.dlg.listWidget.selectedItems()
@@ -475,23 +552,22 @@ class CSIROMarineValues:
             pass
 
     def project_load(self):
-        project = QgsProject.instance()
+#        project = QgsProject.instance()
         qset = QSettings()
         defpath = qset.value("marine_values/default_path", "")
         
-        project = QgsProject.instance()
-        project.fileName()
-        filen = os.path.splitext(ntpath.basename(project.fileName()))[0]
+#        project = QgsProject.instance()
+        self.project.fileName()
+        filen = os.path.splitext(ntpath.basename(self.project.fileName()))[0]
 
         if filen != "marine_values":
 
-            if not project.read(QFileInfo(defpath + '\marine_values.qgs')):
+            if not self.project.read(QFileInfo(defpath + '\marine_values.qgs')):
                 self.dlg.error.setText("Could not load marine_values.qgs")
-            elif len(project.layerTreeRoot().findLayers()) < 1:
+            elif len(self.project.layerTreeRoot().findLayers()) < 1:
                 self.dlg.error.setText("No layers found")
             else:
                 pass
-
 
 #TESTTEST WFS
         #Note that the name of a WFS layer may not contain any spaces or it will fail to load
@@ -505,7 +581,7 @@ class CSIROMarineValues:
         self.treeLayerIdx = 0
         position = {}
         self.layerInfo = {}
-        for treeLayer in project.layerTreeRoot().findLayers():
+        for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             for i in range(self.dlg.tableView.model().rowCount()):
 
@@ -562,26 +638,10 @@ class CSIROMarineValues:
     def tableViewselectionChanged(self):
         getLayerInfo()        
 
-    def endButtonClicked(self):
-        self.dlg.close()
-        pass
-        #self.unload()
-        #Should close project if we close the dialog but QGIS does not have close project method
-        #self.unload()
-
-
-#    def objectInfoClicked(self, index):
-#        row = index.row()
-#        model = self.dlg.objectInfo.model()
-
-
     def tableViewClicked(self, index):
         if QgsMapLayerRegistry.instance().mapLayers():
             row = index.row()
             model = self.dlg.tableView.model()
-
-
-
 
             valx = model.item(row, 0)
             val = valx.text()
@@ -653,7 +713,7 @@ class CSIROMarineValues:
                             return
                 
                 #Checkbox has not been clicked. Process as set layer active   
-                for treeLayer in project.layerTreeRoot().findLayers():
+                for treeLayer in self.project.layerTreeRoot().findLayers():
                     pass
                     #layer = treeLayer.layer()
                     #lnam = layer.name()
@@ -670,6 +730,13 @@ class CSIROMarineValues:
                     #        self.cur_scale_id = "Features"
 
                 layer = self.iface.activeLayer()
+                lna = layer.name()
+                if lna.endswith('LLG'):
+                    self.cur_scale_id = "LLG"
+                if lna.endswith('Districts'):
+                    self.cur_scale_id = "Districts"
+                if lna.endswith('Features'):
+                    self.cur_scale_id = "Features"
 
                 if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
                     if layer:
@@ -764,9 +831,11 @@ class CSIROMarineValues:
                 self.dlg.error.setText("No map layers.")
 
     def saveProjectClicked(self):
-        project = QgsProject.instance()
-        project.write()
-        self.dlg.error.setText("Project saved")
+        #project = QgsProject.instance()
+        if self.project.write():
+            self.dlg.error.setText("Project saved")
+        else:
+            self.dlg.error.setText("Project not saved. File may be writeprotected.")
 
     def renderTest(self, painter):
         # use painter for drawing to map canvas
@@ -798,7 +867,7 @@ class CSIROMarineValues:
 
         #Move layer from old to new position in layertree
 
-        for treeLayer in project.layerTreeRoot().findLayers():
+        for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             idd = layer.Id()
             print idd
@@ -1001,7 +1070,7 @@ class CSIROMarineValues:
                                 #if geom_rb.intersects(geom_feat):
                                 overlay_layer = QgsVectorLayer()
 
-                                for treeLayer in project.layerTreeRoot().findLayers():                
+                                for treeLayer in self.project.layerTreeRoot().findLayers():                
                                     layer_t6 = treeLayer.layer()
 
                                     if layer_t6.name() == layname:
@@ -1259,7 +1328,7 @@ class CSIROMarineValues:
                                 else:
                                     pass
 
-                                for treeLayer in project.layerTreeRoot().findLayers():                
+                                for treeLayer in self.project.layerTreeRoot().findLayers():                
                                     layer_f2 = treeLayer.layer()
                                     if layer_f2.name() == "Clipped":
                                         QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
@@ -1268,7 +1337,7 @@ class CSIROMarineValues:
             self.myMapTool.deleteLater()
             self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
-            for treeLayer in project.layerTreeRoot().findLayers():                
+            for treeLayer in self.project.layerTreeRoot().findLayers():                
                 layer_f2 = treeLayer.layer()
                 if layer_f2.name() == "rubber_band":
                     QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
@@ -1319,6 +1388,9 @@ class CSIROMarineValues:
 
 
     def pushButtonOrigExtentClicked(self):
+        self.OrigExtent()
+
+    def OrigExtent(self):
         mapExtentRect = QgsRectangle(147.9,-3.4,152.8,-6.6)
         mc = self.iface.mapCanvas() 
         mc.setExtent(mapExtentRect)
@@ -1326,6 +1398,12 @@ class CSIROMarineValues:
 #        self.dlg.list_of_values = []
 #        line = np.genfromtxt('temp.txt', usecols=3, dtype=[('floatname','float')], skip_header=1)
 #        list_of_values.append(line)
+
+
+
+
+# *********************** Other Classes **********************************************
+# ************************************************************************************
 
 
 class ModelObjInfo(QStandardItemModel):

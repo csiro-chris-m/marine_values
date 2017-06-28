@@ -39,13 +39,12 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-
+        self._want_to_close = False
         pal=QtGui.QPalette()
         role = QtGui.QPalette.Background
         pal.setColor(role, QtGui.QColor(214, 211, 171))
         self.setPalette(pal)        
 
-        #Doesn't work. Need to make resources
         self.setWindowIcon(QtGui.QIcon(':/plugins/CSIROMarineValues/mv_icon32x32.png'))
 
         #Disable action of the close button 'x'. 
@@ -53,8 +52,7 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
 
         #print self.defaultPath.toPlainText()
 
-    #def closeEvent(self, evnt):
-    #    if self._want_to_close:
-    #        super(MyDialog, self).closeEvent(evnt)
-    #    else:
-    #        evnt.ignore()
+    def closeEvent(self, evnt):
+        print "*"
+        super(CSIROMarineValuesDialog, self).closeEvent(evnt)
+
