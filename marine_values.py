@@ -44,7 +44,7 @@
  *   Configuration of the shapefiles and project                           *
  *   Shapefiles and project must be in CRS "WGS84 (EPSG:4326)"             *                                  
  *   -------------------------------------------------------------------   *
- *   Default project shapefile is '/gis/Marine Values New Britain LLG.shp' *
+ *   Default project is '/gis/marine_values.qgs'                           *
  *   which should be write-protected so user can not make changes.         *
  *   -------------------------------------------------------------------   *
  *   Shapefile naming convention:                                          *
@@ -408,9 +408,16 @@ class CSIROMarineValues:
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
         self.dlg.tableWidgetDetail.setColumnWidth(1,120)
-        self.dlg.tableWidgetDetail.setColumnWidth(2,120)
-        self.dlg.tableWidgetDetail.setColumnWidth(3,120)
-        self.dlg.tableWidgetDetail.setColumnWidth(4,120)
+        self.dlg.tableWidgetDetail.setColumnWidth(2,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(3,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(4,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(5,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(6,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(7,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(8,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(9,80)
+        self.dlg.tableWidgetDetail.setColumnWidth(10,80)
+
 
         self.dlg.tableWidgetDetailCounts.setColumnWidth(0,230)
         self.dlg.tableWidgetDetailCounts.setColumnWidth(1,80)
@@ -430,11 +437,10 @@ class CSIROMarineValues:
 
         #self.dlg.objectInfo.selectRow(0)
 
-        self.dlg.radioButtonWellbeing.setChecked(True)
-
         #Read database with marine value details and keep in memory for quick access.
         #Read only required fields
         self.dlg.list_of_values = []
+        self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
         chktime_time = datetime.datetime.now()
@@ -645,7 +651,7 @@ class CSIROMarineValues:
 
             valx = model.item(row, 0)
             val = valx.text()
-            if val != "Unloaded layers:":
+            if val != "Unloaded but available layers:":
                 val_wo_ext = os.path.splitext(val)[0]
 
                 qset = QSettings()
@@ -758,20 +764,6 @@ class CSIROMarineValues:
                         attb = []
 
                         imporval = None #Do not declare a type
-                        col_choice = None
-                        headi = ""
-                        if self.dlg.radioButtonWellbeing.isChecked():
-                            headi = "Human wellbeing"
-                            col_choice = idx_wellbeing
-                            col_choicex = "well_being"
-                        if self.dlg.radioButtonSecurity.isChecked():
-                            headi = "Food security"
-                            col_choice = idx_foodsec
-                            col_choicex = "food_secur"
-                        if self.dlg.radioButtonIncome.isChecked():
-                            headi = "Income"
-                            col_choice = idx_income
-                            col_choicex = "income"
 
                         for feature in iter:
 
@@ -835,7 +827,7 @@ class CSIROMarineValues:
         if self.project.write():
             self.dlg.error.setText("Project saved")
         else:
-            self.dlg.error.setText("Project not saved. File may be writeprotected.")
+            self.dlg.error.setText("Project not saved. File may be write-protected.")
 
     def renderTest(self, painter):
         # use painter for drawing to map canvas
@@ -1125,6 +1117,12 @@ class CSIROMarineValues:
                                         shapar = 0.0
                                         csomt = 0.0
                                         csomtot = 0.0
+                                        cs_wellb = 0.0
+                                        cs_wellbs  = 0.0
+                                        cs_inco = 0.0
+                                        cs_incos = 0.0
+                                        cs_foosec = 0.0
+                                        cs_foosecs = 0.0
                                         spat_feat_qry = ""
                                         llg_qry = ''
                                         res_geom = f.geometry()
@@ -1141,51 +1139,95 @@ class CSIROMarineValues:
                                                     arx = str(ar[0])
                                                     rub = ar[0] #rub is used further down where each sub area is retrieved from list
                                                     shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
-                                                    
-                                                    for cfs in self.dlg.list_of_values:
-                                                        if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
-                                                            if cfs[0] == attry[idx_spatfeat]:
-                                                                if cfs[1] == attry[idx_llg_dist]:
-                                                                    doInsert = False
-                                                                    if self.dlg.radioButtonWellbeing.isChecked():
-                                                                        if cfs[6] == "Importance for human wellbeing":
-                                                                            doInsert = True
-                                                                    if self.dlg.radioButtonSecurity.isChecked():
-                                                                        if cfs[6] == "Importance for food security":
-                                                                            doInsert = True
-                                                                    if self.dlg.radioButtonIncome.isChecked():
-                                                                        if cfs[6] == "Importance for income":
-                                                                            doInsert = True
-                                                                    if doInsert:
-                                                                        csomt = float(cfs[4])
-                                                                        csomtot = csomtot + csomt
+
+#                                                    for cfs in self.dlg.list_of_values:
+#                                                        if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
+#                                                            if cfs[0] == attry[idx_spatfeat]:
+#                                                                if cfs[1] == attry[idx_llg_dist]:
+#                                                                    doInsert = False
+#                                                                    if self.dlg.radioButtonWellbeing.isChecked():
+#                                                                        if cfs[6] == "Importance for human wellbeing":
+#                                                                            doInsert = True
+#                                                                    if self.dlg.radioButtonSecurity.isChecked():
+#                                                                        if cfs[6] == "Importance for food security":
+#                                                                            doInsert = True
+#                                                                    if self.dlg.radioButtonIncome.isChecked():
+#                                                                        if cfs[6] == "Importance for income":
+#                                                                            doInsert = True
+#                                                                    if doInsert:
+#                                                                        csomt = float(cfs[4])
+#                                                                        csomtot = csomtot + csomt
 
 
 
-            #                                    dis_val = ""
-            #                                    if self.dlg.radioButtonWellbeing.isChecked():
-            #                                        if attry[idx_wellbeing]:
-            #                                            dis_val = attry[idx_wellbeing]
 
-            #                                    if self.dlg.radioButtonSecurity.isChecked():
-            #                                        if attry[idx_foodsec]:
-            #                                            dis_val = attry[idx_foodsec]
 
-            #                                    if self.dlg.radioButtonIncome.isChecked():
-            #                                        if attry[idx_income]:
-            #                                            dis_val = attry[idx_income]
+
+
+                                                    #self.dlg.area_value_matrix:
+                                                    # 0 - value_name
+                                                    # 1 - spatial_feature_name
+                                                    # 2 - scale_name
+                                                    # 3 - scale_id
+                                                    # 4 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
+                                                    # 5 - income (= value_metric_score of records where value_metric_description = "Importance for income")
+                                                    # 6 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
+
+                                                    for cgs in self.dlg.area_value_matrix:
+                                                        if (cgs[3] == "llg" and self.cur_scale_id == "LLG") or (cgs[3] == "dist" and self.cur_scale_id == "Districts"):
+                                                            #Looking for all that are in the same spatial_feature category
+                                                            if cgs[1] == attry[idx_spatfeat]:
+                                                                #Looking for all that are in the same LLG/District
+                                                                if cgs[2] == attry[idx_llg_dist]:
+                                                                    cs_wellb = float(cgs[4])
+                                                                    cs_wellbs = cs_wellbs + cs_wellb
+                                                                    cs_inco = float(cgs[5])
+                                                                    cs_incos = cs_incos + cs_inco
+                                                                    cs_foosec = float(cgs[6])
+                                                                    cs_foosecs = cs_foosecs + cs_foosec
+
+
 
                                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                                 self.dlg.tableWidgetDetail.insertRow(rowPosition)
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg_dist]))
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
 
-                                                if csomtot:
-                                                    # Round to four digits and display with four digits
-                                                    csomtot = "{0:.4f}".format(round(float(csomtot),4))
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
-                                                else:
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+#                                                if csomtot:
+#                                                    # Round to four digits and display with four digits
+#                                                    csomtot = "{0:.4f}".format(round(float(csomtot),4))
+#                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
+#                                                else:
+#                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
+
+                                                try:
+                                                    rwell = float(cs_wellbs)
+                                                    rwell = "{0:.4f}".format(round(rwell,4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(rwell))
+                                                except (TypeError, UnboundLocalError):
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Error"))
+
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
+
+                                                try:
+                                                    rinco = float(cs_incos)
+                                                    rinco = "{0:.4f}".format(round(rinco,4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(rinco))
+                                                except (TypeError, UnboundLocalError):
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem("Error"))
+
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(""))
+
+                                                try:
+                                                    rfoos = float(cs_foosecs)
+                                                    rfoos = "{0:.4f}".format(round(rfoos,4))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(rfoos))
+                                                except (TypeError, UnboundLocalError):
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem("Error"))
+
+
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem(""))
+
 
 #                                                try:
 #                                                 arx
@@ -1194,71 +1236,143 @@ class CSIROMarineValues:
                                                     # Round to four digits and display with four digits
                                                 try:
                                                     arx = "{0:.4f}".format(round(float(arx),4))
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(arx))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 8, QtGui.QTableWidgetItem(arx))
                                                 except (TypeError, UnboundLocalError):
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem("Error"))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 8, QtGui.QTableWidgetItem("Error"))
                                                     self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
 
                                                 #shape area
                                                 if shapar:
                                                     # Round to four digits and display with four digits
                                                     shapar = "{0:.4f}".format(round(float(shapar),4))
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(shapar))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 9, QtGui.QTableWidgetItem(shapar))
                                                 else:
-                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(""))
+                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 9, QtGui.QTableWidgetItem(""))
 
-
-
-                                                for col in range(0,5):
+                                                for col in range(0,10):
                                                     self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
 
-                                        #self.dlg.list_of_values
-                                        #[0]: 17 - spatial_feature_name
-                                        #[1]:  8 - scale_name
-                                        #[2]:  7 - scale_id
-                                        #[3]:  1 - value_name
-                                        #[4]: 12 - value_metric_score
-                                        #[5]:  4 - value_type
-                                        #[6]: 10 - value_metric_description
-                                        #[7]:      spatial_feature_id
 
 
-                                            for cf in self.dlg.list_of_values:
+# This section is a remnant from when user had to select which value metric description (income, well-being, food sec.) they wanted to
+# retrieve via radio button. Three runs were required for the full set of values. After this commented block is the new logic, which
+# retrieves and displays all values in one pass
 
-                                                if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
+#                                            #self.dlg.list_of_values
+#                                            #[0]: 17 - spatial_feature_name
+#                                            #[1]:  8 - scale_name
+#                                            #[2]:  7 - scale_id
+#                                            #[3]:  1 - value_name
+#                                            #[4]: 12 - value_metric_score - the number
+#                                            #[5]:  4 - value_type (same as next one)
+#                                            #[6]: 10 - value_metric_description - area: well-being, income, food sec.
+#                                            #[7]:      spatial_feature_id - not relevant for area calcs
+
+#                                            for cf in self.dlg.list_of_values:
+
+#                                                if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
+#                                                    #Looking for all that are in the same spatial_feature category
+#                                                    if cf[0] == attry[idx_spatfeat]:
+#                                                        #Looking for all that are in the same LLG/District
+#                                                        if cf[1] == attry[idx_llg_dist]:
+
+#                                                            doInsert = False
+#                                                            if self.dlg.radioButtonWellbeing.isChecked():
+#                                                                if cf[6] == "Importance for human wellbeing":
+#                                                                    doInsert = True
+#                                                            if self.dlg.radioButtonSecurity.isChecked():
+#                                                                if cf[6] == "Importance for food security":
+#                                                                    doInsert = True
+#                                                            if self.dlg.radioButtonIncome.isChecked():
+#                                                                if cf[6] == "Importance for income":
+#                                                                    doInsert = True
+#                                                            if doInsert:
+#                                                                try:
+#                                                                    csom = float(cf[4]) * rub / float(shapar)
+#                                                                    csom = "{0:.4f}".format(round(csom,4))
+#                                                                except TypeError:
+#                                                                    csom = "Error"
+#                                                                    self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
+
+#                                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
+#                                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
+#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
+#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
+#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
+#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
+#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
+#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
+#                                                                self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+#                                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+
+
+
+
+                                            #self.dlg.area_value_matrix:
+                                            # 0 - value_name
+                                            # 1 - spatial_feature_name
+                                            # 2 - scale_name
+                                            # 3 - scale_id
+                                            # 4 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
+                                            # 5 - income (= value_metric_score of records where value_metric_description = "Importance for income")
+                                            # 6 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
+
+                                            for cg in self.dlg.area_value_matrix:
+                                                if (cg[3] == "llg" and self.cur_scale_id == "LLG") or (cg[3] == "dist" and self.cur_scale_id == "Districts"):
                                                     #Looking for all that are in the same spatial_feature category
-                                                    if cf[0] == attry[idx_spatfeat]:
+                                                    if cg[1] == attry[idx_spatfeat]:
                                                         #Looking for all that are in the same LLG/District
-                                                        if cf[1] == attry[idx_llg_dist]:
+                                                        if cg[2] == attry[idx_llg_dist]:
 
-                                                            doInsert = False
-                                                            if self.dlg.radioButtonWellbeing.isChecked():
-                                                                if cf[6] == "Importance for human wellbeing":
-                                                                    doInsert = True
-                                                            if self.dlg.radioButtonSecurity.isChecked():
-                                                                if cf[6] == "Importance for food security":
-                                                                    doInsert = True
-                                                            if self.dlg.radioButtonIncome.isChecked():
-                                                                if cf[6] == "Importance for income":
-                                                                    doInsert = True
-                                                            if doInsert:
-                                                                try:
-                                                                    csom = float(cf[4]) * rub / float(shapar)
-                                                                    csom = "{0:.4f}".format(round(csom,4))
-                                                                except TypeError:
-                                                                    csom = "Error"
-                                                                    self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
+                                                            try:
+                                                                cwellb = float(cg[4]) * rub / float(shapar)
+                                                                cwellb = "{0:.4f}".format(round(cwellb,4))
+                                                            except TypeError:
+                                                                cwellb = "Error"
+                                                                self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
 
-                                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
-                                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
-                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
-                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
-                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
-                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
-                                                                self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
-                                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+                                                            try:
+                                                                cinc = float(cg[5]) * rub / float(shapar)
+                                                                cinc = "{0:.4f}".format(round(cinc,4))
+                                                            except TypeError:
+                                                                cinc = "Error"
+                                                                self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
+
+                                                            try:
+                                                                cfsec = float(cg[6]) * rub / float(shapar)
+                                                                cfsec = "{0:.4f}".format(round(cfsec,4))
+                                                            except TypeError:
+                                                                cfsec = "Error"
+                                                                self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
+
+                                                            rowPosition = self.dlg.tableWidgetDetail.rowCount()
+                                                            self.dlg.tableWidgetDetail.insertRow(rowPosition)
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cg[0]))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cg[4]))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cwellb))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cg[5]))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cinc))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cg[6]))
+                                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem(cfsec))
+                                                            self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
+                                                            self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         #****COUNTS************************************************************************
 
@@ -1353,8 +1467,6 @@ class CSIROMarineValues:
         db.open()
         # query the table
         query = db.exec_("select * from marine_values_all")
-
-        # Play with results (not efficient, just for demo)
         while query.next():
             record = query.record()
             #Getting these fields:
@@ -1379,12 +1491,31 @@ class CSIROMarineValues:
             listv = [str(record.value(idx_spatfeatnam)), str(record.value(idx_scalenam)), str(record.value(idx_scaleid)), str(record.value(idx_valnam)), str(record.value(idx_valmetscore)), str(record.value(idx_valtype)), str(record.value(idx_valmetdesc)), str(record.value(idx_spatial_feature_id))]
             self.dlg.list_of_values.append(listv)
 
-
 #            for index in range(record.count()):
 #                lst = [1,2,3,4,5,6]
 #                if index in lst: #To read only second field. Change to read other fields
 #                    values.append(str(record.value(index)))
 #            print ';'.join(values)        
+
+        query2 = db.exec_("select * from marine_values_value_matrix")
+        while query2.next():
+            recorda = query2.record()
+            # 1 - value_name
+            # 2 - spatial_feature_name
+            # 3 - scale_name
+            # 4 - scale_id
+            # 5 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
+            # 6 - income (= value_metric_score of records where value_metric_description = "Importance for income")
+            # 7 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
+            idy_valnam = query2.record().indexOf('value_name')
+            idy_spatfeatnam = query2.record().indexOf('spatial_feature_name')
+            idy_scalenam = query2.record().indexOf('scale_name')
+            idy_scaleid = query2.record().indexOf('scale_id')
+            idy_wellbeing = query2.record().indexOf('wellbeing')
+            idy_income = query2.record().indexOf('income')
+            idy_foodsec = query2.record().indexOf('food_security')
+            listw = [str(recorda.value(idy_valnam)), str(recorda.value(idy_spatfeatnam)), str(recorda.value(idy_scalenam)), str(recorda.value(idy_scaleid)), str(recorda.value(idy_wellbeing)), str(recorda.value(idy_income)), str(recorda.value(idy_foodsec))]
+            self.dlg.area_value_matrix.append(listw)
 
 
     def pushButtonOrigExtentClicked(self):
@@ -1463,7 +1594,7 @@ class Model(QStandardItemModel):
                     qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
                     self.appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
                 #Add row which is the divider between loaded and unloaded layers
-                self.appendRow([QStandardItem('Unloaded layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
+                self.appendRow([QStandardItem('Unloaded but available layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
 
 
         #self.d = QStandardItem("asd")

@@ -149,58 +149,6 @@
     <string>Select area</string>
    </property>
   </widget>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>180</y>
-     <width>111</width>
-     <height>91</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Importance for...</string>
-   </property>
-   <widget class="QRadioButton" name="radioButtonWellbeing">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>human wellbeing</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButtonSecurity">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>food security</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButtonIncome">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>60</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>income</string>
-    </property>
-   </widget>
-  </widget>
   <widget class="QTableWidget" name="tableWidgetDetail">
    <property name="geometry">
     <rect>
@@ -216,8 +164,14 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>331</width>
+     <height>0</height>
+    </size>
+   </property>
    <property name="columnCount">
-    <number>12</number>
+    <number>10</number>
    </property>
    <attribute name="horizontalHeaderDefaultSectionSize">
     <number>100</number>
@@ -235,31 +189,49 @@
    </column>
    <column>
     <property name="text">
-     <string>Spatial feature / Value</string>
+     <string>Spatial feature/Value</string>
     </property>
    </column>
    <column>
     <property name="text">
-     <string>Value metric score</string>
+     <string>Wellbeing</string>
     </property>
    </column>
    <column>
     <property name="text">
-     <string>Selected km2 / Calc</string>
+     <string>Wellbeing km2</string>
     </property>
    </column>
    <column>
     <property name="text">
-     <string>Area km2</string>
+     <string>Income</string>
     </property>
    </column>
-   <column/>
-   <column/>
-   <column/>
-   <column/>
-   <column/>
-   <column/>
-   <column/>
+   <column>
+    <property name="text">
+     <string>Income km2</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Food sec.</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Food sec. km2</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Area sel. km2</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Area total km2</string>
+    </property>
+   </column>
   </widget>
   <widget class="QPushButton" name="pushButtonPan">
    <property name="geometry">
