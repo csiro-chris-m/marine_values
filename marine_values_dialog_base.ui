@@ -136,17 +136,17 @@
   <widget class="QPushButton" name="rubberband">
    <property name="geometry">
     <rect>
-     <x>150</x>
-     <y>215</y>
-     <width>80</width>
+     <x>10</x>
+     <y>190</y>
+     <width>121</width>
      <height>23</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>Select region of interest</string>
+    <string>Select region of interest. Left click for new point. Right click to end.</string>
    </property>
    <property name="text">
-    <string>Select area</string>
+    <string>Select with mouse</string>
    </property>
   </widget>
   <widget class="QTableWidget" name="tableWidgetDetail">
@@ -383,6 +383,48 @@
    </property>
    <property name="text">
     <string>Zoom</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButtonSaveSel">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>215</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Save last created area of interest to database.</string>
+   </property>
+   <property name="text">
+    <string>Save last selection</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>173</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Area of interest</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonOpenSaved">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>240</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open saved area</string>
    </property>
   </widget>
  </widget>
