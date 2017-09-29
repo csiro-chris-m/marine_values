@@ -44,8 +44,7 @@
  *   Configuration of the shapefiles and project                           *
  *   Shapefiles and project must be in CRS "WGS84 (EPSG:4326)"             *                                  
  *   -------------------------------------------------------------------   *
- *   Default project is '/gis/marine_values.qgs'                           *
- *   which should be write-protected so user can not make changes.         *
+ *   Project files should be write-protected so user can not make changes  *
  *   -------------------------------------------------------------------   *
  *   Shapefile naming convention:                                          *
  *      'Marine Values...'      - A layer for which values and value       *
@@ -73,7 +72,7 @@ import sys
 import unicodedata
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom
 from PyQt4 import uic
 from marine_values_dialog import CSIROMarineValuesDialog
@@ -148,12 +147,20 @@ class CSIROMarineValues:
         self.toolbar = self.iface.addToolBar(u'CSIROMarineValues')
         self.toolbar.setObjectName(u'CSIROMarineValues')
 
-#        chktime_time = datetime.datetime.now()
-#        chktime_step = 20
-#        chk = [chktime_time, chktime_step]
-#        self.checktime.dlg.append(chk)
+        # Saving states of grid extension/collapse to know where to place element and how tall to make window
+        self.grid1_display_state = "expanded"
+        self.grid2_display_state = "expanded"
 
-       
+        #MARVIN main window height
+        self.dh = 0
+        self.px = 10
+        self.py = 30
+        self.pw = 350
+        #Difference between min window height and screen-adjusted window height
+        self.diff = 30
+        #Height of first matrix
+        self.matrix1_height = 381
+        self.matrix2_height = 201
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -250,7 +257,7 @@ class CSIROMarineValues:
         self.dlg = CSIROMarineValuesDialog()
 
 
-        """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        """Create the menu entries and toolbar icons inside the QGIS GUI"""
         icon_path = ':/plugins/CSIROMarineValues/mv_icon32x32.png'
         self.add_action(
             icon_path,
@@ -296,8 +303,19 @@ class CSIROMarineValues:
         #rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\export.png");
         #self.dlg.pushButtonOrigExtent.setIcon(QtGui.QIcon(rMyIcon))
 
+
+        self.dlg.butArea1Vis.clicked.connect(self.butArea1VisClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
+        self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
+
+        self.dlg.butArea2Vis.clicked.connect(self.butArea2VisClicked)
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
+        self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
+
+
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
+        self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
 
         # Set up tableView table ****************************
         #self.dlg.tableView.setModel(model)
@@ -442,20 +460,21 @@ class CSIROMarineValues:
         if sys.platform == "win32": # Windows
             try:
                 #Set MARVIN's position and size
-                px = self.dlg.geometry().x = 10
-                py = self.dlg.geometry().y = 30
-                dw = self.dlg.width = 350
+                self.px = self.dlg.geometry().x = 10
+                self.py = self.dlg.geometry().y = 30
+                self.dw = self.dlg.width = 350
                 #dh = self.dlg.height = 960
                 sh = GetSystemMetrics(1) #Determine screen height
                 if sh > 780:
                     twh = sh - self.dlg.tableWidgetDetailCounts.y() - 80
                     self.dlg.tableWidgetDetailCounts.setMinimumHeight(twh)
                     self.dlg.tableWidgetDetailCounts.setMaximumHeight(twh) 
-                    dh = sh - 70
+                    self.dh = sh - 70
                 else:
                     self.dlg.tableWidgetDetailCounts.height = 200
-                    dh = 810
-                self.dlg.setGeometry( px, py, dw, dh )
+                    self.dh = 810
+                    self.diff = 30;
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
             except:
                 pass
 
@@ -1461,6 +1480,33 @@ class CSIROMarineValues:
 #        list_of_values.append(line)
 
 
+    def pushButtonReadShpClicked(self):
+        qfd = QFileDialog()
+        title = 'Select shapefile'
+        path = ""
+        fn = QFileDialog.getOpenFileName(qfd, title, path)
+        print fn
+        layer = QgsVectorLayer(fn, 'polygon', 'ogr')
+        if not layer.isValid():
+            pass
+        else:
+            iter = layer.getFeatures()
+            for feature in iter:
+                geom = feature.geometry()
+                x = geom.asPolygon()
+                pts = str(x)
+                pts = pts.replace("[[","[")
+                pts = pts.replace("]]","]")
+                pts = pts.replace(" ","")
+                self.dlgsavesel.textAOIPtLst.appendPlainText(pts)
+
+                #Only read first polygon
+                return
+
+
+
+
+
     def pushButtonSaveSelClicked(self):
 
         if str(self.rubberbandPoints) != '[]':
@@ -1472,13 +1518,18 @@ class CSIROMarineValues:
             self.dlgsavesel.label_4.setVisible(False)
             self.dlgsavesel.labelDate.setVisible(False)
             self.dlgsavesel.fldID.setVisible(False)
+            self.dlgsavesel.buttonSave.setVisible(True)
+            self.dlgsavesel.pushButtonReadShp.setVisible(False)
 
             self.dlgsavesel.textAOIShortT.setStyleSheet("background-color: #e5996e;")
             self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
 
             rbp = str(self.rubberbandPoints)
+            print rbp
             rbp = rbp.translate(None, '\'')
+            rbp = rbp.replace(" ","")
             self.dlgsavesel.textAOIPtLst.appendPlainText(rbp)
+
         else:
             self.dlg.error.setText("No area selected recently.")
 
@@ -1506,19 +1557,33 @@ class CSIROMarineValues:
     def buttonOpenSavedClicked(self):
         self.setupDia()
         self.dlgsavesel.buttonSave.setVisible(False)
+        self.dlgsavesel.pushButtonReadShp.setVisible(False)
 
+
+
+    def buttonCreateNewSOIClicked(self):
+        self.setupDia()
+        self.dlgsavesel.pushButtonOK.setVisible(False)
+        self.dlgsavesel.tableWidgetAOI.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.dlgsavesel.tableWidgetAOI.setVisible(False)
+        self.dlgsavesel.labelSOA.setVisible(False)
+        self.dlgsavesel.label_4.setVisible(False)
+        self.dlgsavesel.labelDate.setVisible(False)
+        self.dlgsavesel.fldID.setVisible(True)
+        self.dlgsavesel.pushButtonReadShp.setVisible(True)
+
+        self.dlgsavesel.textAOIShortT.setStyleSheet("background-color: #e5996e;")
+        self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
 
 
     def pushButtonOKClicked(self):
-        
-
         fr = self.dlgsavesel.textAOIPtLst.toPlainText()
         if fr:
             self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(),QGis.Polygon) #Init rubberband
             fx = unicodedata.normalize('NFKD', fr).encode('ascii','ignore')
             fx = fx.replace("[", "")
             fx = fx.replace("]", "")
-            fx = fx.replace("), (", ");(")
+            fx = fx.replace("),(", ");(")
             rub = []
             rub = fx.split(";")
             NewRubberBand = []
@@ -1550,6 +1615,7 @@ class CSIROMarineValues:
 
         self.dlgsavesel.pushButtonOK.clicked.connect(self.pushButtonOKClicked)
         self.dlgsavesel.pushButtonCancel.clicked.connect(self.pushButtonCancelClicked)
+        self.dlgsavesel.pushButtonReadShp.clicked.connect(self.pushButtonReadShpClicked)
 
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(0,30)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(1,70)
@@ -1605,6 +1671,68 @@ class CSIROMarineValues:
         self.dlgsavesel.fldID.setText(itm)
 
 
+    def butArea1VisClicked(self):
+
+        if self.grid1_display_state == "expanded":
+            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollOut.png");
+            self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
+            self.dlg.butArea1Vis.setText("show")
+            self.grid1_display_state = "collapsed"
+            self.dlg.tableWidgetDetail.height = 20
+            self.dlg.tableWidgetDetail.setMinimumHeight(20)
+            self.dlg.tableWidgetDetail.setMaximumHeight(20)
+            a_y = 730 - (self.matrix1_height - 20)
+            self.dlg.label_3.setGeometry(10,a_y,111,16)
+            b_y = 728 - (self.matrix1_height - 20)
+            self.dlg.butArea2Vis.setGeometry(280,b_y,61,20)
+            c_y = 750 - (self.matrix1_height - 20)
+            self.dlg.tableWidgetDetailCounts.setGeometry(10,c_y,331,201)
+            if self.grid2_display_state == "collapsed":
+               self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix1_height - self.matrix2_height - self.diff + 20)
+            else:
+               self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix1_height + 20)
+        else:
+            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
+            self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
+            self.dlg.butArea1Vis.setText("hide")
+            self.grid1_display_state = "expanded"
+            self.dlg.tableWidgetDetail.height = 381
+            self.dlg.tableWidgetDetail.setMinimumHeight(381)
+            self.dlg.tableWidgetDetail.setMaximumHeight(381)
+            self.dlg.tableWidgetDetailCounts.y = 750
+            self.dlg.label_3.setGeometry(10,730,111,16)
+            self.dlg.butArea2Vis.setGeometry(280,728,61,20)
+            self.dlg.tableWidgetDetailCounts.setGeometry(10,750,331,201)
+            if self.grid2_display_state == "collapsed":
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height - self.diff + 20)
+            else:
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff + 20)
+
+    def butArea2VisClicked(self):
+        if self.grid2_display_state == "expanded":
+            self.dlg.tableWidgetDetailCounts.height = 20
+            self.dlg.tableWidgetDetailCounts.setMinimumHeight(20)
+            self.dlg.tableWidgetDetailCounts.setMaximumHeight(20) 
+            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollOut.png");
+            self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
+            self.dlg.butArea2Vis.setText("show")
+            self.grid2_display_state = "collapsed"
+            if self.grid1_display_state == "expanded":
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height + 20 - self.diff)
+            else:
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height + 20 - self.diff - self.matrix1_height)
+        else:
+            self.dlg.tableWidgetDetailCounts.height = 201
+            self.dlg.tableWidgetDetailCounts.setMinimumHeight(201)
+            self.dlg.tableWidgetDetailCounts.setMaximumHeight(201) 
+            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
+            self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
+            self.dlg.butArea2Vis.setText("show")
+            self.grid2_display_state = "expanded"
+            if self.grid1_display_state == "expanded":
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh)
+            else:
+                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
 # *********************** Other Classes **********************************************
 # ************************************************************************************
 

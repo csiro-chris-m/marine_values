@@ -32,7 +32,10 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
-        super(CSIROMarineValuesDialog, self).__init__(parent, QtCore.Qt.WindowStaysOnTopHint)
+        super(CSIROMarineValuesDialog, self).__init__(parent, QtCore.Qt.WindowMinimizeButtonHint)
+        #Use this code to make it stay on top of all other UI windows:
+        #super(CSIROMarineValuesDialog, self).__init__(parent, QtCore.Qt.WindowStaysOnTopHint)
+
         # Set up the user interface fr om Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see

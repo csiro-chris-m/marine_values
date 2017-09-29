@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>363</width>
-    <height>626</height>
+    <height>656</height>
    </rect>
   </property>
   <property name="palette">
@@ -208,12 +208,12 @@
     <rect>
      <x>10</x>
      <y>500</y>
-     <width>61</width>
+     <width>251</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Point list</string>
+    <string>Point list. Format: [(lon1,lat1),(lon2,lat2)...]</string>
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="textAOIPtLst">
@@ -222,7 +222,7 @@
      <x>10</x>
      <y>520</y>
      <width>251</width>
-     <height>71</height>
+     <height>101</height>
     </rect>
    </property>
   </widget>
@@ -245,8 +245,8 @@
   <widget class="QPushButton" name="buttonSave">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>600</y>
+     <x>65</x>
+     <y>630</y>
      <width>291</width>
      <height>21</height>
     </rect>
@@ -259,7 +259,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>540</y>
+     <y>578</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -272,7 +272,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>570</y>
+     <y>604</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -282,6 +282,19 @@
    </property>
    <property name="autoDefault">
     <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButtonReadShp">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>552</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Read shp</string>
    </property>
   </widget>
  </widget>
