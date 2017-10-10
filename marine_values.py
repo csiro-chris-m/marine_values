@@ -1706,7 +1706,7 @@ class CSIROMarineValues:
                                         attry = f.attributes()
 
 
-                                        #print attry[7]
+                                        print attry[7]
 
                                         if attry[idx_poly_id] == None:
                                             proc_type = "POINT"

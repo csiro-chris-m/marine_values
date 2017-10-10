@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/plugins/CSIROMarineValues" >
+        <file>mv_icon32x32.png</file>
+        <file>mv_icon16x16.png</file>
+    </qresource>
+</RCC>
