@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MARVIN Marine Values Tool ©2017 CSIRO</string>
+   <string>ELVIS ©2017 CSIRO</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -40,7 +40,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>240</y>
+     <y>230</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -105,7 +105,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>215</y>
+     <y>205</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -285,7 +285,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>190</y>
+     <y>180</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -464,6 +464,32 @@
    </property>
    <property name="text">
     <string>hide</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="openProj">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>256</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open project</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="flyout">
+   <property name="geometry">
+    <rect>
+     <x>226</x>
+     <y>319</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>flyout</string>
    </property>
   </widget>
  </widget>

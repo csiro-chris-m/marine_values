@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- CSIROMarineValuesDialog
-                                 A QGIS plugin
- MARVIN - CSIRO Marine values tool. Management of marine value layers
-                             -------------------
-        begin                : 2016-12-25
-        git sha              : $Format:%H$
-        copyright            : (C) 2016 by CSIRO Oceans and Atmosphere Chris Moeseneder
-        email                : chris.moeseneder@csiro.au
+*    CSIRO Commonwealth Scientific and Industrial Research Organisation    *
+*    ELVIS - EnvironmentaL Values Interrogation System                     *
+*        begin                : 2016-12-25                                 *
+*        git sha              : $Format:%H$                                *
+*        copyright            : (C) 2016 by CSIRO Oceans and Atmosphere    *
+*        email                : chris.moeseneder@csiro.au                  *  
  ***************************************************************************/
 
 /***************************************************************************

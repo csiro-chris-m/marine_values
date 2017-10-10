@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-*    CSIRO Marine Values                                                   *
-*    marine_values.py                                                      *
+*    CSIRO Commonwealth Scientific and Industrial Research Organisation    *
+*    ELVIS - EnvironmentaL Values Interrogation System                     *
 *    A QGIS plugin                                                         *
-*    MARVIN - CSIRO Marine values tool. Management of marine value         *
-*             information.                                                 *
 * ------------------------------------------------------------------------ *
 *        begin                : 2016-12-25                                 *
 *        git sha              : $Format:%H$                                *
@@ -70,17 +68,19 @@ import csv
 import datetime
 import sys
 import unicodedata
+import numpy
+import operator
 
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
 from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog
-from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom
+from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge
 from PyQt4 import uic
 from marine_values_dialog import CSIROMarineValuesDialog
 from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 from qgis.core import *
 from qgis.core import QgsMapLayer
 from qgis.utils import QGis
@@ -111,8 +111,7 @@ class CSIROMarineValues:
         self.plugin_dir = os.path.dirname(__file__)
 
         #Directory where project file and all shps reside
-        #QGIS Settings for marine_values, variable 'gis_dir'
-        self.gis_dir = ""
+        self.last_opened_project_dir = ""
 
         #Counter for sort order of layers
         self.treeLayerIdx = 0
@@ -143,7 +142,6 @@ class CSIROMarineValues:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&CSIRO Marine Values')
-        # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'CSIROMarineValues')
         self.toolbar.setObjectName(u'CSIROMarineValues')
 
@@ -151,7 +149,7 @@ class CSIROMarineValues:
         self.grid1_display_state = "expanded"
         self.grid2_display_state = "expanded"
 
-        #MARVIN main window height
+        #ELVIS main window height
         self.dh = 0
         self.px = 10
         self.py = 30
@@ -316,6 +314,8 @@ class CSIROMarineValues:
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
         self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
+        self.dlg.openProj.clicked.connect(self.openProjClicked)
+        self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
         # Set up tableView table ****************************
         #self.dlg.tableView.setModel(model)
@@ -370,11 +370,8 @@ class CSIROMarineValues:
 
         # Should not connect signals in the run function
 
-        #Check if there is a default path in QGIS settings 
-        # (are stored persistently). If not ask
-        # user to choose a directory and write that to settings.
-        # Default path is used for shapefiles
-        qset = QSettings()
+
+        '''
         self.gis_dir = qset.value("marine_values/gis_dir", "")
         if self.gis_dir and not self.gis_dir.isspace():
             pass
@@ -394,6 +391,9 @@ class CSIROMarineValues:
             self.dlg.error.setText("The default directory does not contain any spatial files.")
 
         onlyfiles.sort()
+
+        '''
+
         '''if not self.filled:
             self.filled = True
             model = QStandardItemModel()
@@ -459,7 +459,7 @@ class CSIROMarineValues:
 
         if sys.platform == "win32": # Windows
             try:
-                #Set MARVIN's position and size
+                #Set ELVIS position and size
                 self.px = self.dlg.geometry().x = 10
                 self.py = self.dlg.geometry().y = 30
                 self.dw = self.dlg.width = 350
@@ -520,7 +520,7 @@ class CSIROMarineValues:
         self.xclosing()
 
     def xclosing(self):
-        print "MARVIN unloading..."
+        print "ELVIS unloading..."
         self.treeLayerIdx = 0
         """Removes the Marine Values plugin icon from QGIS GUI."""
         for action in self.actions:
@@ -541,22 +541,33 @@ class CSIROMarineValues:
             pass
 
     def project_load(self):
-#        project = QgsProject.instance()
+
         qset = QSettings()
-        self.gis_dir = qset.value("marine_values/gis_dir", "")
-        
-#        project = QgsProject.instance()
-        self.project.fileName()
-        filen = os.path.splitext(ntpath.basename(self.project.fileName()))[0]
+        ret = qset.value("marine_values/last_opened_project") #[0]
+        if ret:
+            self.last_opened_project = qset.value("marine_values/last_opened_project")
+        else:
+            self.last_opened_project = qset.setValue("marine_values/last_opened_project", "")
 
-        if filen != "marine_values":
+        if self.last_opened_project and not self.last_opened_project.isspace():
+            self.last_opened_project_dir = ntpath.dirname(self.last_opened_project)
 
-            if not self.project.read(QFileInfo(self.gis_dir + '\marine_values.qgs')):
-                self.dlg.error.setText("Could not load marine_values.qgs")
-            elif len(self.project.layerTreeRoot().findLayers()) < 1:
-                self.dlg.error.setText("No layers found")
-            else:
-                pass
+            #Must instantiate bridge to sync stand-alone project with map tree        
+            bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
+            self.project.read(QFileInfo(self.last_opened_project))
+        else:
+            fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
+            filep = QDir.toNativeSeparators(fileo)
+            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
+            self.last_opened_project_dir = ntpath.dirname(filep)
+            #Must instantiate bridge to sync stand-alone project with map tree        
+            bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
+            self.project.read(QFileInfo(fileo))
+
+        self.dlg.tableWidgetDetail.setRowCount(0)
+        self.dlg.tableWidgetDetailCounts.setRowCount(0)
+        self.GUILoadProjectLayers()
+        self.GUILayersResync()
 
 #TESTTEST WFS
         #Note that the name of a WFS layer may not contain any spaces or it will fail to load
@@ -566,10 +577,56 @@ class CSIROMarineValues:
 #TESTTEST
 
 
+    def openProjClicked(self):
+        fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
+        if fileo:
+            filep = QDir.toNativeSeparators(fileo)
+            qset = QSettings()
+            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
+            self.last_opened_project_dir = ntpath.dirname(filep)
+
+            #Must instantiate bridge to sync stand-alone project with map tree        
+            bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
+            self.project.read(QFileInfo(fileo))
+
+            self.dlg.tableWidgetDetail.setRowCount(0)
+            self.dlg.tableWidgetDetailCounts.setRowCount(0)
+            self.GUILoadProjectLayers()
+            self.GUILayersResync()
+
+
+    def GUILoadProjectLayers(self):
         #self.dlg.tableView.model().itemChanged.connect(lambda x: self.manageLayer(self, x))
         self.treeLayerIdx = 0
         position = {}
         self.layerInfo = {}
+
+        onlyfiles = []
+        for f in listdir(self.last_opened_project_dir):
+            if isfile(join(self.last_opened_project_dir, f)):
+                if f.endswith('.shp'):
+                    print basename(f)
+                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp'):
+                        onlyfiles.append(f)
+        #if not self.filled:
+        #    self.filled = True
+        onlyfiles.sort()
+        #Clear pre-existing entries, ie from previously loaded project
+        self.dlg.tableView.model().setRowCount(0)
+        for fil in onlyfiles:
+            self.d = QStandardItem(fil)
+            self.d.setTextAlignment(QtCore.Qt.AlignLeft)
+            self.d.setText = "testing"
+            self.d.setCheckable(True) 
+            #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
+            qsi = QStandardItem('unknown')
+            qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
+            self.dlg.tableView.model().appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
+        #Add row which is the divider between loaded and unloaded layers
+        self.dlg.tableView.model().appendRow([QStandardItem('Unloaded but available layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
+
+
+    def GUILayersResync(self):
         for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             for i in range(self.dlg.tableView.model().rowCount()):
@@ -600,12 +657,6 @@ class CSIROMarineValues:
         #print self.layerInfo
         self.dlg.tableView.model().sort(2)
 
-
-
-
-
-
-
 #    def getLayerInfo(self, layer):
         #layerInfo = []
         #request = QgsFeatureRequest()
@@ -623,6 +674,12 @@ class CSIROMarineValues:
         #        self.dlg.objectInfo.setModel(model)
 
 
+    def flyoutClicked(self):
+        self.dlgflyout = MVflyout()
+        self.dlgflyout.setModal(False)
+        self.dlgflyout.show()
+        self.dlgflyout.setWindowTitle("ELVIS table zoom")
+
 
     def tableViewselectionChanged(self):
         getLayerInfo()        
@@ -637,9 +694,8 @@ class CSIROMarineValues:
             if val != "Unloaded but available layers:":
                 val_wo_ext = os.path.splitext(val)[0]
 
-                qset = QSettings()
-                self.gis_dir = qset.value("marine_values/gis_dir", "")
-                sfile = os.path.join(self.gis_dir, val)
+                #qset = QSettings()
+                sfile = os.path.join(self.last_opened_project_dir, val)
 
                 ##############################################################
                 #This is how to read cell content of tableView
@@ -863,6 +919,10 @@ class CSIROMarineValues:
 
             with open(unicode(path), 'wb') as stream:
                 writer = csv.writer(stream, delimiter=',')
+
+                f = ["MARINE VALUES DATABASE - ELVIS"]
+                writer.writerow(f)
+
                 ndate = datetime.date.today()
                 n_day = "%02d" % (ndate.day,) 
                 n_mon = "%02d" % (ndate.month,) 
@@ -877,6 +937,11 @@ class CSIROMarineValues:
                 scalet = "Scale type: " + self.cur_scale_id
                 f = [scalet]
                 writer.writerow(f)
+
+                writer.writerow("")
+                f = ["AREA SELECTED COORDINATES"]
+                writer.writerow(f)
+
                 f = ["Selection coordinates:"]
                 writer.writerow(f)
                 f = ["Longitude", "Latitude"]
@@ -893,20 +958,291 @@ class CSIROMarineValues:
 
 
                 writer.writerow("")
-                h = ["Area values:"]
+                h = ["AREA VALUES"]
+                writer.writerow("")
+                h = ["Natural resource values"]
                 writer.writerow(h)
-                h = ["Scale name","Spatial feature/Value","Value metric score","Selected km2/Calc","Area km2"]
+                writer.writerow("")
+
+
+                h = ["Contribution of EGS"]
                 writer.writerow(h)
+
+                wellb_whole_scale = 0
+                wellb_sel_area = 0
+                wellb_sel_are_perc = 0
+
+                income_whole_scale = 0
+                income_sel_area = 0
+                income_sel_are_perc = 0
+
+                foodsec_whole_scale = 0
+                foodsec_sel_area = 0
+                foodsec_sel_are_perc = 0
+
+                h = ["Scale name","Spatial feature/Value","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
+                writer.writerow(h)
+
+                #For summarizing later
+                totalmatrix = []
+                firstmatrix = True
+                quitproc =  False
+
                 for row in range(self.dlg.tableWidgetDetail.rowCount()):
+                    rowdata = []
+                    isfirstcol = True
+                    for column in range(self.dlg.tableWidgetDetail.columnCount()):
+                        item = self.dlg.tableWidgetDetail.item(row, column)
+                        if item is not None:
+                            if '---------------------------------' in item.text() and not firstmatrix:
+                                quitproc = True
+                                break
+                            firstmatrix = False
+                            rowdata.append(unicode(item.text()).encode('utf8'))
+                            if isfirstcol:
+                                totalmatrix.append(rowdata)
+                                isfirstcol = False
+                        else:
+                            rowdata.append('')
+                        if quitproc:
+                            break
+                        isfirstcol = False
+                    if quitproc:
+                        break
+                    writer.writerow(rowdata)
+                writer.writerow("")
+
+                #Sums per contribution
+                sum_col2 = 0.0
+                sum_col3 = 0.0
+                sum_col4 = 0.0
+                sum_col5 = 0.0
+                sum_col6 = 0.0
+                sum_col7 = 0.0
+                sum_col8 = 0.0
+                sum_col9 = 0.0
+                for i in range(len(totalmatrix)):
+                    for j in range(len(totalmatrix[i])):
+                        if totalmatrix[i][j]:
+                            if j == 2:
+                                sum_col2 = sum_col2 + float(totalmatrix[i][j])
+                            if j == 3:
+                                sum_col3 = sum_col3 + float(totalmatrix[i][j])
+                            if j == 4:
+                                sum_col4 = sum_col4 + float(totalmatrix[i][j])
+                            if j == 5:
+                                sum_col5 = sum_col5 + float(totalmatrix[i][j])
+                            if j == 6:
+                                sum_col6 = sum_col6 + float(totalmatrix[i][j])
+                            if j == 7:
+                                sum_col7 = sum_col7 + float(totalmatrix[i][j])
+                            if j == 8:
+                                sum_col8 = sum_col8 + float(totalmatrix[i][j])
+                            if j == 9:
+                                sum_col9 = sum_col9 + float(totalmatrix[i][j])
+
+                #print "sum_col2: %.2f" % (sum_col2)
+                #print "sum_col4: %.2f" % (sum_col4)
+                #print "sum_col6: %.2f" % (sum_col6)
+                #print "sum_col8: %.2f" % (sum_col8)
+                #rint "sum_col9: %.2f" % (sum_col9)
+                #print totalmatrix
+
+
+
+                #Sums per contribution and scale
+                sum_contsca_col2 = []
+                for i in range(len(totalmatrix)):
+                    if '---------------------------------' in totalmatrix[i][0]:
+                        pass
+                    else:
+                        upd4 = False
+                        for srw in sum_contsca_col2:
+                            if totalmatrix[i][0] == srw[0]:
+                                srw[2] = srw[2] + float(totalmatrix[i][2])
+                                srw[3] = srw[3] + float(totalmatrix[i][3])
+                                srw[4] = srw[4] + float(totalmatrix[i][4])
+                                srw[5] = srw[5] + float(totalmatrix[i][5])
+                                srw[6] = srw[6] + float(totalmatrix[i][6])
+                                srw[7] = srw[7] + float(totalmatrix[i][7])
+                                srw[8] = srw[8] + float(totalmatrix[i][8])
+                                srw[9] = srw[9] + float(totalmatrix[i][9])
+                                upd4 = True
+                        if not upd4:
+                            rowda = []
+
+
+                            pval = totalmatrix[i][0]
+                            rowda.append(pval)
+                            rowda.append("") #Placeholder for unused column 1. So indices match up with totalmatrix eventhough we don't have spatial feature/value
+
+                            for g in (2,3,4,5,6,7,8,9):
+                                pval = totalmatrix[i][g]
+                                if pval:
+                                    rowda.append(float(pval))
+                                else:
+                                    rowda.append(0)
+                            #print rowda
+                            sum_contsca_col2.append(rowda)
+
+                f = ["Contribution of N.R. to Overall Wellbeing (%)"]
+                writer.writerow(f)
+                writer.writerow("")
+                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                writer.writerow(f)
+                rwd3 = []
+                for srw in sum_contsca_col2:
+                    rwd3.append(unicode(srw[0]).encode('utf8'))
+                    rwd3.append("")
+                    rwd3.append(unicode(srw[2]).encode('utf8'))
+                    rwd3.append(unicode(srw[3]).encode('utf8'))
+                    perse = srw[3] / srw[2] * 100
+                    rwd3.append(unicode(perse).encode('utf8'))
+                    writer.writerow(rwd3)
+                    rwd3 = []
+                writer.writerow("")
+
+                f = ["Contribution of N.R. to Overall Income (%)"]
+                writer.writerow(f)
+                writer.writerow("")
+                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                writer.writerow(f)
+                rwd3 = []
+                for srw in sum_contsca_col2:
+                    rwd3.append(unicode(srw[0]).encode('utf8'))
+                    rwd3.append("")
+                    rwd3.append(unicode(srw[4]).encode('utf8'))
+                    rwd3.append(unicode(srw[5]).encode('utf8'))
+                    perse = srw[5] / srw[4] * 100
+                    rwd3.append(unicode(perse).encode('utf8'))
+                    writer.writerow(rwd3)
+                    rwd3 = []
+                writer.writerow("")
+
+                f = ["Contribution of N.R. to Overall Food security (%)"]
+                writer.writerow(f)
+                writer.writerow("")
+                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                writer.writerow(f)
+                rwd3 = []
+                for srw in sum_contsca_col2:
+                    rwd3.append(unicode(srw[0]).encode('utf8'))
+                    rwd3.append("")
+                    rwd3.append(unicode(srw[6]).encode('utf8'))
+                    rwd3.append(unicode(srw[7]).encode('utf8'))
+                    perse = srw[7] / srw[6] * 100
+                    rwd3.append(unicode(perse).encode('utf8'))
+                    writer.writerow(rwd3)
+                    rwd3 = []
+                writer.writerow("")
+
+                h = ["Contribution of Features"]
+                writer.writerow(h)
+                writer.writerow("")
+                h = ["Scale name","Spatial feature","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
+                writer.writerow(h)
+                tt = []
+                rd = []
+                for i in range(len(totalmatrix)):
+                    if '---------------------------------' in totalmatrix[i][0]:
+                        pass
+                    else:
+                        for j in range(len(totalmatrix[i])):
+                            if totalmatrix[i][j]:
+                                rd.append(unicode(totalmatrix[i][j]).encode('utf8'))
+                            else:
+                                rd.append("")
+                        tt.append(rd)
+                        rd = []
+                vv = []
+                #Sort matrix on columns 1 and 2
+                vv = sorted(tt, key = operator.itemgetter(0, 1))
+                for e4 in vv:
+                    writer.writerow(e4)
+                writer.writerow("")
+
+
+
+
+
+                h = ["Contribution of EGS"]
+                writer.writerow(h)
+
+
+                tmatrix = []
+                firstmat = True
+                endproc = False
+                for row in range(self.dlg.tableWidgetDetail.rowCount()):
+                    esc = False
                     rowdata = []
                     for column in range(self.dlg.tableWidgetDetail.columnCount()):
                         item = self.dlg.tableWidgetDetail.item(row, column)
                         if item is not None:
-                            rowdata.append(
-                                unicode(item.text()).encode('utf8'))
+                            if '---------------------------------' in item.text():
+                                if firstmat:
+                                    firstmat = False
+                                else:
+                                    endproc = True
+                                    break
+                                esc = True
+                                break
+                            rowdata.append(unicode(item.text()).encode('utf8'))
                         else:
                             rowdata.append('')
-                    writer.writerow(rowdata)
+                    if endproc:
+                        break
+                    if not esc:
+                        tmatrix.append(rowdata)
+
+                #Add first column text to sub-items
+                titl = ""
+                for i in range(len(tmatrix)):
+                    #print "%d: %d" % (i, len(tmatrix[i]))
+                    if tmatrix[i][0]:
+                        titl = tmatrix[i][0]
+                        tmatrix[i][0] = "" #Clear text in first cell just so we can delete this sum row later by searching for empty cell
+                    else:
+                        tmatrix[i][0] = titl
+                #Now remove higher level items (features)
+                newm = []
+                for i in range(len(tmatrix)):
+                    if tmatrix[i][0] is not "":
+                        newm.append(tmatrix[i])
+                #Sort matrix on columns 1 and 2
+                gg = []
+                gg = sorted(newm, key = operator.itemgetter(0, 1))
+
+
+                writer.writerow("")
+                h = ["Scale name","EGS","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected"]
+                writer.writerow(h)
+                roawda4 = []
+                for i in range(len(gg)):
+                    lin = []
+                    for de in range(len(gg[i])):
+                        lin.append(unicode(gg[i][de]).encode('utf8'))
+                    writer.writerow(lin)
+                    
+
+                #Build base list of values
+                res_val = []
+                res_val.append(["Ecological regulatory values","Carbon sequestration",0])
+                res_val.append(["Ecological regulatory values","Hazard reduction",0])
+                res_val.append(["Ecological regulatory values","Water regulation",0])
+                res_val.append(["Ecosystem structure and process values","Biological diversity",0])
+                res_val.append(["Ecosystem structure and process values","Importance for ETP species or habitats",0])
+                res_val.append(["Ecosystem structure and process values","Naturalness",0])
+                res_val.append(["Ecosystem structure and process values","Productivity or nutrient cycling",0])
+                res_val.append(["Ecosystem structure and process values","Rarity/uniqueness",0])
+                res_val.append(["Ecosystem structure and process values","Vulnerability, sensitivity or slow recovery",0])
+                res_val.append(["Natural resource values","Significant Natural resource Importance",0])
+                res_val.append(["Socio-cultural values","Cultural heritage importance",0])
+                res_val.append(["Socio-cultural values","Recreational, tourism or aesthetic importance",0])
+                res_val.append(["Socio-cultural values","Spiritual importance",0])
+
+
+
+
 
                 writer.writerow("")
                 g = ["Countable values:"]
@@ -914,15 +1250,15 @@ class CSIROMarineValues:
                 g = ["Value type","Count"]
                 writer.writerow(g)
                 for row in range(self.dlg.tableWidgetDetailCounts.rowCount()):
-                    rowdata = []
+                    rowdata2 = []
                     for column in range(self.dlg.tableWidgetDetailCounts.columnCount()):
                         item = self.dlg.tableWidgetDetailCounts.item(row, column)
                         if item is not None:
-                            rowdata.append(
+                            rowdata2.append(
                                 unicode(item.text()).encode('utf8'))
                         else:
-                            rowdata.append('')
-                    writer.writerow(rowdata)
+                            rowdata2.append('')
+                    writer.writerow(rowdata2)
 
 
     def pushButtonPanClicked(self):
@@ -1154,6 +1490,10 @@ class CSIROMarineValues:
                                                                 cs_foosec = float(cgs[6])
                                                                 cs_foosecs = cs_foosecs + cs_foosec
 
+                                                #Calculating wellb, income and food sec values per selected areas 
+                                                selare_wellb = cs_wellbs * (float(arx) / float(shapar))
+                                                selare_inco = cs_incos * (float(arx) / float(shapar))
+                                                selare_foosec = cs_foosecs * (float(arx) / float(shapar))
 
 
                                             rowPosition = self.dlg.tableWidgetDetail.rowCount()
@@ -1175,7 +1515,12 @@ class CSIROMarineValues:
                                             except (TypeError, UnboundLocalError):
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Error"))
 
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(""))
+                                            try:
+                                                xselare_wellb = float(selare_wellb)
+                                                xselare_wellb = "{0:.4f}".format(round(xselare_wellb,4))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(xselare_wellb))
+                                            except (TypeError, UnboundLocalError):
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem("Error"))
 
                                             try:
                                                 rinco = float(cs_incos)
@@ -1184,7 +1529,12 @@ class CSIROMarineValues:
                                             except (TypeError, UnboundLocalError):
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem("Error"))
 
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(""))
+                                            try:
+                                                xselare_inco = float(selare_inco)
+                                                xselare_inco = "{0:.4f}".format(round(xselare_inco,4))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(xselare_inco))
+                                            except (TypeError, UnboundLocalError):
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem("Error"))
 
                                             try:
                                                 rfoos = float(cs_foosecs)
@@ -1193,8 +1543,12 @@ class CSIROMarineValues:
                                             except (TypeError, UnboundLocalError):
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem("Error"))
 
-
-                                            self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem(""))
+                                            try:
+                                                xselare_foosec = float(selare_foosec)
+                                                xselare_foosec = "{0:.4f}".format(round(xselare_foosec,4))
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem(xselare_foosec))
+                                            except (TypeError, UnboundLocalError):
+                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem("Error"))
 
 
 #                                                try:
@@ -1351,6 +1705,9 @@ class CSIROMarineValues:
                                         point_id = ""
                                         attry = f.attributes()
 
+
+                                        #print attry[7]
+
                                         if attry[idx_poly_id] == None:
                                             proc_type = "POINT"
                                             point_id = "PNT_" + str(attry[idx_point_id])
@@ -1504,9 +1861,6 @@ class CSIROMarineValues:
                 return
 
 
-
-
-
     def pushButtonSaveSelClicked(self):
 
         if str(self.rubberbandPoints) != '[]':
@@ -1553,12 +1907,10 @@ class CSIROMarineValues:
             self.dlg.error.setText("To save area ensure all required text is filled.")
 
 
-
     def buttonOpenSavedClicked(self):
         self.setupDia()
         self.dlgsavesel.buttonSave.setVisible(False)
         self.dlgsavesel.pushButtonReadShp.setVisible(False)
-
 
 
     def buttonCreateNewSOIClicked(self):
@@ -1745,6 +2097,16 @@ class MVSaveSel(QtGui.QDialog, FORM_CLASS):
         self.setupUi(self)
 
 
+FORM2_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_feature_flyout.ui'))
+
+class MVflyout(QtGui.QDialog, FORM2_CLASS):
+    def __init__(self, parent=None):
+        """Constructor."""
+        super(MVflyout, self).__init__(parent)
+        self.setupUi(self)
+
+
+
 class ModelObjInfo(QStandardItemModel):
     def __init__(self, parent=None):
         QtGui.QStandardItemModel.__init__(self)
@@ -1762,28 +2124,40 @@ class Model(QStandardItemModel):
         self.setColumnCount(4)
         self.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key'])
 
+
+        '''
         qset = QSettings()
-        self.gis_dir = qset.value("marine_values/gis_dir", "")
-        if self.gis_dir and not self.gis_dir.isspace():
-            pass
+
+        ret = qset.value("marine_values/last_opened_project") #[0]
+        if ret:
+            self.last_opened_project = qset.value("marine_values/last_opened_project")
         else:
-            dirp = QtGui.QFileDialog.getExistingDirectory(None, 'Select a default folder. It must contain the project file (.qgs) and all shapefiles for this project:', '', QtGui.QFileDialog.ShowDirsOnly)
-            qset.setValue("marine_values/gis_dir", dirp)
-            self.gis_dir = qset.value("marine_values/gis_dir", "")
+            self.last_opened_project = qset.setValue("marine_values/last_opened_project", "")
 
-        onlyfiles = []
-        for f in listdir(self.gis_dir):
-            if isfile(join(self.gis_dir, f)):
-                if f.endswith('.shp'):
-                    onlyfiles.append(f)
-
-
+        if self.last_opened_project and not self.last_opened_project.isspace():
+            self.last_opened_project_dir = ntpath.dirname(self.last_opened_project)
+            onlyfiles = []
+            for f in listdir(self.last_opened_project_dir):
+                if isfile(join(self.last_opened_project_dir, f)):
+                    if f.endswith('.shp'):
+                        onlyfiles.append(f)
+        else:
+            fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
+            filep = QDir.toNativeSeparators(fileo)
+            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
+            self.last_opened_project_dir = ntpath.dirname(filep)
+            onlyfiles = []
+            for f in listdir(self.last_opened_project_dir):
+                if isfile(join(self.last_opened_project_dir, f)):
+                    if f.endswith('.shp'):
+                        onlyfiles.append(f)
+        '''
 #TESTTEST WFS
 #        tt = "MarineValuesNewBritainTestLLG"
 #        onlyfiles.append(tt)
 #TESTTEST
 
-
+        '''
         if not len(onlyfiles):
             self.dlg.error.setText("Default directory does not contain any spatial files.")
         else:
@@ -1812,6 +2186,7 @@ class Model(QStandardItemModel):
                 #item.setCheckable(True)
                 #self.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
 
+        '''
 
     def data(self, index, role):
         if index.isValid():
