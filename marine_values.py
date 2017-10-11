@@ -70,9 +70,10 @@ import sys
 import unicodedata
 import numpy
 import operator
+import qgis.utils
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge
 from PyQt4 import uic
 from marine_values_dialog import CSIROMarineValuesDialog
@@ -83,7 +84,9 @@ from os import listdir
 from os.path import isfile, join, basename
 from qgis.core import *
 from qgis.core import QgsMapLayer
+from qgis.core import QgsProviderRegistry
 from qgis.utils import QGis
+from qgis import utils
 from collections import defaultdict
 from pprint import pprint
 from os.path import expanduser
@@ -97,6 +100,12 @@ except ImportError:
 class CSIROMarineValues:
     def __init__(self, iface):
         #Constructor.
+
+        #Following code is unused but can be used to check if previous instance of plugin
+        #is running
+        #ELVIS loaded and available
+        #for plug in qgis.utils.available_plugins:
+        #    if plug == "marine_values":
 
         self.project = QgsProject.instance()
 
@@ -138,9 +147,9 @@ class CSIROMarineValues:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&CSIRO Marine Values')
-        self.toolbar = self.iface.addToolBar(u'CSIROMarineValues')
-        self.toolbar.setObjectName(u'CSIROMarineValues')
+        self.menu = self.tr(u'&CSIRO ELVIS')
+        self.toolbar = self.iface.addToolBar(u'CSIRO ELVIS')
+        self.toolbar.setObjectName(u'CSIRO ELVIS')
 
         # Saving states of grid extension/collapse to know where to place element and how tall to make window
         self.grid1_display_state = "expanded"
@@ -229,7 +238,11 @@ class CSIROMarineValues:
             action.setWhatsThis(whats_this)
 
         if add_to_toolbar:
-            self.toolbar.addAction(action)
+            for x in self.iface.mainWindow().findChildren(QToolBar): 
+                if x.objectName() == "CSIRO ELVIS":
+                    pass
+                else:
+                    self.toolbar.addAction(action)
 
         if add_to_menu:
             self.iface.addPluginToMenu(
@@ -248,7 +261,7 @@ class CSIROMarineValues:
         icon_path = ':/plugins/CSIROMarineValues/mv_icon32x32.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'CSIRO Marine Values System'),
+            text=self.tr(u'CSIRO ELVIS'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -439,14 +452,18 @@ class CSIROMarineValues:
         print "ELVIS unloading..."
         self.treeLayerIdx = 0
         """Removes the Marine Values plugin icon from QGIS GUI."""
-        for action in self.actions:
-            self.iface.removeToolBarIcon(action)
-        del self.toolbar
+        #for action in self.actions:
+        #    self.iface.removeToolBarIcon(action)
+        #del self.toolbar
         QtCore.QObject.disconnect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
         QtCore.QObject.disconnect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
         QtCore.QObject.disconnect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         self._want_to_close = True
         self.dlg.close()
+        #Must close current project and begin new empty project, otherwise QGIS stays open
+        #with current project and running ELVIS again causes unexpected behaviour, i.e. 
+        #clear the main map window
+        self.iface.newProject()
 
     def manageLayer(self, x, index):
         #Write code here to load and unload layers and save project
