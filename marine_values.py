@@ -15,7 +15,7 @@
 /***************************************************************************
  *                                                                         *
  *   Help file for this app is in the plugin directory                     *
- *   called "marine values help.txt"                                       * 
+ *   named "elvis help.txt"                                                * 
  *                                                                         *
  *   Environment Versions                                                  *
  *   ------------------------------------                                  *
@@ -94,10 +94,7 @@ except ImportError:
     pass
 
 
-
 class CSIROMarineValues:
-    """QGIS Plugin Implementation."""
-
     def __init__(self, iface):
         #Constructor.
 
@@ -160,18 +157,11 @@ class CSIROMarineValues:
         self.matrix1_height = 381
         self.matrix2_height = 201
 
-    # noinspection PyMethodMayBeStatic
+
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
+        #Get the translation for a string using Qt translation API.
+        #We implement this ourselves since we do not inherit QObject.
+        #   :param message: String for translation. Type message: str, QString. Returns: Translated version of message. rtype: QString
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('CSIROMarineValues', message)
 
@@ -254,8 +244,7 @@ class CSIROMarineValues:
         # Create the dialog (after translation) and keep reference
         self.dlg = CSIROMarineValuesDialog()
 
-
-        """Create the menu entries and toolbar icons inside the QGIS GUI"""
+        #Create the menu entries and toolbar icons inside the QGIS GUI
         icon_path = ':/plugins/CSIROMarineValues/mv_icon32x32.png'
         self.add_action(
             icon_path,
@@ -298,9 +287,6 @@ class CSIROMarineValues:
         self.dlg.pushButtonExport.setIcon(QtGui.QIcon(rMyIcon))
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
-        #rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\export.png");
-        #self.dlg.pushButtonOrigExtent.setIcon(QtGui.QIcon(rMyIcon))
-
 
         self.dlg.butArea1Vis.clicked.connect(self.butArea1VisClicked)
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
@@ -310,7 +296,6 @@ class CSIROMarineValues:
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
         self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
 
-
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
         self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
@@ -318,21 +303,17 @@ class CSIROMarineValues:
         self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
         # Set up tableView table ****************************
-        #self.dlg.tableView.setModel(model)
         self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.dlg.tableView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         xmod = Model()
         self.dlg.tableView.setModel(xmod)
 
         header = self.dlg.tableView.horizontalHeader()
-        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
         header.setResizeMode(QtGui.QHeaderView.Fixed)
         self.dlg.tableView.setColumnWidth(0,230)
         self.dlg.tableView.setColumnWidth(1,80)
         self.dlg.tableView.setColumnWidth(2,0)
         self.dlg.tableView.setColumnWidth(3,0)
-
-        #self.dlg.tableView.model().clicked.connect(self.tableViewselectionChanged)
 
         self.dlg.tableView.verticalHeader().setMovable(True)
         self.dlg.tableView.verticalHeader().setDragEnabled(True)
@@ -340,6 +321,7 @@ class CSIROMarineValues:
 
         QtCore.QObject.connect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
 
+        #Drag and drop
         #self.dlg.tableView.setDropIndicatorShown(True)
         #self.dlg.tableView.setAcceptDrops(True)
         #self.dlg.tableView.setDragEnabled(True)
@@ -355,70 +337,14 @@ class CSIROMarineValues:
         #self.dlg.tableView.dropEvent = lambda event: pprint(event)
         #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
 
-
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         #QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
 
-        #self.iface.mapCanvas().xyCoordinates.connect(showCoordinates)
-        #myMapTool.canvasClicked.connect(manageClick)
-        #self.iface.mapCanvas().setMapTool(myMapTool)
-
     def run(self):
-
         # Should not connect signals in the run function
-
-
-        '''
-        self.gis_dir = qset.value("marine_values/gis_dir", "")
-        if self.gis_dir and not self.gis_dir.isspace():
-            pass
-        else:
-            dirp = QtGui.QFileDialog.getExistingDirectory(None, 'Select a default folder. It must contain the project file (.qgs) and all shapefiles for this project:', '', QtGui.QFileDialog.ShowDirsOnly)
-            #prttxt = self.dlg.defaultPath.toPlainText()
-            qset.setValue("marine_values/gis_dir", dirp)
-            self.gis_dir = qset.value("marine_values/gis_dir", "")
-
-        onlyfiles = []
-        for f in listdir(self.gis_dir):
-            if isfile(join(self.gis_dir, f)):
-                if f.endswith('.shp'):
-                    onlyfiles.append(f)
-
-        if not len(onlyfiles):
-            self.dlg.error.setText("The default directory does not contain any spatial files.")
-
-        onlyfiles.sort()
-
-        '''
-
-        '''if not self.filled:
-            self.filled = True
-            model = QStandardItemModel()
-            #model = QAbstractItemModel()
-            model.setColumnCount(3)
-            model.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key'])
-            for fil in onlyfiles:
-                item = QStandardItem(fil)
-                item.setCheckable(True)
-                model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])'''
-            
-
-        # Set up objectInfo table ***************************
-        #self.dlg.objectInfo.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        #self.dlg.objectInfo.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        #xmodobjinf = ModelObjInfo()
-        #self.dlg.objectInfo.setModel(xmodobjinf)
-        #header = self.dlg.objectInfo.horizontalHeader()
-        #self.dlg.objectInfo.setColumnWidth(0,100)
-        #self.dlg.objectInfo.setColumnWidth(1,100)
-        #self.dlg.objectInfo.setColumnWidth(2,100)
-        #header.setDefaultAlignment(QtCore.Qt.AlignHCenter)
-        #header.setResizeMode(QtGui.QHeaderView.Fixed)
-        #self.dlg.objectInfo.verticalHeader().setMovable(True)
-        #self.dlg.objectInfo.clicked.connect(self.objectInfoClicked)
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
         self.dlg.tableWidgetDetail.setColumnWidth(1,120)
@@ -432,24 +358,18 @@ class CSIROMarineValues:
         self.dlg.tableWidgetDetail.setColumnWidth(9,80)
         self.dlg.tableWidgetDetail.setColumnWidth(10,80)
 
+        self.dlg.tableWidgetDetailCounts.setColumnWidth(0,150)
+        self.dlg.tableWidgetDetailCounts.setColumnWidth(1,100)
+        self.dlg.tableWidgetDetailCounts.setColumnWidth(2,40)
 
-        self.dlg.tableWidgetDetailCounts.setColumnWidth(0,230)
-        self.dlg.tableWidgetDetailCounts.setColumnWidth(1,80)
-
-
-#Load main project
+        #Load main project
         self.project_load()
 
-        #Stores name of currently active layer. Need this since rubber band sets itself current
-        #so must set back
+        #Stores name of currently active layer. Need this since rubber band sets itself current so must set back
         self.cur_lay = ""
 
         #List of points in last created Rubberband
         self.rubberbandPoints = []
-
-        #self.dlg.tableView.selectRow(0)
-
-        #self.dlg.objectInfo.selectRow(0)
 
         #Read database with marine value details and keep in memory for quick access.
         #Read only required fields
@@ -481,11 +401,9 @@ class CSIROMarineValues:
         if sys.platform == "darwin": # OS X, MacOS
             pass
 
-
         #Set mouse pointer in case we crashed and pointer was still in rubberband mode
         #Does not work
         self.iface.actionPan().trigger()
-        #self.iface.mapCanvas.actionZoomIn()
 
         ## show the dialog
         self.dlg.show()
@@ -499,8 +417,6 @@ class CSIROMarineValues:
         #if result:
         if result == 1:
             pass
-
-
 
 
     def unload(self):
@@ -531,7 +447,6 @@ class CSIROMarineValues:
         QtCore.QObject.disconnect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
         self._want_to_close = True
         self.dlg.close()
-#        self = None
 
     def manageLayer(self, x, index):
         #Write code here to load and unload layers and save project
@@ -543,7 +458,7 @@ class CSIROMarineValues:
     def project_load(self):
 
         qset = QSettings()
-        ret = qset.value("marine_values/last_opened_project") #[0]
+        ret = qset.value("marine_values/last_opened_project")
         if ret:
             self.last_opened_project = qset.value("marine_values/last_opened_project")
         else:
@@ -596,7 +511,6 @@ class CSIROMarineValues:
 
 
     def GUILoadProjectLayers(self):
-        #self.dlg.tableView.model().itemChanged.connect(lambda x: self.manageLayer(self, x))
         self.treeLayerIdx = 0
         position = {}
         self.layerInfo = {}
@@ -608,8 +522,7 @@ class CSIROMarineValues:
                     print basename(f)
                     if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp'):
                         onlyfiles.append(f)
-        #if not self.filled:
-        #    self.filled = True
+
         onlyfiles.sort()
         #Clear pre-existing entries, ie from previously loaded project
         self.dlg.tableView.model().setRowCount(0)
@@ -618,7 +531,6 @@ class CSIROMarineValues:
             self.d.setTextAlignment(QtCore.Qt.AlignLeft)
             self.d.setText = "testing"
             self.d.setCheckable(True) 
-            #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
             qsi = QStandardItem('unknown')
             qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
             self.dlg.tableView.model().appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
@@ -630,31 +542,24 @@ class CSIROMarineValues:
         for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             for i in range(self.dlg.tableView.model().rowCount()):
-
                 item = self.dlg.tableView.model().item(i, 0)
-
                 #Skip the row which is the divider between loaded and unloaded items
                 it4 = self.dlg.tableView.model().item(i, 2)
                 it5 = it4.text()
                 if it5 == '90000':
                     pass
-
                 else:
-
                     if item.text() in layer.source().split("|")[0]:
                         #self.layerInfo[item.text()] = self.getLayerInfo(layer)
                         self.dlg.tableView.model().item(i, 0).setCheckState(QtCore.Qt.Checked)
-                        #Set column 4 to same as checkbox. Click on checkox is hard to 
-                        #catch so using thisas indicator
+                        #Set column 4 to same as checkbox. Click on checkox is hard to catch so using this as indicator
                         self.dlg.tableView.model().item(i, 3).setText(self.tr('checked'))
-
 
                         geometryType = self.dlg.tableView.model().item(i, 1)
                         geometryType.setText(self.geometryTypes[layer.geometryType()])
                         sortOrder = self.dlg.tableView.model().item(i, 2)
                         sortOrder.setText('{:05d}'.format(self.treeLayerIdx))
             self.treeLayerIdx += 1
-        #print self.layerInfo
         self.dlg.tableView.model().sort(2)
 
 #    def getLayerInfo(self, layer):
@@ -694,7 +599,6 @@ class CSIROMarineValues:
             if val != "Unloaded but available layers:":
                 val_wo_ext = os.path.splitext(val)[0]
 
-                #qset = QSettings()
                 sfile = os.path.join(self.last_opened_project_dir, val)
 
                 ##############################################################
@@ -702,7 +606,6 @@ class CSIROMarineValues:
                 #it = model.item(row, 3)
                 #print it.text()
                 ##############################################################
-
                 #Since mouse click on tableView row cannot determine if the checkbox
                 #was clicked (which controls loading/unloading of layers) or if the 
                 #row was clicked elsewhere (which makes a layer active) we store the click
@@ -730,19 +633,15 @@ class CSIROMarineValues:
                         model.item(i, 2).setText('{:05d}'.format(neworder))
                         neworder += 1
 
-
                     model.item(row, 3).setText(self.tr('checked'))
                     #Newly loaded layer gets order 1, which is default QGIS behavious, set it on top
                     model.item(row, 2).setText('{:05d}'.format(1)) 
-                    #self.treeLayerIdx += 1
 
                     #Look up layer geometry type
                     root = QgsProject.instance().layerTreeRoot()
                     lyr3 = root.findLayer(lid).layer()
                     geot = self.geometryTypes[lyr3.geometryType()]
                     model.item(row, 1).setText(self.tr(geot))
-
-
                     self.dlg.tableView.model().sort(2)
                     return
 
@@ -760,19 +659,6 @@ class CSIROMarineValues:
                 #Checkbox has not been clicked. Process as set layer active   
                 for treeLayer in self.project.layerTreeRoot().findLayers():
                     pass
-                    #layer = treeLayer.layer()
-                    #lnam = layer.name()
-
-                    #if val_wo_ext == lnam:
-                    #    self.iface.setActiveLayer(layer)
-                    #    self.cur_lay = layer.name()
-
-                    #    if self.cur_lay.endswith('LLG'):
-                    #        self.cur_scale_id = "LLG"
-                    #    if self.cur_lay.endswith('Districts'):
-                    #        self.cur_scale_id = "Districts"
-                    #    if self.cur_lay.endswith('Features'):
-                    #        self.cur_scale_id = "Features"
 
                 layer = self.iface.activeLayer()
                 lna = layer.name()
@@ -826,50 +712,19 @@ class CSIROMarineValues:
                 #                pass #Dummy statement so next one can be rem'ed w/o failing
                                 #print "Unknown"
 
-    #                        if feature.attributes:
-    #                            attrs = feature.attributes()
-    #                            if len(attrs) > 2:
-
-    #                                arear = str(attrs[col_choice])
-    #                               gg = [attrs[idx_spatfeat],arear,attrs[idx_llg_dist]]
-    #                                attb.append(gg)
-
-    #                    model = QStandardItemModel()
-    #                    model.setColumnCount(3)
-    #                    model.setHorizontalHeaderLabels(['Scale name', 'Spatial feature', headi])
-
-    #                    for itc in attb:
-    #                        item = QStandardItem("1")
-    #                        vals = itc[1]
-
-    #                        if vals == "NULL":
-    #                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem("")])
-    #                        else:
-    #                            valf = float(vals)
-    #                            valr = round(valf,4)
-    #                            valo = "{0:.4f}".format(valr)
-    #                            model.appendRow([QStandardItem(itc[2]), QStandardItem(itc[0]),QStandardItem(valo)])
-
-    #                    self.dlg.objectInfo.setModel(model)
-
                     else:
                         self.dlg.error.setText("Layer not loaded.")
-    #            else:
-    #                model = QStandardItemModel()
-    #                self.dlg.objectInfo.setModel(model)
-    #                model.clear()
             else:
                 self.dlg.error.setText("No map layers.")
 
     def saveProjectClicked(self):
-        #project = QgsProject.instance()
         if self.project.write():
             self.dlg.error.setText("Project saved")
         else:
             self.dlg.error.setText("Project not saved. File may be write-protected.")
 
     def renderTest(self, painter):
-        # use painter for drawing to map canvas
+        #Use painter for drawing to map canvas
         print ""
 
     def tableViewRowMoved(self, row, old_index, new_index):
@@ -888,14 +743,9 @@ class CSIROMarineValues:
             model.item(i, 2).setText('{:05d}'.format(neworder))
             neworder += 1
 
-
-
-
-
         #for layer in QgsMapLayerRegistry.instance().mapLayers().values():
         #        if val_wo_ext == layer.name():
         #            QgsMapLayerRegistry.instance().removeMapLayer(layer)
-
         #Move layer from old to new position in layertree
 
         for treeLayer in self.project.layerTreeRoot().findLayers():
@@ -904,7 +754,6 @@ class CSIROMarineValues:
             print idd
             lnam = layer.name()
             print lnam
-
 
         #root = QgsProject.instance().layerTreeRoot()
         #layid = project.layerTreeRoot().findLayer(new_index).Id()
@@ -916,7 +765,6 @@ class CSIROMarineValues:
         if not path:
             return
         else:
-
             with open(unicode(path), 'wb') as stream:
                 writer = csv.writer(stream, delimiter=',')
 
@@ -955,15 +803,12 @@ class CSIROMarineValues:
                     rowdata.append(py)  
                     writer.writerow(rowdata)
 
-
-
                 writer.writerow("")
                 h = ["AREA VALUES"]
                 writer.writerow("")
                 h = ["Natural resource values"]
                 writer.writerow(h)
                 writer.writerow("")
-
 
                 h = ["Contribution of EGS"]
                 writer.writerow(h)
@@ -1041,15 +886,6 @@ class CSIROMarineValues:
                             if j == 9:
                                 sum_col9 = sum_col9 + float(totalmatrix[i][j])
 
-                #print "sum_col2: %.2f" % (sum_col2)
-                #print "sum_col4: %.2f" % (sum_col4)
-                #print "sum_col6: %.2f" % (sum_col6)
-                #print "sum_col8: %.2f" % (sum_col8)
-                #rint "sum_col9: %.2f" % (sum_col9)
-                #print totalmatrix
-
-
-
                 #Sums per contribution and scale
                 sum_contsca_col2 = []
                 for i in range(len(totalmatrix)):
@@ -1070,8 +906,6 @@ class CSIROMarineValues:
                                 upd4 = True
                         if not upd4:
                             rowda = []
-
-
                             pval = totalmatrix[i][0]
                             rowda.append(pval)
                             rowda.append("") #Placeholder for unused column 1. So indices match up with totalmatrix eventhough we don't have spatial feature/value
@@ -1082,7 +916,6 @@ class CSIROMarineValues:
                                     rowda.append(float(pval))
                                 else:
                                     rowda.append(0)
-                            #print rowda
                             sum_contsca_col2.append(rowda)
 
                 f = ["Contribution of N.R. to Overall Wellbeing (%)"]
@@ -1161,13 +994,8 @@ class CSIROMarineValues:
                     writer.writerow(e4)
                 writer.writerow("")
 
-
-
-
-
                 h = ["Contribution of EGS"]
                 writer.writerow(h)
-
 
                 tmatrix = []
                 firstmat = True
@@ -1188,7 +1016,7 @@ class CSIROMarineValues:
                                 break
                             rowdata.append(unicode(item.text()).encode('utf8'))
                         else:
-                            rowdata.append('')
+                            rowdata.append("")
                     if endproc:
                         break
                     if not esc:
@@ -1222,43 +1050,28 @@ class CSIROMarineValues:
                     for de in range(len(gg[i])):
                         lin.append(unicode(gg[i][de]).encode('utf8'))
                     writer.writerow(lin)
-                    
-
-                #Build base list of values
-                res_val = []
-                res_val.append(["Ecological regulatory values","Carbon sequestration",0])
-                res_val.append(["Ecological regulatory values","Hazard reduction",0])
-                res_val.append(["Ecological regulatory values","Water regulation",0])
-                res_val.append(["Ecosystem structure and process values","Biological diversity",0])
-                res_val.append(["Ecosystem structure and process values","Importance for ETP species or habitats",0])
-                res_val.append(["Ecosystem structure and process values","Naturalness",0])
-                res_val.append(["Ecosystem structure and process values","Productivity or nutrient cycling",0])
-                res_val.append(["Ecosystem structure and process values","Rarity/uniqueness",0])
-                res_val.append(["Ecosystem structure and process values","Vulnerability, sensitivity or slow recovery",0])
-                res_val.append(["Natural resource values","Significant Natural resource Importance",0])
-                res_val.append(["Socio-cultural values","Cultural heritage importance",0])
-                res_val.append(["Socio-cultural values","Recreational, tourism or aesthetic importance",0])
-                res_val.append(["Socio-cultural values","Spiritual importance",0])
-
-
-
-
-
                 writer.writerow("")
-                g = ["Countable values:"]
-                writer.writerow(g)
-                g = ["Value type","Count"]
-                writer.writerow(g)
+
+                isheader = False
                 for row in range(self.dlg.tableWidgetDetailCounts.rowCount()):
                     rowdata2 = []
+                    it = self.dlg.tableWidgetDetailCounts.item(row, 1).text()
+                    if it == "": #This is a header row
+                        isheader = True
+                        writer.writerow("") #Leading blank line
+                    else:
+                        isheader = False
                     for column in range(self.dlg.tableWidgetDetailCounts.columnCount()):
                         item = self.dlg.tableWidgetDetailCounts.item(row, column)
                         if item is not None:
-                            rowdata2.append(
-                                unicode(item.text()).encode('utf8'))
+                            rowdata2.append(unicode(item.text()).encode('utf8'))
                         else:
-                            rowdata2.append('')
+                            rowdata2.append("")
                     writer.writerow(rowdata2)
+                    if isheader:
+                        writer.writerow("") #Leading blank line
+                        h = ["Scale name","Value locations","Count"]
+                        writer.writerow(h)
 
 
     def pushButtonPanClicked(self):
@@ -1289,9 +1102,7 @@ class CSIROMarineValues:
             self.myRubberBand.addPoint(currentPos)
 
 
-
     def manageClick(self, currentPos, clickedButton):
-        
         if clickedButton == Qt.LeftButton:
             self.myRubberBand.addPoint(currentPos)
 
@@ -1305,7 +1116,6 @@ class CSIROMarineValues:
     def procAreaSelection(self):
         self.dlg.tableWidgetDetail.setRowCount(0)
         self.dlg.tableWidgetDetailCounts.setRowCount(0)
-
         geom_rb = self.myRubberBand.asGeometry()
 
         #Create in-memory layer from Rubberband geometry for later processing
@@ -1313,9 +1123,9 @@ class CSIROMarineValues:
         prx = vlx.dataProvider()
         # Enter editing mode
         vlx.startEditing()
-        # add fields
+        # Add fields
         prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
-        # add a feature
+        # Add a feature
         fetx = QgsFeature()
         fetx.setGeometry(geom_rb)
         fetx.setAttributes([0, "Feature"])
@@ -1345,7 +1155,6 @@ class CSIROMarineValues:
                     new_pt = (px,py)
                     self.rubberbandPoints.append(new_pt)
 
-
         ql = QgsMapLayerRegistry.instance().mapLayers().values()
         for layerIterator in ql:
             layname = layerIterator.name()
@@ -1365,9 +1174,7 @@ class CSIROMarineValues:
                                 self.cur_scale_id = "Features"
 
                             clp_lay = layer.name()
-
                             iter = layer.getFeatures()
-
                             for feature in iter:
                                 geom_feat = feature.geometry()
                             
@@ -1398,7 +1205,6 @@ class CSIROMarineValues:
     #***** AREA PERCENTAGES *************************************************************************************************
                             #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
                             if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-
 # H E A D E R
                                 #Red header for each layer
                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
@@ -1495,18 +1301,10 @@ class CSIROMarineValues:
                                                 selare_inco = cs_incos * (float(arx) / float(shapar))
                                                 selare_foosec = cs_foosecs * (float(arx) / float(shapar))
 
-
                                             rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                             self.dlg.tableWidgetDetail.insertRow(rowPosition)
                                             self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(attry[idx_llg_dist]))
                                             self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(attry[idx_spatfeat]))
-
-#                                                if csomtot:
-#                                                    # Round to four digits and display with four digits
-#                                                    csomtot = "{0:.4f}".format(round(float(csomtot),4))
-#                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(csomtot))
-#                                                else:
-#                                                    self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
 
                                             try:
                                                 rwell = float(cs_wellbs)
@@ -1550,12 +1348,6 @@ class CSIROMarineValues:
                                             except (TypeError, UnboundLocalError):
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 7, QtGui.QTableWidgetItem("Error"))
 
-
-#                                                try:
-#                                                 arx
-#                                                except (TypeError, UnboundLocalError) as e:
-#                                                else:
-                                                # Round to four digits and display with four digits
                                             try:
                                                 arx = "{0:.4f}".format(round(float(arx),4))
                                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 8, QtGui.QTableWidgetItem(arx))
@@ -1573,59 +1365,6 @@ class CSIROMarineValues:
 
                                             for col in range(0,10):
                                                 self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
-
-
-
-# This section is a remnant from when user had to select which value metric description (income, well-being, food sec.) they wanted to
-# retrieve via radio button. Three runs were required for the full set of values. After this commented block is the new logic, which
-# retrieves and displays all values in one pass
-
-#                                            #self.dlg.list_of_values
-#                                            #[0]: 17 - spatial_feature_name
-#                                            #[1]:  8 - scale_name
-#                                            #[2]:  7 - scale_id
-#                                            #[3]:  1 - value_name
-#                                            #[4]: 12 - value_metric_score - the number
-#                                            #[5]:  4 - value_type (same as next one)
-#                                            #[6]: 10 - value_metric_description - area: well-being, income, food sec.
-#                                            #[7]:      spatial_feature_id - not relevant for area calcs
-
-#                                            for cf in self.dlg.list_of_values:
-
-#                                                if (cf[2] == "llg" and self.cur_scale_id == "LLG") or (cf[2] == "dist" and self.cur_scale_id == "Districts"):
-#                                                    #Looking for all that are in the same spatial_feature category
-#                                                    if cf[0] == attry[idx_spatfeat]:
-#                                                        #Looking for all that are in the same LLG/District
-#                                                        if cf[1] == attry[idx_llg_dist]:
-
-#                                                            doInsert = False
-#                                                            if self.dlg.radioButtonWellbeing.isChecked():
-#                                                                if cf[6] == "Importance for human wellbeing":
-#                                                                    doInsert = True
-#                                                            if self.dlg.radioButtonSecurity.isChecked():
-#                                                                if cf[6] == "Importance for food security":
-#                                                                    doInsert = True
-#                                                            if self.dlg.radioButtonIncome.isChecked():
-#                                                                if cf[6] == "Importance for income":
-#                                                                    doInsert = True
-#                                                            if doInsert:
-#                                                                try:
-#                                                                    csom = float(cf[4]) * rub / float(shapar)
-#                                                                    csom = "{0:.4f}".format(round(csom,4))
-#                                                                except TypeError:
-#                                                                    csom = "Error"
-#                                                                    self.dlg.error.setText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting")
-
-#                                                                rowPosition = self.dlg.tableWidgetDetail.rowCount()
-#                                                                self.dlg.tableWidgetDetail.insertRow(rowPosition)
-#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(cf[3]))
-#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(cf[4]))
-#                                                                self.dlg.tableWidgetDetail.setItem(rowPosition, 3, QtGui.QTableWidgetItem(csom))
-#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 4, QtGui.QTableWidgetItem(cf[2]))
-#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 5, QtGui.QTableWidgetItem(cf[1]))
-#                                                                #self.dlg.tableWidgetDetail.setItem(rowPosition, 6, QtGui.QTableWidgetItem(cf[0]))
-#                                                                self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
-#                                                                self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
                                         #self.dlg.area_value_matrix:
                                         # 0 - value_name
@@ -1705,9 +1444,6 @@ class CSIROMarineValues:
                                         point_id = ""
                                         attry = f.attributes()
 
-
-                                        print attry[7]
-
                                         if attry[idx_poly_id] == None:
                                             proc_type = "POINT"
                                             point_id = "PNT_" + str(attry[idx_point_id])
@@ -1720,26 +1456,94 @@ class CSIROMarineValues:
                                                 
                                                 cc = str(cfs[7])
                                                 if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                    count_detail = count_detail + 1
+                                                    ladd2 = [cfs[1],cfs[5],cfs[8], 1]
+                                                    lstValueTypes.append(ladd2)
 
-                                                    if len(lstValueTypes) > 0:
-                                                        founda = False
-                                                        for elem in lstValueTypes:
-                                                            if elem[0] == cfs[5]:
-                                                                elem[1] = elem[1] + 1
-                                                                founda = True
-                                                        if not founda:
-                                                            ladd1 = [cfs[5],1]
-                                                            lstValueTypes.append(ladd1)
-                                                    else:
-                                                        ladd2 = [cfs[5],1]
-                                                        lstValueTypes.append(ladd2)
+                                        #Summarize per scale name and value type
+                                        restab = []
+                                        firstr = True
+                                        xfou = False
+                                        for elem in lstValueTypes:
+                                            if firstr:
+                                                ladd3 = [elem[0],elem[1],elem[2], 1]
+                                                restab.append(ladd3)
+                                                firstr = False
+                                            else:
+                                                for elo in restab:
+                                                    if elo[0] == elem[0] and elo[1] == elem[1]:
+                                                        elo[3] = elo[3] + 1
+                                                        xfou = True
+                                                        break
+                                                if not xfou:
+                                                    ladd3 = [elem[0],elem[1],elem[2], 1]
+                                                    restab.append(ladd3)
+                                                xfou = False
+                                nt = []                                                
+                                nt = sorted(restab, key = operator.itemgetter(0, 1)) #Scale name and value type which will be retained when grouped later
 
-                                for elem70 in lstValueTypes:
+                                #Reorganise list to group by value categories
+                                newtab = []
+                                fg = []
+                                fg.append("Natural resource values")
+                                fg.append("")
+                                fg.append("")
+                                newtab.append(fg)
+                                for e1 in restab:
+                                    if e1[2] == "Natural resource values":
+                                        fg = []
+                                        fg.append(e1[0])
+                                        fg.append(e1[1])
+                                        fg.append(e1[3])
+                                        newtab.append(fg)
+
+                                fg = []
+                                fg.append("Ecological regulatory values")
+                                fg.append("")
+                                fg.append("")
+                                newtab.append(fg)
+                                for e1 in restab:
+                                    if e1[2] == "Ecological regulatory values":
+                                        fg = []
+                                        fg.append(e1[0])
+                                        fg.append(e1[1])
+                                        fg.append(e1[3])
+                                        newtab.append(fg)
+
+                                fg = []
+                                fg.append("Ecosystem structure and process values")
+                                fg.append("")
+                                fg.append("")
+                                newtab.append(fg)
+                                for e1 in restab:
+                                    if e1[2] == "Ecosystem structure and process values":
+                                        fg = []
+                                        fg.append(e1[0])
+                                        fg.append(e1[1])
+                                        fg.append(e1[3])
+                                        newtab.append(fg)
+
+                                fg = []
+                                fg.append("Socio-cultural values")
+                                fg.append("")
+                                fg.append("")
+                                newtab.append(fg)
+                                for e1 in restab:
+                                    if e1[2] == "Socio-cultural values":
+                                        fg = []
+                                        fg.append(e1[0])
+                                        fg.append(e1[1])
+                                        fg.append(e1[3])
+                                        newtab.append(fg)
+
+                                for elem70 in newtab:
                                     rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
                                     self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(elem70[0]))
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem70[0])))
                                     self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem70[1])))
+                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem70[2])))
+                                    if not elem70[1]: #If second column is empty we assume it is a header and colour it
+                                        for col in range(0,2):
+                                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
                                     self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
 
         #**********************************************************************************
@@ -1791,16 +1595,10 @@ class CSIROMarineValues:
             idx_valtype = query.record().indexOf('value_type')
             idx_valmetdesc = query.record().indexOf('value_metric_description')
             idx_spatial_feature_id = query.record().indexOf('spatial_feature_id')
+            idx_valuecategory = query.record().indexOf('value_category')
 
-            #listv = [str(record.value(17)), str(record.value(8)), str(record.value(7)), str(record.value(1)), str(record.value(12)), str(record.value(4)), str(record.value(10))]
-            listv = [str(record.value(idx_spatfeatnam)), str(record.value(idx_scalenam)), str(record.value(idx_scaleid)), str(record.value(idx_valnam)), str(record.value(idx_valmetscore)), str(record.value(idx_valtype)), str(record.value(idx_valmetdesc)), str(record.value(idx_spatial_feature_id))]
+            listv = [str(record.value(idx_spatfeatnam)), str(record.value(idx_scalenam)), str(record.value(idx_scaleid)), str(record.value(idx_valnam)), str(record.value(idx_valmetscore)), str(record.value(idx_valtype)), str(record.value(idx_valmetdesc)), str(record.value(idx_spatial_feature_id)) , str(record.value(idx_valuecategory))]
             self.dlg.list_of_values.append(listv)
-
-#            for index in range(record.count()):
-#                lst = [1,2,3,4,5,6]
-#                if index in lst: #To read only second field. Change to read other fields
-#                    values.append(str(record.value(index)))
-#            print ';'.join(values)        
 
         query2 = db.exec_("select * from marine_values_value_matrix")
         while query2.next():
@@ -1859,7 +1657,6 @@ class CSIROMarineValues:
 
                 #Only read first polygon
                 return
-
 
     def pushButtonSaveSelClicked(self):
 
@@ -1923,7 +1720,6 @@ class CSIROMarineValues:
         self.dlgsavesel.labelDate.setVisible(False)
         self.dlgsavesel.fldID.setVisible(True)
         self.dlgsavesel.pushButtonReadShp.setVisible(True)
-
         self.dlgsavesel.textAOIShortT.setStyleSheet("background-color: #e5996e;")
         self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
 
@@ -1953,6 +1749,7 @@ class CSIROMarineValues:
         
     def pushButtonCancelClicked(self):
         self.dlgsavesel.close()
+
 
     def setupDia(self):
 
@@ -1994,7 +1791,6 @@ class CSIROMarineValues:
             self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(ele[2])))
             self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(ele[4])))
             self.dlgsavesel.tableWidgetAOI.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
-
 
 
     def tableWidgetAOIClicked(self, row, column):
@@ -2085,7 +1881,8 @@ class CSIROMarineValues:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh)
             else:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
-# *********************** Other Classes **********************************************
+
+#  Other Classes *********************************************************************
 # ************************************************************************************
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_dialog_save_selection_base.ui'))
@@ -2106,7 +1903,6 @@ class MVflyout(QtGui.QDialog, FORM2_CLASS):
         self.setupUi(self)
 
 
-
 class ModelObjInfo(QStandardItemModel):
     def __init__(self, parent=None):
         QtGui.QStandardItemModel.__init__(self)
@@ -2124,115 +1920,23 @@ class Model(QStandardItemModel):
         self.setColumnCount(4)
         self.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key'])
 
-
-        '''
-        qset = QSettings()
-
-        ret = qset.value("marine_values/last_opened_project") #[0]
-        if ret:
-            self.last_opened_project = qset.value("marine_values/last_opened_project")
-        else:
-            self.last_opened_project = qset.setValue("marine_values/last_opened_project", "")
-
-        if self.last_opened_project and not self.last_opened_project.isspace():
-            self.last_opened_project_dir = ntpath.dirname(self.last_opened_project)
-            onlyfiles = []
-            for f in listdir(self.last_opened_project_dir):
-                if isfile(join(self.last_opened_project_dir, f)):
-                    if f.endswith('.shp'):
-                        onlyfiles.append(f)
-        else:
-            fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
-            filep = QDir.toNativeSeparators(fileo)
-            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
-            self.last_opened_project_dir = ntpath.dirname(filep)
-            onlyfiles = []
-            for f in listdir(self.last_opened_project_dir):
-                if isfile(join(self.last_opened_project_dir, f)):
-                    if f.endswith('.shp'):
-                        onlyfiles.append(f)
-        '''
 #TESTTEST WFS
 #        tt = "MarineValuesNewBritainTestLLG"
 #        onlyfiles.append(tt)
 #TESTTEST
 
-        '''
-        if not len(onlyfiles):
-            self.dlg.error.setText("Default directory does not contain any spatial files.")
-        else:
-            if not self.filled:
-                self.filled = True
-                onlyfiles.sort()
-                for fil in onlyfiles:
-                    self.d = QStandardItem(fil)
-                    self.d.setTextAlignment(QtCore.Qt.AlignLeft)
-                    self.d.setText = "testing"
-                    self.d.setCheckable(True) 
-                    #self.d.setFlags(QtCore.Qt.ItemIsUserCheckable| QtCore.Qt.ItemIsEnabled)
-                    qsi = QStandardItem('unknown')
-                    qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
-                    self.appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
-                #Add row which is the divider between loaded and unloaded layers
-                self.appendRow([QStandardItem('Unloaded but available layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
-
-
-        #self.d = QStandardItem("asd")
-        #self.d.setCheckable(True)
-        #self.d.setFlags(Qt.ItemIsUserCheckable| Qt.ItemIsEnabled)
-        #self.appendRow(self.d)
-
-                #item = QStandardItem(fil)
-                #item.setCheckable(True)
-                #self.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
-
-        '''
 
     def data(self, index, role):
         if index.isValid():
             if role == QtCore.Qt.CheckStateRole:
                 return super(Model, self).data(index, QtCore.Qt.CheckStateRole)
 
-
-            '''if role == QtCore.Qt.ToolTipRole:
-                print "******* TooTipRole"
-                return self.items[row][column]
-
-            if role == QtCore.Qt.EditRole:
-                print "******* Edit or display"
-                return self.items[row][column]
-                #return self.d.text()
-                pass
-
-            if role == QtCore.Qt.DisplayRole:
-                print "******* Display"
-                return self.items[row][column]
-                #return self.d.text()
-                pass'''
-
-            # Don't delete this line. Makes display go funny
+            # Don't delete this line. Fixes  display going funny
             return super(Model, self).data(index, QtCore.Qt.DisplayRole)
 
-            #print "******* Default"
-            #return QStandardItemModel.data(self, index, role)                #return self.checkState(index)
-                #if value != 0:
-                #    return QtCore.Qt.Checked
-                #else:
-                #    return QtCore.Qt.Unchecked
-
-            #if role == QtCore.Qt.ItemDataRole:
-                #print "role itemdatarole -----------------------"
-            #    return self.data(index)
-            #elif role==QtCore.Qt.DisplayRole:                
-                #print "role displayrole -----------------------"
-            #    return QtCore.QVariant(self.items[index.row()])
-        #else:
-            #print "Index not valid"
 
     def checkState(self, index):
         if index in self.checks:
             return self.checks[index]
         else:
             return QtCore.Qt.Unchecked
-
-

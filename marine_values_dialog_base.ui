@@ -311,6 +311,11 @@
    </property>
    <column>
     <property name="text">
+     <string>Scale name</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
      <string>Value type</string>
     </property>
    </column>
