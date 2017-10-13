@@ -7,14 +7,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=CSIRO Marine Values
+name=CSIRO ELVIS
 qgisMinimumVersion=2.0
-description=CSIRO Marine values plugin. Management of marine value layers
+description=CSIRO ELVIS Environmental Values Interrogation System
 version=0.1
 author=CSIRO Oceans and Atmosphere Chris Moeseneder
 email=chris.moeseneder@csiro.au
 
-about=This plugin is the main component of the CSIRO Marine Values management system. It provides the user with a simple way of managing marine values in the Pacific area which includes displaying previously created shapefiles and creating new features.
+about=This plugin is the main component of CSIRO ELVIS Environmental Values Interrogation System.
 
 tracker=https://github.com/csiro-chris-m/marine_values
 repository=https://github.com/csiro-chris-m/marine_values

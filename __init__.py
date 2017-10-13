@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- CSIROMarineValues
+ ELVIS
                                  A QGIS plugin
- CSIRO Marine values plugin. Management of marine value layers
+ CSIRO Environmental Values Interrogation System plugin
                              -------------------
         begin                : 2016-12-25
         copyright            : (C) 2016 by CSIRO Oceans and Atmosphere Chris Moeseneder
