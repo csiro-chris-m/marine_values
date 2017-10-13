@@ -53,7 +53,8 @@
  *      ending in ... .LLG       - Processing as per LLGs                  *
  *      ending in ... .Districts - Processing as per Disctrics             *
  *      ending in ... .Features  - Processing as per countable features    *
- *                               without scale                             *
+ *      ending in ... .ECOvalues - Processing as per countable features    *
+ *                                 without scale                           *
  *                                                                         *
  ***************************************************************************/
 """
@@ -313,6 +314,7 @@ class CSIROMarineValues:
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
         self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
         self.dlg.openProj.clicked.connect(self.openProjClicked)
+        self.dlg.delRubber.clicked.connect(self.delRubberClicked)
         self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
         # Set up tableView table ****************************
@@ -527,6 +529,18 @@ class CSIROMarineValues:
             self.GUILayersResync()
 
 
+    def delRubberClicked(self):
+        self.delRubberband()
+
+
+    def delRubberband(self):
+        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
+        for treeLayer in self.project.layerTreeRoot().findLayers():                
+            layer_f2 = treeLayer.layer()
+            if layer_f2.name() == "rubber_band":
+                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
     def GUILoadProjectLayers(self):
         self.treeLayerIdx = 0
         position = {}
@@ -537,7 +551,7 @@ class CSIROMarineValues:
             if isfile(join(self.last_opened_project_dir, f)):
                 if f.endswith('.shp'):
                     print basename(f)
-                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp'):
+                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
                         onlyfiles.append(f)
 
         onlyfiles.sort()
@@ -685,6 +699,8 @@ class CSIROMarineValues:
                     self.cur_scale_id = "Districts"
                 if lna.endswith('Features'):
                     self.cur_scale_id = "Features"
+                if lna.endswith('ECOvalues'):
+                    self.cur_scale_id = "ECOvalues"
 
                 if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
                     if layer:
@@ -1101,6 +1117,9 @@ class CSIROMarineValues:
         self.iface.actionZoomOut().trigger()
 
     def rubberbandClicked(self):
+        #Delete any pre-existing rubberband layer
+        self.delRubberband()
+
         self.rubberbandPoints = []
         self.previousMapTool = self.iface.mapCanvas().mapTool()
         self.myMapTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
@@ -1135,6 +1154,9 @@ class CSIROMarineValues:
         self.dlg.tableWidgetDetailCounts.setRowCount(0)
         geom_rb = self.myRubberBand.asGeometry()
 
+        #Delete any pre-existing rubberband layer
+        self.delRubberband()
+
         #Create in-memory layer from Rubberband geometry for later processing
         vlx = QgsVectorLayer("Polygon?crs=epsg:4326", "rubber_band", "memory")
         prx = vlx.dataProvider()
@@ -1147,17 +1169,23 @@ class CSIROMarineValues:
         fetx.setGeometry(geom_rb)
         fetx.setAttributes([0, "Feature"])
         prx.addFeatures( [ fetx ] )
-        vlx.updateExtents()
 
-        # Commit changes
+        #Change rubberband appearance
+        symbol = QgsSymbolV2.defaultSymbol(vlx.geometryType())
+        symbol.setColor(QColor.fromRgb(222,109,170))
+        symbol.setAlpha(0.6)
+        registry = QgsSymbolLayerV2Registry.instance()
+        lineMeta = registry.symbolLayerMetadata("SimpleLine")
+        lineLayer = lineMeta.createSymbolLayer({'width': '1', 'color': '142,28,107'})
+        symbol.appendSymbolLayer(lineLayer)
+
+        vlx.rendererV2().setSymbol(symbol)
         vlx.commitChanges()
         QgsMapLayerRegistry.instance().addMapLayers([vlx])
 
         #Getting coordinates to save rubber band to tableViewRB
         clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
-        symbol = QgsSymbolV2.defaultSymbol(clay.geometryType())
-        symbol.setColor(QColor("transparent"))
-        clay.rendererV2().setSymbol(symbol)
+
 
         cfeat = clay.getFeatures()
         temp_geom = []
@@ -1189,6 +1217,8 @@ class CSIROMarineValues:
                                 self.cur_scale_id = "Districts"
                             if layname.endswith('Features'):
                                 self.cur_scale_id = "Features"
+                            if layname.endswith('ECOvalues'):
+                                self.cur_scale_id = "ECOvalues"
 
                             clp_lay = layer.name()
                             iter = layer.getFeatures()
@@ -1436,7 +1466,7 @@ class CSIROMarineValues:
 
                             #For layers which are processed in counts: Features
 
-                            if self.cur_scale_id == "Features":
+                            if self.cur_scale_id == "Features" or self.cur_scale_id == "ECOvalues":
 # H E A D E R
                                 #Red header for each layer
                                 rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
@@ -1576,12 +1606,13 @@ class CSIROMarineValues:
 
         if self.RBMode == "user":
             self.myMapTool.deleteLater()
-        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
 
-        for treeLayer in self.project.layerTreeRoot().findLayers():                
-            layer_f2 = treeLayer.layer()
-            if layer_f2.name() == "rubber_band":
-                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+#        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
+
+#        for treeLayer in self.project.layerTreeRoot().findLayers():                
+#            layer_f2 = treeLayer.layer()
+#            if layer_f2.name() == "rubber_band":
+#                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
 
     def readSQLiteDB(self):
