@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
+    <width>621</width>
     <height>655</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>511</width>
+     <width>601</width>
      <height>611</height>
     </rect>
    </property>
@@ -29,7 +29,7 @@
    </column>
    <column>
     <property name="text">
-     <string>Polygon</string>
+     <string>Poly/Pt</string>
     </property>
    </column>
    <column>
@@ -46,8 +46,8 @@
   <widget class="QPushButton" name="butCloseInfo2">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>625</y>
+     <x>537</x>
+     <y>627</y>
      <width>75</width>
      <height>23</height>
     </rect>

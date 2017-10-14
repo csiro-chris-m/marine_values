@@ -550,18 +550,17 @@ class CSIROMarineValues:
         self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
         self.dlginfo2.setModal(False)
         QApplication.setOverrideCursor(Qt.WhatsThisCursor);
-        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlginfo2)
+        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
         self.iface.mapCanvas().setMapTool(tool2)
         self.dlginfo2.tableWidget.setColumnWidth(0,200)
         self.dlginfo2.tableWidget.setColumnWidth(1,70)
-        self.dlginfo2.tableWidget.setColumnWidth(2,11)
-        self.dlginfo2.tableWidget.setColumnWidth(3,90)
+        self.dlginfo2.tableWidget.setColumnWidth(2,150)
+        self.dlginfo2.tableWidget.setColumnWidth(3,150)
         self.dlginfo2.show()
         self.dlginfo2.setWindowTitle("ELVIS feature info")
 
 
     def butCloseInfo2Clicked(self):
-        QApplication.restoreOverrideCursor()
         self.dlginfo2.close()
 
 
@@ -1667,6 +1666,23 @@ class CSIROMarineValues:
             idx_metricscoresource = query.record().indexOf('metric_score_source')
             idx_metricscorecontact = query.record().indexOf('metric_score_contact')
 
+            self.dlg.list_of_values_fields = []
+            self.dlg.list_of_values_fields.append(['Spatial feature name', 'spatial_feature_name', idx_spatfeatnam])
+            self.dlg.list_of_values_fields.append(['Scale name', 'scale_name', idx_scalenam])
+            self.dlg.list_of_values_fields.append(['Scale id', 'scale_id', idx_scaleid])
+            self.dlg.list_of_values_fields.append(['Value name', 'value_name', idx_valnam])
+            self.dlg.list_of_values_fields.append(['Value metric score', 'value_metric_score', idx_valmetscore])
+            self.dlg.list_of_values_fields.append(['Value type', 'value_type', idx_valtype])
+            self.dlg.list_of_values_fields.append(['Value metric description', 'value_metric_description', idx_valmetdesc])
+            self.dlg.list_of_values_fields.append(['Spatial feature id', 'spatial_feature_id', idx_spatial_feature_id])
+            self.dlg.list_of_values_fields.append(['Value category', 'value_category', idx_valuecategory])
+            self.dlg.list_of_values_fields.append(['Scale type', 'scale_type', idx_scaletype])
+            self.dlg.list_of_values_fields.append(['Value metric units', 'value_metric_units', idx_valuemetricunits])
+            self.dlg.list_of_values_fields.append(['Spatial feature description', 'spatial_feature_description', idx_spatfeatdesc])
+            self.dlg.list_of_values_fields.append(['Date collected', 'date_collected', idx_datecollected])
+            self.dlg.list_of_values_fields.append(['Metric score source', 'metric_score_source', idx_metricscoresource])
+            self.dlg.list_of_values_fields.append(['Metric score contact', 'metric_score_contact', idx_metricscorecontact])
+
             # **************************************************************************
             # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygosn and points in the shapefiles)
             listv = [str(record.value(idx_spatfeatnam)),      # 0 - Spatial feature name
@@ -1682,9 +1698,9 @@ class CSIROMarineValues:
                str(record.value(idx_valuemetricunits)),       #10 - Value metric units
                str(record.value(idx_spatfeatdesc)),           #11 - Spatial feature description
                str(record.value(idx_datecollected)),          #12 - Date collected
-               str(record.value(idx_metricscorecontact))]     #13 - Metric score contact
+               str(record.value(idx_metricscoresource)),      #13 - Metric score source
+               str(record.value(idx_metricscorecontact))]     #14 - Metric score contact
             # **************************************************************************
-
             self.dlg.list_of_values.append(listv)
 
         query2 = db.exec_("select * from marine_values_value_matrix")
@@ -1998,6 +2014,9 @@ class MVinfo2(QtGui.QDialog, FORM4_CLASS):
         super(MVinfo2, self).__init__(parent)
         self.setupUi(self)
 
+    def closeEvent(self, event):
+        QApplication.restoreOverrideCursor()
+
 
 class ModelObjInfo(QStandardItemModel):
     def __init__(self, parent=None):
@@ -2039,10 +2058,11 @@ class Model(QStandardItemModel):
 
 
 class PointTool2(QgsMapTool):   
-    def __init__(self, canvas, dlist_of_values, info_window):
+    def __init__(self, canvas, dlist_of_values, dlist_of_values_fields, info_window):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas  
         self.dlist_of_values = dlist_of_values
+        self.dlist_of_values_fields = dlist_of_values_fields
         self.info_window = info_window
 
     def canvasReleaseEvent(self, event):
@@ -2057,6 +2077,8 @@ class PointTool2(QgsMapTool):
         self.info_window.tableWidget.setRowCount(0)
 
         regmap = QgsMapLayerRegistry.instance().mapLayers().values()
+        curcol = QColor.fromRgb(198,187,107)
+        col_alt = True
         for lay in regmap:
             layname = lay.name()
             #Only processing vector layers
@@ -2094,23 +2116,41 @@ class PointTool2(QgsMapTool):
                                             cc = str(cfs[7])
                                             if (value_type == str(cfs[5])):
                                                 if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                    rowPosition = self.info_window.tableWidget.rowCount()
-                                                    self.info_window.tableWidget.insertRow(rowPosition)
-                                                    self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Value name"))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[3]))
-                                                    self.info_window.tableWidget.setRowHeight(rowPosition,17) 
 
-                                                    rowPosition = self.info_window.tableWidget.rowCount()
-                                                    self.info_window.tableWidget.insertRow(rowPosition)
-                                                    self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Value metric score"))
-                                                    self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[4]))
-                                                    self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+                                                    if col_alt:
+                                                        curcol = QColor.fromRgb(198,187,107)
+                                                    else:
+                                                        curcol = QColor.fromRgb(255,255,255)
+
+                                                    idx = 0
+                                                    for val in self.dlist_of_values_fields:
+                                                        if (val[0] == 'Value name' 
+                                                        or val[0] == 'Value category' 
+                                                        or val[0] == 'Value type' 
+                                                        or val[0] == 'Scale type'
+                                                        or val[0] == 'Scale name'
+                                                        or val[0] == 'Value metric description'
+                                                        or val[0] == 'Value metric units'
+                                                        or val[0] == 'Value metric score'
+                                                        or val[0] == 'Spatial feature name'
+                                                        or val[0] == 'Spatial feature description'
+                                                        or val[0] == 'Date collected'
+                                                        or val[0] == 'Metric score source'
+                                                        or val[0] == 'Metric score contact'):
+
+                                                            rowPosition = self.info_window.tableWidget.rowCount()
+                                                            self.info_window.tableWidget.insertRow(rowPosition)
+                                                            self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
+                                                            self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+                                                            for col in range(0,4):
+                                                                self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
+                                                        idx = idx + 1
+                                                    col_alt = not col_alt
         #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
-        pttxt = "Point at : " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
+        pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
         self.info_window.labelCoord.setText(pttxt)
         self.info_window.show()
         self.info_window.activateWindow()
