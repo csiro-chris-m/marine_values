@@ -40,7 +40,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>214</y>
+     <y>216</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -105,7 +105,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>189</y>
+     <y>193</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -236,7 +236,7 @@
   <widget class="QPushButton" name="pushButtonPan">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>190</x>
      <y>174</y>
      <width>21</width>
      <height>23</height>
@@ -252,7 +252,7 @@
   <widget class="QPushButton" name="pushButtonZoomPlus">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>143</x>
      <y>174</y>
      <width>21</width>
      <height>23</height>
@@ -268,7 +268,7 @@
   <widget class="QPushButton" name="pushButtonZoomMinus">
    <property name="geometry">
     <rect>
-     <x>173</x>
+     <x>166</x>
      <y>174</y>
      <width>21</width>
      <height>23</height>
@@ -285,7 +285,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>164</y>
+     <y>170</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -329,7 +329,7 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>224</y>
+     <y>197</y>
      <width>80</width>
      <height>23</height>
     </rect>
@@ -367,7 +367,7 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>211</x>
+     <x>191</x>
      <y>158</y>
      <width>21</width>
      <height>16</height>
@@ -380,7 +380,7 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>159</x>
+     <x>152</x>
      <y>158</y>
      <width>31</width>
      <height>16</height>
@@ -475,7 +475,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>240</y>
+     <y>239</y>
      <width>81</width>
      <height>23</height>
     </rect>
@@ -508,6 +508,19 @@
    </property>
    <property name="text">
     <string>Delete rubberband</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnInfo2">
+   <property name="geometry">
+    <rect>
+     <x>213</x>
+     <y>174</y>
+     <width>21</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

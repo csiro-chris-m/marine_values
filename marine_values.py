@@ -74,8 +74,8 @@ import operator
 import qgis.utils
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar
-from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication
+from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from marine_values_dialog import CSIROMarineValuesDialog
 from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
@@ -84,6 +84,7 @@ from PyQt4 import QtCore
 from os import listdir
 from os.path import isfile, join, basename
 from qgis.core import *
+from qgis.core import QgsWKBTypes
 from qgis.core import QgsMapLayer
 from qgis.core import QgsProviderRegistry
 from qgis.utils import QGis
@@ -317,6 +318,10 @@ class CSIROMarineValues:
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
         self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
+        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
+        self.dlg.btnInfo2.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.btnInfo2.clicked.connect(self.btnInfo2Clicked)
+
         # Set up tableView table ****************************
         self.dlg.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.dlg.tableView.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -522,7 +527,6 @@ class CSIROMarineValues:
             #Must instantiate bridge to sync stand-alone project with map tree        
             bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
             self.project.read(QFileInfo(fileo))
-
             self.dlg.tableWidgetDetail.setRowCount(0)
             self.dlg.tableWidgetDetailCounts.setRowCount(0)
             self.GUILoadProjectLayers()
@@ -539,6 +543,26 @@ class CSIROMarineValues:
             layer_f2 = treeLayer.layer()
             if layer_f2.name() == "rubber_band":
                 QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
+    def btnInfo2Clicked(self):
+        self.dlginfo2 = MVinfo2()
+        self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
+        self.dlginfo2.setModal(False)
+        QApplication.setOverrideCursor(Qt.WhatsThisCursor);
+        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlginfo2)
+        self.iface.mapCanvas().setMapTool(tool2)
+        self.dlginfo2.tableWidget.setColumnWidth(0,200)
+        self.dlginfo2.tableWidget.setColumnWidth(1,70)
+        self.dlginfo2.tableWidget.setColumnWidth(2,11)
+        self.dlginfo2.tableWidget.setColumnWidth(3,90)
+        self.dlginfo2.show()
+        self.dlginfo2.setWindowTitle("ELVIS feature info")
+
+
+    def butCloseInfo2Clicked(self):
+        QApplication.restoreOverrideCursor()
+        self.dlginfo2.close()
 
 
     def GUILoadProjectLayers(self):
@@ -1626,14 +1650,6 @@ class CSIROMarineValues:
         query = db.exec_("select * from marine_values_all")
         while query.next():
             record = query.record()
-            #Getting these fields:
-            # 17 - spatial_feature_name  * used to query
-            #  8 - scale_name            * used to query
-            #  7 - scale_id              * used to query
-            #  1 - value_name
-            # 12 - value_metric_score
-            #  4 - value_type
-            # 10 - value_metric_description
 
             idx_spatfeatnam = query.record().indexOf('spatial_feature_name')
             idx_scalenam = query.record().indexOf('scale_name')
@@ -1644,8 +1660,31 @@ class CSIROMarineValues:
             idx_valmetdesc = query.record().indexOf('value_metric_description')
             idx_spatial_feature_id = query.record().indexOf('spatial_feature_id')
             idx_valuecategory = query.record().indexOf('value_category')
+            idx_scaletype = query.record().indexOf('scale_type')
+            idx_valuemetricunits = query.record().indexOf('value_metric_units')
+            idx_spatfeatdesc = query.record().indexOf('spatial_feature_description')
+            idx_datecollected = query.record().indexOf('date_collected')
+            idx_metricscoresource = query.record().indexOf('metric_score_source')
+            idx_metricscorecontact = query.record().indexOf('metric_score_contact')
 
-            listv = [str(record.value(idx_spatfeatnam)), str(record.value(idx_scalenam)), str(record.value(idx_scaleid)), str(record.value(idx_valnam)), str(record.value(idx_valmetscore)), str(record.value(idx_valtype)), str(record.value(idx_valmetdesc)), str(record.value(idx_spatial_feature_id)) , str(record.value(idx_valuecategory))]
+            # **************************************************************************
+            # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygosn and points in the shapefiles)
+            listv = [str(record.value(idx_spatfeatnam)),      # 0 - Spatial feature name
+               str(record.value(idx_scalenam)),               # 1 - Scale name
+               str(record.value(idx_scaleid)),                # 2 - Scale id
+               str(record.value(idx_valnam)),                 # 3 - Value name
+               str(record.value(idx_valmetscore)),            # 4 - Value metric score
+               str(record.value(idx_valtype)),                # 5 - Value type
+               str(record.value(idx_valmetdesc)),             # 6 - Value metric description
+               str(record.value(idx_spatial_feature_id)),     # 7 - Spatial feature id
+               str(record.value(idx_valuecategory)),          # 8 - Value category
+               str(record.value(idx_scaletype)),              # 9 - Scale type
+               str(record.value(idx_valuemetricunits)),       #10 - Value metric units
+               str(record.value(idx_spatfeatdesc)),           #11 - Spatial feature description
+               str(record.value(idx_datecollected)),          #12 - Date collected
+               str(record.value(idx_metricscorecontact))]     #13 - Metric score contact
+            # **************************************************************************
+
             self.dlg.list_of_values.append(listv)
 
         query2 = db.exec_("select * from marine_values_value_matrix")
@@ -1951,6 +1990,15 @@ class MVflyout(QtGui.QDialog, FORM2_CLASS):
         self.setupUi(self)
 
 
+FORM4_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_info2.ui'))
+
+class MVinfo2(QtGui.QDialog, FORM4_CLASS):
+    def __init__(self, parent=None):
+        """Constructor."""
+        super(MVinfo2, self).__init__(parent)
+        self.setupUi(self)
+
+
 class ModelObjInfo(QStandardItemModel):
     def __init__(self, parent=None):
         QtGui.QStandardItemModel.__init__(self)
@@ -1988,3 +2036,82 @@ class Model(QStandardItemModel):
             return self.checks[index]
         else:
             return QtCore.Qt.Unchecked
+
+
+class PointTool2(QgsMapTool):   
+    def __init__(self, canvas, dlist_of_values, info_window):
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas  
+        self.dlist_of_values = dlist_of_values
+        self.info_window = info_window
+
+    def canvasReleaseEvent(self, event):
+        #Get the click
+        x = event.pos().x()
+        y = event.pos().y()
+        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+        print ""
+        print "************************"
+        print ""
+        print point
+        self.info_window.tableWidget.setRowCount(0)
+
+        regmap = QgsMapLayerRegistry.instance().mapLayers().values()
+        for lay in regmap:
+            layname = lay.name()
+            #Only processing vector layers
+            if lay.type() == QgsMapLayer.VectorLayer:
+                if lay.geometryType() == 2:
+                    #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
+                    if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
+                        if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                            fiter = lay.getFeatures()
+                            for feature in fiter:
+                                poly = feature.geometry()
+                                #Does this polygon contain the mouse click ?
+                                if poly.contains(point):
+                                    #Access the polygon's data in the SQLite DB
+                                    idx_poly_id = lay.fieldNameIndex('poly_id')
+                                    idx_point_id = lay.fieldNameIndex('point_1')
+                                    idx_value_type = lay.fieldNameIndex('value_type')
+                                    proc_type = ""
+                                    if feature.attributes:
+                                        poly_id = ""
+                                        point_id = ""
+                                        attry = feature.attributes()
+                                        #print "Shapefile %s" % (attry)
+                                        value_type = str(attry[idx_value_type])
+                                        poly_or_point_id = ""
+                                        if attry[idx_poly_id] == None:
+                                            proc_type = "POINT"
+                                            point_id = "PNT_" + str(attry[idx_point_id])
+                                            poly_or_point_id = "PNT_" + str(attry[idx_point_id])
+                                        else:
+                                            proc_type = "POLY"
+                                            poly_id = "POLY_" + str(attry[idx_poly_id])
+                                            poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
+                                        for cfs in self.dlist_of_values:
+                                            cc = str(cfs[7])
+                                            if (value_type == str(cfs[5])):
+                                                if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                    rowPosition = self.info_window.tableWidget.rowCount()
+                                                    self.info_window.tableWidget.insertRow(rowPosition)
+                                                    self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Value name"))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[3]))
+                                                    self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+
+                                                    rowPosition = self.info_window.tableWidget.rowCount()
+                                                    self.info_window.tableWidget.insertRow(rowPosition)
+                                                    self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem("Value metric score"))
+                                                    self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[4]))
+                                                    self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+        #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
+        pttxt = "Point at : " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
+        self.info_window.labelCoord.setText(pttxt)
+        self.info_window.show()
+        self.info_window.activateWindow()
+
