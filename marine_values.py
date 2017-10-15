@@ -980,15 +980,16 @@ class CSIROMarineValues:
                 f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
                 writer.writerow(f)
                 rwd3 = []
-                for srw in sum_contsca_col2:
-                    rwd3.append(unicode(srw[0]).encode('utf8'))
-                    rwd3.append("")
-                    rwd3.append(unicode(srw[2]).encode('utf8'))
-                    rwd3.append(unicode(srw[3]).encode('utf8'))
-                    perse = srw[3] / srw[2] * 100
-                    rwd3.append(unicode(perse).encode('utf8'))
-                    writer.writerow(rwd3)
-                    rwd3 = []
+                if sum_contsca_col2:
+                    for srw in sum_contsca_col2:
+                        rwd3.append(unicode(srw[0]).encode('utf8'))
+                        rwd3.append("")
+                        rwd3.append(unicode(srw[2]).encode('utf8'))
+                        rwd3.append(unicode(srw[3]).encode('utf8'))
+                        perse = srw[3] / srw[2] * 100
+                        rwd3.append(unicode(perse).encode('utf8'))
+                        writer.writerow(rwd3)
+                        rwd3 = []
                 writer.writerow("")
 
                 f = ["Contribution of N.R. to Overall Income (%)"]
@@ -997,16 +998,17 @@ class CSIROMarineValues:
                 f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
                 writer.writerow(f)
                 rwd3 = []
-                for srw in sum_contsca_col2:
-                    rwd3.append(unicode(srw[0]).encode('utf8'))
-                    rwd3.append("")
-                    rwd3.append(unicode(srw[4]).encode('utf8'))
-                    rwd3.append(unicode(srw[5]).encode('utf8'))
-                    perse = srw[5] / srw[4] * 100
-                    rwd3.append(unicode(perse).encode('utf8'))
-                    writer.writerow(rwd3)
-                    rwd3 = []
-                writer.writerow("")
+                if sum_contsca_col2:
+                    for srw in sum_contsca_col2:
+                        rwd3.append(unicode(srw[0]).encode('utf8'))
+                        rwd3.append("")
+                        rwd3.append(unicode(srw[4]).encode('utf8'))
+                        rwd3.append(unicode(srw[5]).encode('utf8'))
+                        perse = srw[5] / srw[4] * 100
+                        rwd3.append(unicode(perse).encode('utf8'))
+                        writer.writerow(rwd3)
+                        rwd3 = []
+                    writer.writerow("")
 
                 f = ["Contribution of N.R. to Overall Food security (%)"]
                 writer.writerow(f)
@@ -1014,16 +1016,17 @@ class CSIROMarineValues:
                 f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
                 writer.writerow(f)
                 rwd3 = []
-                for srw in sum_contsca_col2:
-                    rwd3.append(unicode(srw[0]).encode('utf8'))
-                    rwd3.append("")
-                    rwd3.append(unicode(srw[6]).encode('utf8'))
-                    rwd3.append(unicode(srw[7]).encode('utf8'))
-                    perse = srw[7] / srw[6] * 100
-                    rwd3.append(unicode(perse).encode('utf8'))
-                    writer.writerow(rwd3)
-                    rwd3 = []
-                writer.writerow("")
+                if sum_contsca_col2:
+                    for srw in sum_contsca_col2:
+                        rwd3.append(unicode(srw[0]).encode('utf8'))
+                        rwd3.append("")
+                        rwd3.append(unicode(srw[6]).encode('utf8'))
+                        rwd3.append(unicode(srw[7]).encode('utf8'))
+                        perse = srw[7] / srw[6] * 100
+                        rwd3.append(unicode(perse).encode('utf8'))
+                        writer.writerow(rwd3)
+                        rwd3 = []
+                    writer.writerow("")
 
                 h = ["Contribution of Features"]
                 writer.writerow(h)
@@ -1229,7 +1232,6 @@ class CSIROMarineValues:
             #Only processing vector layers
             if layerIterator.type() == QgsMapLayer.VectorLayer:
 #POINT PROCESSING NEW
-                #if layerIterator.geometryType() == 2: #or layerIterator.geometryType() == QGis.Point:
                 if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
                     #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                     if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
@@ -1327,24 +1329,6 @@ class CSIROMarineValues:
                                                 arx = str(ar[0])
                                                 rub = ar[0] #rub is used further down where each sub area is retrieved from list
                                                 shapar = attry[idx_shapar] #shapar (feature area) is used further down where each sub area is retrieved from list
-
-#                                                    for cfs in self.dlg.list_of_values:
-#                                                        if (cfs[2] == "llg" and self.cur_scale_id == "LLG") or (cfs[2] == "dist" and self.cur_scale_id == "Districts"):
-#                                                            if cfs[0] == attry[idx_spatfeat]:
-#                                                                if cfs[1] == attry[idx_llg_dist]:
-#                                                                    doInsert = False
-#                                                                    if self.dlg.radioButtonWellbeing.isChecked():
-#                                                                        if cfs[6] == "Importance for human wellbeing":
-#                                                                            doInsert = True
-#                                                                    if self.dlg.radioButtonSecurity.isChecked():
-#                                                                        if cfs[6] == "Importance for food security":
-#                                                                            doInsert = True
-#                                                                    if self.dlg.radioButtonIncome.isChecked():
-#                                                                        if cfs[6] == "Importance for income":
-#                                                                            doInsert = True
-#                                                                    if doInsert:
-#                                                                        csomt = float(cfs[4])
-#                                                                        csomtot = csomtot + csomt
 
                                                 #self.dlg.area_value_matrix:
                                                 # 0 - value_name
@@ -1510,39 +1494,46 @@ class CSIROMarineValues:
                                 for f in res_feat:
                                     res_geom = f.geometry()
                                     idx_poly_id = res_lay.fieldNameIndex('poly_id')
-                                    idx_point_id = res_lay.fieldNameIndex('point_1')                                
+                                    idx_point_id = res_lay.fieldNameIndex('point_1')
                                     proc_type = ""
                                     if f.attributes:
                                         poly_id = ""
                                         point_id = ""
+                                        attct = 0
                                         attry = f.attributes()
-
-                                        if attry[idx_poly_id] == None:
-                                            proc_type = "POINT"
-                                            point_id = "PNT_" + str(attry[idx_point_id])
+                                        if attry[idx_poly_id] == None or idx_poly_id == -1: #Poly ID field empty or not found 
+                                            if idx_point_id > -1: #Point ID field found
+                                                proc_type = "POINT"
+                                                point_id = "PNT_" + str(attry[idx_point_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
                                         else:
-                                            proc_type = "POLY"
-                                            poly_id = "POLY_" + str(attry[idx_poly_id])
+                                            if idx_poly_id > -1: #Poly ID field found
+                                                    proc_type = "POLY"
+                                                    poly_id = "POLY_" + str(attry[idx_poly_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
                                         count_detail = 0
-                                        for cfs in self.dlg.list_of_values:
-                                            if cfs[5] in ["Carbon sequestration"
-                                               ,"Hazard reduction"
-                                               ,"Water regulation"
-                                               ,"Biological diversity"
-                                               ,"Importance for ETP species or habitats"
-                                               ,"Naturalness"
-                                               ,"Productivity or nutrient cycling"
-                                               ,"Rarity/uniqueness"
-                                               ,"Vulnerability, sensitivity or slow recovery"
-                                               ,"Natural resources"
-                                               ,"Cultural heritage importance"
-                                               ,"Recreational, tourism or aesthetic importance"
-                                               ,"Spiritual importance"]:
-                                                
-                                                cc = str(cfs[7])
-                                                if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                    ladd2 = [cfs[1],cfs[5],cfs[8], 1]
-                                                    lstValueTypes.append(ladd2)
+                                        if proc_type != "NONE":
+                                            for cfs in self.dlg.list_of_values:
+                                                #Check it is in value type
+                                                if cfs[5] in ["Carbon sequestration"
+                                                   ,"Hazard reduction"
+                                                   ,"Water regulation"
+                                                   ,"Biological diversity"
+                                                   ,"Importance for ETP species or habitats"
+                                                   ,"Naturalness"
+                                                   ,"Productivity or nutrient cycling"
+                                                   ,"Rarity/uniqueness"
+                                                   ,"Vulnerability, sensitivity or slow recovery"
+                                                   ,"Natural resources"
+                                                   ,"Cultural heritage importance"
+                                                   ,"Recreational, tourism or aesthetic importance"
+                                                   ,"Spiritual importance"]:
+                                                    cc = str(cfs[7])
+                                                    if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                        ladd2 = [cfs[1],cfs[5],cfs[8], 1]
+                                                        lstValueTypes.append(ladd2)
                                 #Summarize per scale name and value type
                                 firstr = True
                                 xfou = False
@@ -1563,8 +1554,7 @@ class CSIROMarineValues:
                                         xfou = False
                                 nt = []                                                
                                 nt = sorted(restab, key = operator.itemgetter(0, 1)) #Scale name and value type which will be retained when grouped later
-#POINT PROCESSING NEW
-                                #Un-rem next line and indent all below it
+
                                 if res_feat:
 
                                     #Reorganise list to group by value categories
@@ -2100,73 +2090,92 @@ class PointTool2(QgsMapTool):
         for lay in regmap:
             layname = lay.name()
             #Only processing vector layers
+
+
             if lay.type() == QgsMapLayer.VectorLayer:
-                if lay.geometryType() == 2:
-                    #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
-                    if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
-                        if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
+                if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
+                    if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                        if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
                             fiter = lay.getFeatures()
                             for feature in fiter:
-                                poly = feature.geometry()
+                                fgem = feature.geometry()
                                 #Does this polygon contain the mouse click ?
-                                if poly.contains(point):
-                                    #Access the polygon's data in the SQLite DB
-                                    idx_poly_id = lay.fieldNameIndex('poly_id')
-                                    idx_point_id = lay.fieldNameIndex('point_1')
-                                    idx_value_type = lay.fieldNameIndex('value_type')
-                                    proc_type = ""
+
+                                isIn = False
+                                if lay.geometryType() == QGis.Point:
+                                    buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
+                                    if buf.contains(point):
+                                        isIn = True
+
+                                if lay.geometryType() == 2:
+                                    if fgem.contains(point): #Point is in polygon feature
+                                        isIn = True
+
+                                if isIn:
                                     if feature.attributes:
                                         poly_id = ""
                                         point_id = ""
+                                        idx_poly_id = lay.fieldNameIndex('poly_id')
+                                        idx_point_id = lay.fieldNameIndex('point_1')
+                                        idx_value_type = lay.fieldNameIndex('value_type')
+                                        proc_type = ""
                                         attry = feature.attributes()
-                                        #print "Shapefile %s" % (attry)
                                         value_type = str(attry[idx_value_type])
                                         poly_or_point_id = ""
-                                        if attry[idx_poly_id] == None:
-                                            proc_type = "POINT"
-                                            point_id = "PNT_" + str(attry[idx_point_id])
-                                            poly_or_point_id = "PNT_" + str(attry[idx_point_id])
+
+                                        if attry[idx_poly_id] == None or idx_poly_id == -1:
+                                            if idx_point_id > -1: #Point ID field found
+                                                proc_type = "POINT"
+                                                point_id = "PNT_" + str(attry[idx_point_id])
+                                                poly_or_point_id = "PNT_" + str(attry[idx_point_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
                                         else:
-                                            proc_type = "POLY"
-                                            poly_id = "POLY_" + str(attry[idx_poly_id])
-                                            poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
-                                        for cfs in self.dlist_of_values:
-                                            cc = str(cfs[7])
-                                            if (value_type == str(cfs[5])):
-                                                if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                            if idx_poly_id > -1: #Poly ID field found
+                                                proc_type = "POLY"
+                                                poly_id = "POLY_" + str(attry[idx_poly_id])
+                                                poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
 
-                                                    if col_alt:
-                                                        curcol = QColor.fromRgb(198,187,107)
-                                                    else:
-                                                        curcol = QColor.fromRgb(255,255,255)
+                                        if proc_type != "NONE":
+                                            for cfs in self.dlist_of_values:
+                                                cc = str(cfs[7])
+                                                if (value_type == str(cfs[5])):
+                                                    if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                        if col_alt:
+                                                            curcol = QColor.fromRgb(198,187,107)
+                                                        else:
+                                                            curcol = QColor.fromRgb(255,255,255)
 
-                                                    idx = 0
-                                                    for val in self.dlist_of_values_fields:
-                                                        if (val[0] == 'Value name' 
-                                                        or val[0] == 'Value category' 
-                                                        or val[0] == 'Value type' 
-                                                        or val[0] == 'Scale type'
-                                                        or val[0] == 'Scale name'
-                                                        or val[0] == 'Value metric description'
-                                                        or val[0] == 'Value metric units'
-                                                        or val[0] == 'Value metric score'
-                                                        or val[0] == 'Spatial feature name'
-                                                        or val[0] == 'Spatial feature description'
-                                                        or val[0] == 'Date collected'
-                                                        or val[0] == 'Metric score source'
-                                                        or val[0] == 'Metric score contact'):
+                                                        idx = 0
+                                                        for val in self.dlist_of_values_fields:
+                                                            if (val[0] == 'Value name' 
+                                                            or val[0] == 'Value category' 
+                                                            or val[0] == 'Value type' 
+                                                            or val[0] == 'Scale type'
+                                                            or val[0] == 'Scale name'
+                                                            or val[0] == 'Value metric description'
+                                                            or val[0] == 'Value metric units'
+                                                            or val[0] == 'Value metric score'
+                                                            or val[0] == 'Spatial feature name'
+                                                            or val[0] == 'Spatial feature description'
+                                                            or val[0] == 'Date collected'
+                                                            or val[0] == 'Metric score source'
+                                                            or val[0] == 'Metric score contact'):
 
-                                                            rowPosition = self.info_window.tableWidget.rowCount()
-                                                            self.info_window.tableWidget.insertRow(rowPosition)
-                                                            self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
-                                                            self.info_window.tableWidget.setRowHeight(rowPosition,17) 
-                                                            for col in range(0,4):
-                                                                self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
-                                                        idx = idx + 1
-                                                    col_alt = not col_alt
+                                                                rowPosition = self.info_window.tableWidget.rowCount()
+                                                                self.info_window.tableWidget.insertRow(rowPosition)
+                                                                self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
+                                                                self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+                                                                for col in range(0,4):
+                                                                    self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
+                                                            idx = idx + 1
+                                                        col_alt = not col_alt
         #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
         pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
         self.info_window.labelCoord.setText(pttxt)
