@@ -1228,7 +1228,8 @@ class CSIROMarineValues:
             layname = layerIterator.name()
             #Only processing vector layers
             if layerIterator.type() == QgsMapLayer.VectorLayer:
-                if layerIterator.geometryType() == 2:
+#POINT PROCESSING NEW
+                if layerIterator.geometryType() == 2: #or layerIterator.geometryType() == QGis.Point:
                     #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                     if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
 
@@ -1504,6 +1505,7 @@ class CSIROMarineValues:
                                 self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
 
                                 lstValueTypes = []
+                                restab = []
                                 for f in res_feat:
                                     res_geom = f.geometry()
                                     idx_poly_id = res_lay.fieldNameIndex('poly_id')
@@ -1522,34 +1524,47 @@ class CSIROMarineValues:
                                             poly_id = "POLY_" + str(attry[idx_poly_id])
                                         count_detail = 0
                                         for cfs in self.dlg.list_of_values:
-                                            if cfs[5] in ["Carbon sequestration","Hazard reduction","Water regulation","Biological diversity","Importance for ETP species or habitats","Naturalness","Productivity or nutrient cycling","Rarity/uniqueness","Vulnerability, sensitivity or slow recovery","Natural resources","Cultural heritage importance","Recreational, tourism or aesthetic importance","Spiritual importance"]:
+                                            if cfs[5] in ["Carbon sequestration"
+                                               ,"Hazard reduction"
+                                               ,"Water regulation"
+                                               ,"Biological diversity"
+                                               ,"Importance for ETP species or habitats"
+                                               ,"Naturalness"
+                                               ,"Productivity or nutrient cycling"
+                                               ,"Rarity/uniqueness"
+                                               ,"Vulnerability, sensitivity or slow recovery"
+                                               ,"Natural resources"
+                                               ,"Cultural heritage importance"
+                                               ,"Recreational, tourism or aesthetic importance"
+                                               ,"Spiritual importance"]:
                                                 
                                                 cc = str(cfs[7])
                                                 if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
                                                     ladd2 = [cfs[1],cfs[5],cfs[8], 1]
                                                     lstValueTypes.append(ladd2)
-
-                                        #Summarize per scale name and value type
-                                        restab = []
-                                        firstr = True
+                                #Summarize per scale name and value type
+                                firstr = True
+                                xfou = False
+                                for elem in lstValueTypes:
+                                    if firstr:
+                                        ladd3 = [elem[0],elem[1],elem[2], 1]
+                                        restab.append(ladd3)
+                                        firstr = False
+                                    else:
+                                        for elo in restab:
+                                            if elo[0] == elem[0] and elo[1] == elem[1]:
+                                                elo[3] = elo[3] + 1
+                                                xfou = True
+                                                break
+                                        if not xfou:
+                                            ladd3 = [elem[0],elem[1],elem[2], 1]
+                                            restab.append(ladd3)
                                         xfou = False
-                                        for elem in lstValueTypes:
-                                            if firstr:
-                                                ladd3 = [elem[0],elem[1],elem[2], 1]
-                                                restab.append(ladd3)
-                                                firstr = False
-                                            else:
-                                                for elo in restab:
-                                                    if elo[0] == elem[0] and elo[1] == elem[1]:
-                                                        elo[3] = elo[3] + 1
-                                                        xfou = True
-                                                        break
-                                                if not xfou:
-                                                    ladd3 = [elem[0],elem[1],elem[2], 1]
-                                                    restab.append(ladd3)
-                                                xfou = False
                                 nt = []                                                
                                 nt = sorted(restab, key = operator.itemgetter(0, 1)) #Scale name and value type which will be retained when grouped later
+#POINT PROCESSING NEW
+                                #Un-rem next line and indent all below it
+                                #if res_feat:
 
                                 #Reorganise list to group by value categories
                                 newtab = []
@@ -1625,6 +1640,8 @@ class CSIROMarineValues:
                                 layer_f2 = treeLayer.layer()
                                 if layer_f2.name() == "Clipped":
                                     QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
 
 
         if self.RBMode == "user":
