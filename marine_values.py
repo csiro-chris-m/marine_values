@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 *    CSIRO Commonwealth Scientific and Industrial Research Organisation    *
-*    ELVIS - EnvironmentaL Values Interrogation System                     *
+*    ELVIS EnvironmentaL Values Interrogation System                       *
 *    A QGIS plugin                                                         *
 * ------------------------------------------------------------------------ *
 *        begin                : 2016-12-25                                 *
@@ -1229,7 +1229,8 @@ class CSIROMarineValues:
             #Only processing vector layers
             if layerIterator.type() == QgsMapLayer.VectorLayer:
 #POINT PROCESSING NEW
-                if layerIterator.geometryType() == 2: #or layerIterator.geometryType() == QGis.Point:
+                #if layerIterator.geometryType() == 2: #or layerIterator.geometryType() == QGis.Point:
+                if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
                     #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                     if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
 
@@ -1499,7 +1500,7 @@ class CSIROMarineValues:
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 2)
-                                for colc in range(0,2):
+                                for colc in range(0,3):
                                     self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setBackground(QBrush(QColor.fromRgb(188,69,57)))
                                 self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
                                 self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
@@ -1564,72 +1565,72 @@ class CSIROMarineValues:
                                 nt = sorted(restab, key = operator.itemgetter(0, 1)) #Scale name and value type which will be retained when grouped later
 #POINT PROCESSING NEW
                                 #Un-rem next line and indent all below it
-                                #if res_feat:
+                                if res_feat:
 
-                                #Reorganise list to group by value categories
-                                newtab = []
-                                fg = []
-                                fg.append("Natural resource values")
-                                fg.append("")
-                                fg.append("")
-                                newtab.append(fg)
-                                for e1 in restab:
-                                    if e1[2] == "Natural resource values":
-                                        fg = []
-                                        fg.append(e1[0])
-                                        fg.append(e1[1])
-                                        fg.append(e1[3])
-                                        newtab.append(fg)
+                                    #Reorganise list to group by value categories
+                                    newtab = []
+                                    fg = []
+                                    fg.append("Natural resource values")
+                                    fg.append("")
+                                    fg.append("")
+                                    newtab.append(fg)
+                                    for e1 in restab:
+                                        if e1[2] == "Natural resource values":
+                                            fg = []
+                                            fg.append(e1[0])
+                                            fg.append(e1[1])
+                                            fg.append(e1[3])
+                                            newtab.append(fg)
 
-                                fg = []
-                                fg.append("Ecological regulatory values")
-                                fg.append("")
-                                fg.append("")
-                                newtab.append(fg)
-                                for e1 in restab:
-                                    if e1[2] == "Ecological regulatory values":
-                                        fg = []
-                                        fg.append(e1[0])
-                                        fg.append(e1[1])
-                                        fg.append(e1[3])
-                                        newtab.append(fg)
+                                    fg = []
+                                    fg.append("Ecological regulatory values")
+                                    fg.append("")
+                                    fg.append("")
+                                    newtab.append(fg)
+                                    for e1 in restab:
+                                        if e1[2] == "Ecological regulatory values":
+                                            fg = []
+                                            fg.append(e1[0])
+                                            fg.append(e1[1])
+                                            fg.append(e1[3])
+                                            newtab.append(fg)
 
-                                fg = []
-                                fg.append("Ecosystem structure and process values")
-                                fg.append("")
-                                fg.append("")
-                                newtab.append(fg)
-                                for e1 in restab:
-                                    if e1[2] == "Ecosystem structure and process values":
-                                        fg = []
-                                        fg.append(e1[0])
-                                        fg.append(e1[1])
-                                        fg.append(e1[3])
-                                        newtab.append(fg)
+                                    fg = []
+                                    fg.append("Ecosystem structure and process values")
+                                    fg.append("")
+                                    fg.append("")
+                                    newtab.append(fg)
+                                    for e1 in restab:
+                                        if e1[2] == "Ecosystem structure and process values":
+                                            fg = []
+                                            fg.append(e1[0])
+                                            fg.append(e1[1])
+                                            fg.append(e1[3])
+                                            newtab.append(fg)
 
-                                fg = []
-                                fg.append("Socio-cultural values")
-                                fg.append("")
-                                fg.append("")
-                                newtab.append(fg)
-                                for e1 in restab:
-                                    if e1[2] == "Socio-cultural values":
-                                        fg = []
-                                        fg.append(e1[0])
-                                        fg.append(e1[1])
-                                        fg.append(e1[3])
-                                        newtab.append(fg)
+                                    fg = []
+                                    fg.append("Socio-cultural values")
+                                    fg.append("")
+                                    fg.append("")
+                                    newtab.append(fg)
+                                    for e1 in restab:
+                                        if e1[2] == "Socio-cultural values":
+                                            fg = []
+                                            fg.append(e1[0])
+                                            fg.append(e1[1])
+                                            fg.append(e1[3])
+                                            newtab.append(fg)
 
-                                for elem70 in newtab:
-                                    rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
-                                    self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
-                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem70[0])))
-                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem70[1])))
-                                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem70[2])))
-                                    if not elem70[1]: #If second column is empty we assume it is a header and colour it
-                                        for col in range(0,2):
-                                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
-                                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+                                    for elem70 in newtab:
+                                        rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                                        self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                                        self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem70[0])))
+                                        self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem70[1])))
+                                        self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem70[2])))
+                                        if not elem70[1]: #If second column is empty we assume it is a header and colour it
+                                            for col in range(0,3):
+                                                self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                                        self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
 
         #**********************************************************************************
 
