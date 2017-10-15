@@ -1,0 +1,17 @@
+
+Using MARVIN, the CSIRO Marine Values Tool
+v.1.0
+
+Layer    - A collection of features. A layer is one line in the layer box. A layer has one or many features.
+Features - A point or an object that is shown on the map. A feature is in one layer.
+
+The layers box shows all available layers. Those which are loaded have a checkmark. Actions:
+- Click the checkbox to set it checked to load a layer. It will move to the top
+- Click the checkbox to set it unchecked to unload a layer. It will move under the "Unloaded layers" divider
+- Click the layer name to set the layer active and work with it
+- Drag and drop a row to reorder the layers and bring it above or below other layers (for example to show features that have been obscured by other layers).
+
+Setting default path if it needs to be changed (runs at first start)
+Go to QGIS Settings Option Advanced. Click the 'I will be careful, I promise!' button. Browse to marine_values/default_path entry. Then either enter a path in the value box or ensure it is empty. This will cause it to prompt for a path on next startup.
+
+MARVIN syncs from the app window to QGIS but not vice versa. Hence, do all changes in MARVIN and they will come through to the QGIS project. Save when you are done. You can make changes in the QGIS project but do them with the MARVIN window closed. When starting MARVIN again it will reflect the changes that were made.
