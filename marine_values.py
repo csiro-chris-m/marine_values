@@ -986,7 +986,10 @@ class CSIROMarineValues:
                         rwd3.append("")
                         rwd3.append(unicode(srw[2]).encode('utf8'))
                         rwd3.append(unicode(srw[3]).encode('utf8'))
-                        perse = srw[3] / srw[2] * 100
+                        if srw[2] != 0:
+                            perse = srw[3] / srw[2] * 100
+                        else:
+                            perse = 0
                         rwd3.append(unicode(perse).encode('utf8'))
                         writer.writerow(rwd3)
                         rwd3 = []
@@ -1004,7 +1007,10 @@ class CSIROMarineValues:
                         rwd3.append("")
                         rwd3.append(unicode(srw[4]).encode('utf8'))
                         rwd3.append(unicode(srw[5]).encode('utf8'))
-                        perse = srw[5] / srw[4] * 100
+                        if srw[4] != 0:
+                            perse = srw[5] / srw[4] * 100
+                        else:
+                            perse - 0
                         rwd3.append(unicode(perse).encode('utf8'))
                         writer.writerow(rwd3)
                         rwd3 = []
@@ -1022,7 +1028,10 @@ class CSIROMarineValues:
                         rwd3.append("")
                         rwd3.append(unicode(srw[6]).encode('utf8'))
                         rwd3.append(unicode(srw[7]).encode('utf8'))
-                        perse = srw[7] / srw[6] * 100
+                        if srw[6] != 0:
+                            perse = srw[7] / srw[6] * 100
+                        else:
+                            perse = 0
                         rwd3.append(unicode(perse).encode('utf8'))
                         writer.writerow(rwd3)
                         rwd3 = []
@@ -1234,8 +1243,8 @@ class CSIROMarineValues:
 #POINT PROCESSING NEW
                 if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
                     #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
-                    if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
-
+                    #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
+                    if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
                         layer = layerIterator
                         if layer:
                             if layname.endswith('LLG'):
@@ -1279,7 +1288,7 @@ class CSIROMarineValues:
     #***** AREA PERCENTAGES *************************************************************************************************
                             #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
                             if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-# H E A D E R
+    # H E A D E R
                                 #Red header for each layer
                                 rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                 self.dlg.tableWidgetDetail.insertRow(rowPosition)
@@ -1476,7 +1485,7 @@ class CSIROMarineValues:
                             #For layers which are processed in counts: Features
 
                             if self.cur_scale_id == "Features" or self.cur_scale_id == "ECOvalues":
-# H E A D E R
+    # H E A D E R
                                 #Red header for each layer
                                 rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
                                 self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
@@ -2094,88 +2103,88 @@ class PointTool2(QgsMapTool):
 
             if lay.type() == QgsMapLayer.VectorLayer:
                 #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
-                if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
-                    if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
-                        if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
-                            fiter = lay.getFeatures()
-                            for feature in fiter:
-                                fgem = feature.geometry()
-                                #Does this polygon contain the mouse click ?
+                #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
+                if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                    if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
+                        fiter = lay.getFeatures()
+                        for feature in fiter:
+                            fgem = feature.geometry()
+                            #Does this polygon contain the mouse click ?
 
-                                isIn = False
-                                if lay.geometryType() == QGis.Point:
-                                    buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
-                                    if buf.contains(point):
-                                        isIn = True
+                            isIn = False
+                            if lay.geometryType() == QGis.Point:
+                                buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
+                                if buf.contains(point):
+                                    isIn = True
 
-                                if lay.geometryType() == 2:
-                                    if fgem.contains(point): #Point is in polygon feature
-                                        isIn = True
+                            if lay.geometryType() == 2:
+                                if fgem.contains(point): #Point is in polygon feature
+                                    isIn = True
 
-                                if isIn:
-                                    if feature.attributes:
-                                        poly_id = ""
-                                        point_id = ""
-                                        idx_poly_id = lay.fieldNameIndex('poly_id')
-                                        idx_point_id = lay.fieldNameIndex('point_1')
-                                        idx_value_type = lay.fieldNameIndex('value_type')
-                                        proc_type = ""
-                                        attry = feature.attributes()
-                                        value_type = str(attry[idx_value_type])
-                                        poly_or_point_id = ""
+                            if isIn:
+                                if feature.attributes:
+                                    poly_id = ""
+                                    point_id = ""
+                                    idx_poly_id = lay.fieldNameIndex('poly_id')
+                                    idx_point_id = lay.fieldNameIndex('point_1')
+                                    idx_value_type = lay.fieldNameIndex('value_type')
+                                    proc_type = ""
+                                    attry = feature.attributes()
+                                    value_type = str(attry[idx_value_type])
+                                    poly_or_point_id = ""
 
-                                        if attry[idx_poly_id] == None or idx_poly_id == -1:
-                                            if idx_point_id > -1: #Point ID field found
-                                                proc_type = "POINT"
-                                                point_id = "PNT_" + str(attry[idx_point_id])
-                                                poly_or_point_id = "PNT_" + str(attry[idx_point_id])
-                                            else:
-                                                proc_type = "NONE" #Could not find any point or poly fields
+                                    if attry[idx_poly_id] == None or idx_poly_id == -1:
+                                        if idx_point_id > -1: #Point ID field found
+                                            proc_type = "POINT"
+                                            point_id = "PNT_" + str(attry[idx_point_id])
+                                            poly_or_point_id = "PNT_" + str(attry[idx_point_id])
                                         else:
-                                            if idx_poly_id > -1: #Poly ID field found
-                                                proc_type = "POLY"
-                                                poly_id = "POLY_" + str(attry[idx_poly_id])
-                                                poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
-                                            else:
-                                                proc_type = "NONE" #Could not find any point or poly fields
+                                            proc_type = "NONE" #Could not find any point or poly fields
+                                    else:
+                                        if idx_poly_id > -1: #Poly ID field found
+                                            proc_type = "POLY"
+                                            poly_id = "POLY_" + str(attry[idx_poly_id])
+                                            poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
+                                        else:
+                                            proc_type = "NONE" #Could not find any point or poly fields
 
-                                        if proc_type != "NONE":
-                                            for cfs in self.dlist_of_values:
-                                                cc = str(cfs[7])
-                                                if (value_type == str(cfs[5])):
-                                                    if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                        if col_alt:
-                                                            curcol = QColor.fromRgb(198,187,107)
-                                                        else:
-                                                            curcol = QColor.fromRgb(255,255,255)
+                                    if proc_type != "NONE":
+                                        for cfs in self.dlist_of_values:
+                                            cc = str(cfs[7])
+                                            if (value_type == str(cfs[5])):
+                                                if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                    if col_alt:
+                                                        curcol = QColor.fromRgb(198,187,107)
+                                                    else:
+                                                        curcol = QColor.fromRgb(255,255,255)
 
-                                                        idx = 0
-                                                        for val in self.dlist_of_values_fields:
-                                                            if (val[0] == 'Value name' 
-                                                            or val[0] == 'Value category' 
-                                                            or val[0] == 'Value type' 
-                                                            or val[0] == 'Scale type'
-                                                            or val[0] == 'Scale name'
-                                                            or val[0] == 'Value metric description'
-                                                            or val[0] == 'Value metric units'
-                                                            or val[0] == 'Value metric score'
-                                                            or val[0] == 'Spatial feature name'
-                                                            or val[0] == 'Spatial feature description'
-                                                            or val[0] == 'Date collected'
-                                                            or val[0] == 'Metric score source'
-                                                            or val[0] == 'Metric score contact'):
+                                                    idx = 0
+                                                    for val in self.dlist_of_values_fields:
+                                                        if (val[0] == 'Value name' 
+                                                        or val[0] == 'Value category' 
+                                                        or val[0] == 'Value type' 
+                                                        or val[0] == 'Scale type'
+                                                        or val[0] == 'Scale name'
+                                                        or val[0] == 'Value metric description'
+                                                        or val[0] == 'Value metric units'
+                                                        or val[0] == 'Value metric score'
+                                                        or val[0] == 'Spatial feature name'
+                                                        or val[0] == 'Spatial feature description'
+                                                        or val[0] == 'Date collected'
+                                                        or val[0] == 'Metric score source'
+                                                        or val[0] == 'Metric score contact'):
 
-                                                                rowPosition = self.info_window.tableWidget.rowCount()
-                                                                self.info_window.tableWidget.insertRow(rowPosition)
-                                                                self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
-                                                                self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
-                                                                self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
-                                                                self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
-                                                                self.info_window.tableWidget.setRowHeight(rowPosition,17) 
-                                                                for col in range(0,4):
-                                                                    self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
-                                                            idx = idx + 1
-                                                        col_alt = not col_alt
+                                                            rowPosition = self.info_window.tableWidget.rowCount()
+                                                            self.info_window.tableWidget.insertRow(rowPosition)
+                                                            self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
+                                                            self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
+                                                            self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+                                                            for col in range(0,4):
+                                                                self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
+                                                        idx = idx + 1
+                                                    col_alt = not col_alt
         #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
         pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
         self.info_window.labelCoord.setText(pttxt)
