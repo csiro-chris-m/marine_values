@@ -597,8 +597,6 @@ class CSIROMarineValues:
             telem.append(ctr)
             ctr = ctr + 1
 
-        print (self.graphItemsList)
-
         #Get only first field, scale name
         lst2 = [item[0] for item in self.graphItemsList]
         #Create unique list
