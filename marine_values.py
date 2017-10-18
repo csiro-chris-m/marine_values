@@ -72,9 +72,11 @@ import unicodedata
 import numpy
 import operator
 import qgis.utils
+import pyqtgraph as pg
+import time
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from marine_values_dialog import CSIROMarineValuesDialog
@@ -341,27 +343,33 @@ class CSIROMarineValues:
 
         QtCore.QObject.connect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
 
+        self.dlg.tableWidgetSpatialFeature.setColumnWidth(0,120)
+
         #Drag and drop
         #self.dlg.tableView.setDropIndicatorShown(True)
         #self.dlg.tableView.setAcceptDrops(True)
         #self.dlg.tableView.setDragEnabled(True)
         #self.dlg.tableView.dropOn = lambda event: pprint(event)
         #self.dlg.tableView.droppingOnItself = lambda event: pprint(event)
-
         #self.dlg.tableView.model().selectionChanged = lambda x, y: pprint([self, x, y])
         #self.dlg.tableView.stateChanged = lambda x, y: pprint([self, x, y])
         #self.dlg.tableView.itemChanged.connect(self.s_changed)
-        self.dlg.tableView.clicked.connect(self.tableViewClicked)
-
         #self.dlg.tableView.mousePressEvent = lambda event: pprint(event)
         #self.dlg.tableView.dropEvent = lambda event: pprint(event)
         #self.dlg.tableView.model().columnsMoved.connect(lambda event: pprint(event))
 
+        self.dlg.tableView.clicked.connect(self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
-        #QtCore.QObject.connect(self.dlg.objectInfo, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
+
+        QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
+
+        #Set background to white on graph control
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+
 
     def run(self):
         # Should not connect signals in the run function
@@ -397,6 +405,10 @@ class CSIROMarineValues:
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
+        #List for items to graph
+        self.graphItemsList = []
+
+        #Main window sizing and position
         if sys.platform == "win32": # Windows
             try:
                 #Set ELVIS position and size
@@ -404,16 +416,17 @@ class CSIROMarineValues:
                 self.py = self.dlg.geometry().y = 30
                 self.dw = self.dlg.width = 350
                 #dh = self.dlg.height = 960
+                self.dh = self.dlg.height = 693
                 sh = GetSystemMetrics(1) #Determine screen height
-                if sh > 780:
-                    twh = sh - self.dlg.tableWidgetDetailCounts.y() - 80
-                    self.dlg.tableWidgetDetailCounts.setMinimumHeight(twh)
-                    self.dlg.tableWidgetDetailCounts.setMaximumHeight(twh) 
-                    self.dh = sh - 70
-                else:
-                    self.dlg.tableWidgetDetailCounts.height = 200
-                    self.dh = 810
-                    self.diff = 30;
+                #if sh > 780:
+                #    twh = sh - self.dlg.tableWidgetDetailCounts.y() - 80
+                #    self.dlg.tableWidgetDetailCounts.setMinimumHeight(twh)
+                #    self.dlg.tableWidgetDetailCounts.setMaximumHeight(twh) 
+                #    self.dh = sh - 70
+                #else:
+                #    self.dlg.tableWidgetDetailCounts.height = 200
+                #    self.dh = 810
+                #    self.diff = 30;
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
             except:
                 pass
@@ -456,7 +469,7 @@ class CSIROMarineValues:
         self.xclosing()
 
     def xclosing(self):
-        print "ELVIS unloading..."
+        #print "ELVIS unloading..."
         self.treeLayerIdx = 0
         """Removes the Marine Values plugin icon from QGIS GUI."""
         #for action in self.actions:
@@ -533,6 +546,167 @@ class CSIROMarineValues:
             self.GUILayersResync()
 
 
+    def doGraph(self):
+
+        #Read output table to get values for graph
+        firstmatrix = True
+        quitproc = False
+        totalmatrix = []
+        for row in range(self.dlg.tableWidgetDetail.rowCount()):
+            rowdata = []
+            isfirstcol = True
+            for column in range(self.dlg.tableWidgetDetail.columnCount()):
+                item = self.dlg.tableWidgetDetail.item(row, column)
+                if item is not None:
+                    if '---------------------------------' in item.text() and not firstmatrix:
+                        quitproc = True
+                        break
+                    firstmatrix = False
+                    rowdata.append(unicode(item.text()).encode('utf8'))
+                    if isfirstcol:
+                        totalmatrix.append(rowdata)
+                        isfirstcol = False
+                else:
+                    rowdata.append('')
+                if quitproc:
+                    break
+                isfirstcol = False
+            if quitproc:
+                break
+
+        tt = []
+        rd = []
+        for i in range(len(totalmatrix)):
+            if '---------------------------------' in totalmatrix[i][0]:
+                pass
+            else:
+                for j in range(len(totalmatrix[i])):
+                    if totalmatrix[i][j]:
+                        rd.append(unicode(totalmatrix[i][j]).encode('utf8'))
+                    else:
+                        rd.append("")
+                tt.append(rd)
+                rd = []
+
+        vv = []
+        #Sort matrix on columns 1 and 2
+        self.graphItemsList = sorted(tt, key = operator.itemgetter(0, 1))
+
+        ctr = 1
+        for telem in self.graphItemsList:
+            telem.append(ctr)
+            ctr = ctr + 1
+
+        print (self.graphItemsList)
+
+        #Get only first field, scale name
+        lst2 = [item[0] for item in self.graphItemsList]
+        #Create unique list
+        lst3 = set(lst2)
+        lst4 = sorted(lst3, key = operator.itemgetter(0))
+
+        self.dlg.listWidgetScaleNames.clear()
+        for telem in lst4:
+            item = QListWidgetItem(telem)
+            self.dlg.listWidgetScaleNames.addItem(item)
+
+        self.dlg.tableWidgetSpatialFeature.setRowCount(0)
+
+        if len(lst4) > 0:
+            self.dlg.listWidgetScaleNames.setCurrentRow(0);
+            self.redrawGraph(self.dlg.listWidgetScaleNames.item(0).text())
+
+
+    def redrawGraph(self, scalename):
+
+        self.dlg.lblWell.setText("")
+        self.dlg.lblInc.setText("")
+        self.dlg.lblFoosec.setText("")
+
+        self.dlg.tableWidgetSpatialFeature.setRowCount(0)
+        self.dlg.graphicsView.clear()
+
+        #Get unique spatial features for this scale name and sort
+        fl = []
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                fl.append(str(it[1]))
+        lst3 = set(fl)
+        lst4 = sorted(lst3, key = operator.itemgetter(0))
+
+        for it in lst4:
+                rowPosition = self.dlg.tableWidgetSpatialFeature.rowCount()
+                self.dlg.tableWidgetSpatialFeature.insertRow(rowPosition)
+                self.dlg.tableWidgetSpatialFeature.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
+                self.dlg.tableWidgetSpatialFeature.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSpatialFeature.verticalHeader().minimumSectionSize())
+                self.dlg.tableWidgetSpatialFeature.setRowHeight(rowPosition,17)
+
+        well = []
+        wellt = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                well.append(float(it[3])) #Wellb for scale in sel area
+                wellt = wellt + float(it[3])
+        self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
+
+        inc = []
+        inct = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                inc.append(float(it[5])) #Income for scale in sel area
+                inct = inct + float(it[5])
+        self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
+
+        fsec = []
+        fsect = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                fsec.append(float(it[7])) #Income for scale in sel area
+                fsect = fsect + float(it[7])
+        self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
+
+        #Wellbeing
+        x1 = numpy.array(range(1,len(well)))
+        y1 = numpy.array(well)
+        wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
+        self.dlg.graphicsView.addItem(wellb)
+
+
+        #Income
+        x2 = numpy.array(range(1,len(inc)))
+        y2 = numpy.array(inc)
+        income = pg.BarGraphItem(x=x2+0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
+        self.dlg.graphicsView.addItem(income)
+
+        #Food security
+        x3 = numpy.array(range(1,len(fsec)))
+        y3 = numpy.array(fsec)
+        foodsec = pg.BarGraphItem(x=x3-0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
+        self.dlg.graphicsView.addItem(foodsec)
+
+#        xScale = pg.AxisItem(orientation='bottom')
+#        xScale.setRange(1, 10)
+#        self.dlg.graphicsView.addItem(xScale, 1, 1)
+
+        #axa = pg.AxisItem(orientation='bottom', pen=pg.mkPen(color=(0,255,0), width=1), maxTickLength=0)
+        #axa.setTicks([1,2,3,4,5,6,7,8,9,10])
+        #self.dlg.graphicsView.addItem(axa, row=1, col=0, axisItems={'bottom': axa})
+        #Reference for properties to use in axis items is at:
+        #www.pyqtgraph.org/documentation/graphicsItems/axisitem.html
+        
+        #Takes up too much space on left, pushing graph to left. Should put elsewhere
+        #self.dlg.graphicsView.setLabel('left', 'Contrib. in sel. area', units='%')
+
+#        font=QtGui.QFont()
+#        font.setPixelSize(6)
+#        self.dlg.graphicsView.setStyle(tickFont=font)
+        
+
+    def listWidgetScaleNamesItemClicked(self, item):
+        self.redrawGraph(item.text())
+        print item.text()
+
+
     def delRubberClicked(self):
         self.delRubberband()
 
@@ -573,7 +747,7 @@ class CSIROMarineValues:
         for f in listdir(self.last_opened_project_dir):
             if isfile(join(self.last_opened_project_dir, f)):
                 if f.endswith('.shp'):
-                    print basename(f)
+                    #print basename(f)
                     if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
                         onlyfiles.append(f)
 
@@ -781,11 +955,12 @@ class CSIROMarineValues:
 
     def renderTest(self, painter):
         #Use painter for drawing to map canvas
-        print ""
+        pass
+        #print ""
 
     def tableViewRowMoved(self, row, old_index, new_index):
-        str1 = "row:" + str(row) + ", old_index:" + str(old_index) + ", new_index:" + str(new_index)
-        print str1
+        #str1 = "row:" + str(row) + ", old_index:" + str(old_index) + ", new_index:" + str(new_index)
+        #print str1
 
         #Previously loaded items are reordered
         neworder = 1
@@ -807,9 +982,9 @@ class CSIROMarineValues:
         for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             idd = layer.Id()
-            print idd
+            #print idd
             lnam = layer.name()
-            print lnam
+            #print lnam
 
         #root = QgsProject.instance().layerTreeRoot()
         #layid = project.layerTreeRoot().findLayer(new_index).Id()
@@ -1037,7 +1212,7 @@ class CSIROMarineValues:
                         rwd3 = []
                     writer.writerow("")
 
-                h = ["Contribution of Features"]
+                h = ["Contribution of Features (%)"]
                 writer.writerow(h)
                 writer.writerow("")
                 h = ["Scale name","Spatial feature","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
@@ -1643,6 +1818,10 @@ class CSIROMarineValues:
 
 
 
+        #Create graph
+        if self.dlg.tableWidgetDetail.columnCount() > 1:
+            self.doGraph()
+
 
         if self.RBMode == "user":
             self.myMapTool.deleteLater()
@@ -1760,7 +1939,7 @@ class CSIROMarineValues:
         title = 'Select shapefile'
         path = ""
         fn = QFileDialog.getOpenFileName(qfd, title, path)
-        print fn
+        #print fn
         layer = QgsVectorLayer(fn, 'polygon', 'ogr')
         if not layer.isValid():
             pass
@@ -1796,7 +1975,7 @@ class CSIROMarineValues:
             self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
 
             rbp = str(self.rubberbandPoints)
-            print rbp
+            #print rbp
             rbp = rbp.translate(None, '\'')
             rbp = rbp.replace(" ","")
             self.dlgsavesel.textAOIPtLst.appendPlainText(rbp)
@@ -2002,6 +2181,7 @@ class CSIROMarineValues:
             else:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
 
+
 #  Other Classes *********************************************************************
 # ************************************************************************************
 
@@ -2087,10 +2267,10 @@ class PointTool2(QgsMapTool):
         x = event.pos().x()
         y = event.pos().y()
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        print ""
-        print "************************"
-        print ""
-        print point
+        #print ""
+        #print "************************"
+        #print ""
+        #print point
         self.info_window.tableWidget.setRowCount(0)
 
         regmap = QgsMapLayerRegistry.instance().mapLayers().values()
@@ -2190,4 +2370,5 @@ class PointTool2(QgsMapTool):
         self.info_window.labelCoord.setText(pttxt)
         self.info_window.show()
         self.info_window.activateWindow()
+
 
