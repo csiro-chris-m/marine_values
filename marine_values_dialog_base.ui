@@ -363,9 +363,21 @@
       <rect>
        <x>0</x>
        <y>20</y>
-       <width>321</width>
+       <width>331</width>
        <height>151</height>
       </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="backgroundBrush">
+      <brush brushstyle="NoBrush">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
      </property>
     </widget>
     <widget class="QListWidget" name="listWidgetScaleNames">
