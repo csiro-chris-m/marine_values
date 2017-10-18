@@ -22,6 +22,10 @@
  *   Python 2.7.5                                                          *
  *   QGIS 2.18.2 Las Palmas                                                *
  *   Qt Creator 4.2.0                                                      *
+
+
+* pyqtgraph
+
  *                                                                         *
  *                                                                         *
  *   Plugins required:                                                     *
@@ -45,11 +49,6 @@
  *   Project files should be write-protected so user can not make changes  *
  *   -------------------------------------------------------------------   *
  *   Shapefile naming convention:                                          *
- *      'Marine Values...'      - A layer for which values and value       *
- *                                metric scores are processed.             *
- *      'MarineValues...'       - A WFS layer for which values and value   *
- *                                 metric scores are processed. Entire     *
- *                                 name may not contain any spaces         *
  *      ending in ... .LLG       - Processing as per LLGs                  *
  *      ending in ... .Districts - Processing as per Disctrics             *
  *      ending in ... .Features  - Processing as per countable features    *
@@ -1450,7 +1449,12 @@ class CSIROMarineValues:
 
                             #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
                             processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
-                            res_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")[0]
+                            xres_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")
+                            res_lay = QgsVectorLayer()
+                            #Get first layer that is returned (because maplayersbyname returns a list). Syntaxt ("Clipped")[0] does not work in somce QGIS versions
+                            for itl in xres_lay:
+                                res_lay = itl
+                                break
                             res_lay.updateExtents()
                             res_feat = res_lay.getFeatures()
 
