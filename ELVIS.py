@@ -247,7 +247,7 @@ class ELVIS:
         self.dlg = ELVISDialog()
 
         #Create the menu entries and toolbar icons inside the QGIS GUI
-        icon_path = ':/plugins/ELVIS/ELVISicon32x32.png'
+        icon_path = ':/plugins/ELVIS/resources/ELVIS32.png'
         self.add_action(
             icon_path,
             text=self.tr(u'CSIRO ELVIS'),
@@ -261,32 +261,25 @@ class ELVIS:
 
         #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\save.png");
-        self.dlg.saveProject.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.saveProject.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/save.png'))
 
         self.dlg.endButton.clicked.connect(self.endButtonClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\end.png");
-        self.dlg.endButton.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.endButton.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/end.png'))
 
         self.dlg.rubberband.clicked.connect(self.rubberbandClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\sel_area2.png");
-        self.dlg.rubberband.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.rubberband.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/sel_area2.png'))
 
         self.dlg.pushButtonPan.clicked.connect(self.pushButtonPanClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\hand.png");
-        self.dlg.pushButtonPan.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.pushButtonPan.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/hand.png'))
 
         self.dlg.pushButtonZoomPlus.clicked.connect(self.pushButtonZoomPlusClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\zoomin.png");
-        self.dlg.pushButtonZoomPlus.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.pushButtonZoomPlus.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/zoomin.png'))
 
         self.dlg.pushButtonZoomMinus.clicked.connect(self.pushButtonZoomMinusClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\zoomout.png");
-        self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.pushButtonZoomMinus.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/zoomout.png'))
 
         self.dlg.pushButtonExport.clicked.connect(self.pushButtonExportClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\export.png");
-        self.dlg.pushButtonExport.setIcon(QtGui.QIcon(rMyIcon))
+        self.dlg.pushButtonExport.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/export.png'))
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
 
@@ -296,8 +289,8 @@ class ELVIS:
         self.dlg.openProj.clicked.connect(self.openProjClicked)
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
 
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
-        self.dlg.btnInfo2.setIcon(QtGui.QIcon(rMyIcon))
+        #rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
+        self.dlg.btnInfo2.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/info.png'))
         self.dlg.btnInfo2.clicked.connect(self.btnInfo2Clicked)
 
         # Set up tableView table ****************************
@@ -689,7 +682,7 @@ class ELVIS:
         self.dlginfo2 = MVinfo2()
         self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
         self.dlginfo2.setModal(False)
-        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
+        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
         QApplication.setOverrideCursor(Qt.WhatsThisCursor);
         tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
@@ -2020,7 +2013,7 @@ class ELVIS:
         self.dlgsavesel.setModal(True)
         self.dlgsavesel.show()
         self.dlgsavesel.setWindowTitle("Manage Areas of interest")
-        self.dlgsavesel.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
+        self.dlgsavesel.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
         
         self.dlgsavesel.tableWidgetAOI.cellClicked.connect(self.tableWidgetAOIClicked)

@@ -1,6 +1,15 @@
 <RCC>
     <qresource prefix="/plugins/ELVIS" >
-        <file>ELVISicon32x32.png</file>
-        <file>ELVISicon16x16.png</file>
+        <file>resources/ELVIS32.png</file>
+        <file>resources/ELVIS16.png</file>
+        <file>resources/info.png</file>
+        <file>resources/end.png</file>
+        <file>resources/export.png</file>
+        <file>resources/hand.png</file>
+        <file>resources/pan.png</file>
+        <file>resources/save.png</file>
+        <file>resources/sel_area2.png</file>
+        <file>resources/zoomin.png</file>
+        <file>resources/zoomout.png</file>
     </qresource>
 </RCC>

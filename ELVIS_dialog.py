@@ -46,7 +46,7 @@ class ELVISDialog(QtGui.QDialog, FORM_CLASS):
         pal.setColor(role, QtGui.QColor(214, 211, 171))
         self.setPalette(pal)        
 
-        self.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
+        self.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
         #Disable action of the close button 'x'. 
         #self._want_to_close = False
