@@ -22,14 +22,12 @@
  *   Python 2.7.5                                                          *
  *   QGIS 2.18.2 Las Palmas                                                *
  *   Qt Creator 4.2.0                                                      *
-
-
-* pyqtgraph
-
  *                                                                         *
- *                                                                         *
- *   Plugins required:                                                     *
+ *   Modules required:                                                     *
  *   ------------------------------------                                  *
+ *   pyqtgraph - problems with installation via pip and ez_setup           *
+ *               hence copy manually to the                                *
+ *               QGIS/Apps/Python27/Lib/site-packages dir                  *
  *                                                                         *
  *   QGIS:                                                                 *
  *   ------------------------------------                                  *
@@ -100,7 +98,7 @@ except ImportError:
     pass
 
 
-class CSIROMarineValues:
+class ELVIS:
     def __init__(self, iface):
         #Constructor.
 
@@ -138,7 +136,7 @@ class CSIROMarineValues:
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
-            'CSIROMarineValues_{}.qm'.format(locale))
+            'ELVIS_{}.qm'.format(locale))
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -158,25 +156,12 @@ class CSIROMarineValues:
         self.grid1_display_state = "expanded"
         self.grid2_display_state = "expanded"
 
-        '''
-        #ELVIS main window height
-        self.px = 10
-        self.py = 30
-        self.pw = 350
-        self.dh = 693
-        #Difference between min window height and screen-adjusted window height
-        self.diff = 30
-        #Height of first matrix
-        self.matrix1_height = 381
-        self.matrix2_height = 201
-        '''
-
     def tr(self, message):
         #Get the translation for a string using Qt translation API.
         #We implement this ourselves since we do not inherit QObject.
         #   :param message: String for translation. Type message: str, QString. Returns: Translated version of message. rtype: QString
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('CSIROMarineValues', message)
+        return QCoreApplication.translate('ELVIS', message)
 
 
     def add_action(
@@ -262,7 +247,7 @@ class CSIROMarineValues:
         self.dlg = CSIROMarineValuesDialog()
 
         #Create the menu entries and toolbar icons inside the QGIS GUI
-        icon_path = ':/plugins/CSIROMarineValues/mv_icon32x32.png'
+        icon_path = ':/plugins/ELVIS/mv_icon32x32.png'
         self.add_action(
             icon_path,
             text=self.tr(u'CSIRO ELVIS'),
@@ -305,25 +290,11 @@ class CSIROMarineValues:
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
 
-        #self.dlg.resizeEvent.connect(self.mainDlgResize)
-        #QtCore.QObject.connect(self.dlg.resizeEvent.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.mainDlgResize)
-
-        '''
-        self.dlg.butArea1Vis.clicked.connect(self.butArea1VisClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
-        self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
-
-        self.dlg.butArea2Vis.clicked.connect(self.butArea2VisClicked)
-        rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
-        self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
-        '''
-
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
         self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
         self.dlg.openProj.clicked.connect(self.openProjClicked)
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
-        #self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
         self.dlg.btnInfo2.setIcon(QtGui.QIcon(rMyIcon))
@@ -423,11 +394,7 @@ class CSIROMarineValues:
 #                self.dh = self.dlg.height = 693
 #                sh = GetSystemMetrics(1) #Determine screen height
 #                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
-                
-
-    
-#Good this:
-                #self.dlg.setGeometry(10, 30, 350, 700)
+#                self.dlg.setGeometry(10, 30, 350, 700)
             self.dlg.setGeometry(10, 30, self.dlg.width(), self.dlg.height())
  #           except:
  #               pass
@@ -804,13 +771,6 @@ class CSIROMarineValues:
         #        item = QStandardItem("\n".join(layerInfo[0]))
         #        model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
         #        self.dlg.objectInfo.setModel(model)
-
-
-    def flyoutClicked(self):
-        self.dlgflyout = MVflyout()
-        self.dlgflyout.setModal(False)
-        self.dlgflyout.show()
-        self.dlgflyout.setWindowTitle("ELVIS table zoom")
 
 
     def tableViewselectionChanged(self):
@@ -1990,7 +1950,7 @@ class CSIROMarineValues:
     def buttonSaveClicked(self):
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
-        db.setDatabaseName(self.plugin_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
         db.open()
 
         if self.dlgsavesel.textAOIShortT.toPlainText() and self.dlgsavesel.textAOIDesc.toPlainText() and self.dlgsavesel.textAOIPtLst.toPlainText():
@@ -2057,7 +2017,7 @@ class CSIROMarineValues:
     def setupDia(self):
 
         #if self.rubberbandPoints:
-        self.dlgsavesel = MVSaveSel()
+        self.dlgsavesel = ELVISSaveSel()
         self.dlgsavesel.setModal(True)
         self.dlgsavesel.show()
         self.dlgsavesel.setWindowTitle("Manage Areas of interest")
@@ -2189,25 +2149,16 @@ class CSIROMarineValues:
 #  Other Classes *********************************************************************
 # ************************************************************************************
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_dialog_save_selection_base.ui'))
+FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_save_sel.ui'))
 
-class MVSaveSel(QtGui.QDialog, FORM_CLASS):
+class ELVISSaveSel(QtGui.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
-        super(MVSaveSel, self).__init__(parent)
+        super(ELVISSaveSel, self).__init__(parent)
         self.setupUi(self)
 
 
-FORM2_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_feature_flyout.ui'))
-
-class MVflyout(QtGui.QDialog, FORM2_CLASS):
-    def __init__(self, parent=None):
-        """Constructor."""
-        super(MVflyout, self).__init__(parent)
-        self.setupUi(self)
-
-
-FORM4_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'marine_values_info2.ui'))
+FORM4_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_info2.ui'))
 
 class MVinfo2(QtGui.QDialog, FORM4_CLASS):
     def __init__(self, parent=None):

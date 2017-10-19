@@ -31,5 +31,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .marine_values import CSIROMarineValues
-    return CSIROMarineValues(iface)
+    from .marine_values import ELVIS
+    return ELVIS(iface)

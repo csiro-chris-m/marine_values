@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/CSIROMarineValues" >
+    <qresource prefix="/plugins/ELVIS" >
         <file>mv_icon32x32.png</file>
         <file>mv_icon16x16.png</file>
     </qresource>

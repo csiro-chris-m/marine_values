@@ -1,0 +1,1 @@
+Install pyqtgraph manually by unzipping the contents of pyqtgraph.zip to QGIS (or OSGEO4W64) ...Apps/Python27/Lib/site-packages

@@ -24,7 +24,7 @@ import os
 from PyQt4 import QtGui, uic, QtCore
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'marine_values_dialog_base.ui'))
+    os.path.dirname(__file__), 'ELVIS_dialog_base.ui'))
 
 
 class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
@@ -46,7 +46,7 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
         pal.setColor(role, QtGui.QColor(214, 211, 171))
         self.setPalette(pal)        
 
-        self.setWindowIcon(QtGui.QIcon(':/plugins/CSIROMarineValues/mv_icon32x32.png'))
+        self.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/mv_icon32x32.png'))
 
         #Disable action of the close button 'x'. 
         #self._want_to_close = False
