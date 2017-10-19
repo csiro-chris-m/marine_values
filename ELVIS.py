@@ -76,7 +76,7 @@ from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFi
 from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
-from marine_values_dialog import CSIROMarineValuesDialog
+from ELVIS_dialog import ELVISDialog
 from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -106,7 +106,7 @@ class ELVIS:
         #is running
         #ELVIS loaded and available
         #for plug in qgis.utils.available_plugins:
-        #    if plug == "marine_values":
+        #    if plug == "ELVIS":
 
         self.project = QgsProject.instance()
 
@@ -244,10 +244,10 @@ class ELVIS:
     def initGui(self):
 
         # Create the dialog (after translation) and keep reference
-        self.dlg = CSIROMarineValuesDialog()
+        self.dlg = ELVISDialog()
 
         #Create the menu entries and toolbar icons inside the QGIS GUI
-        icon_path = ':/plugins/ELVIS/mv_icon32x32.png'
+        icon_path = ':/plugins/ELVIS/ELVISicon32x32.png'
         self.add_action(
             icon_path,
             text=self.tr(u'CSIRO ELVIS'),
@@ -375,7 +375,7 @@ class ELVIS:
         #List of points in last created Rubberband
         self.rubberbandPoints = []
 
-        #Read database with marine value details and keep in memory for quick access.
+        #Read database with ELVIS value details and keep in memory for quick access.
         #Read only required fields
         self.dlg.list_of_values = []
         self.dlg.area_value_matrix = []
@@ -425,7 +425,7 @@ class ELVIS:
         """Removes the plugin menu item and icon from QGIS GUI."""
 #        for action in self.actions:
 #            self.iface.removePluginMenu(
-#                self.tr(u'&CSIRO Marine Values'), action)
+#                self.tr(u'&CSIRO ELVIS'), action)
 #            self.iface.removeToolBarIcon(action)
         # remove the toolbar
 #        del self.toolbar
@@ -439,7 +439,7 @@ class ELVIS:
     def xclosing(self):
         #print "ELVIS unloading..."
         self.treeLayerIdx = 0
-        """Removes the Marine Values plugin icon from QGIS GUI."""
+        """Removes the ELVIS plugin icon from QGIS GUI."""
         #for action in self.actions:
         #    self.iface.removeToolBarIcon(action)
         #del self.toolbar
@@ -463,11 +463,11 @@ class ELVIS:
     def project_load(self):
 
         qset = QSettings()
-        ret = qset.value("marine_values/last_opened_project")
+        ret = qset.value("ELVIS/last_opened_project")
         if ret:
-            self.last_opened_project = qset.value("marine_values/last_opened_project")
+            self.last_opened_project = qset.value("ELVIS/last_opened_project")
         else:
-            self.last_opened_project = qset.setValue("marine_values/last_opened_project", "")
+            self.last_opened_project = qset.setValue("ELVIS/last_opened_project", "")
 
         if self.last_opened_project and not self.last_opened_project.isspace():
             self.last_opened_project_dir = ntpath.dirname(self.last_opened_project)
@@ -478,7 +478,7 @@ class ELVIS:
         else:
             fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
             filep = QDir.toNativeSeparators(fileo)
-            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
+            self.last_opened_project = qset.setValue("ELVIS/last_opened_project", filep)
             self.last_opened_project_dir = ntpath.dirname(filep)
             #Must instantiate bridge to sync stand-alone project with map tree        
             bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
@@ -502,7 +502,7 @@ class ELVIS:
         if fileo:
             filep = QDir.toNativeSeparators(fileo)
             qset = QSettings()
-            self.last_opened_project = qset.setValue("marine_values/last_opened_project", filep)
+            self.last_opened_project = qset.setValue("ELVIS/last_opened_project", filep)
             self.last_opened_project_dir = ntpath.dirname(filep)
 
             #Must instantiate bridge to sync stand-alone project with map tree        
@@ -689,6 +689,8 @@ class ELVIS:
         self.dlginfo2 = MVinfo2()
         self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
         self.dlginfo2.setModal(False)
+        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
+
         QApplication.setOverrideCursor(Qt.WhatsThisCursor);
         tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
         self.iface.mapCanvas().setMapTool(tool2)
@@ -958,7 +960,7 @@ class ELVIS:
             with open(unicode(path), 'wb') as stream:
                 writer = csv.writer(stream, delimiter=',')
 
-                f = ["MARINE VALUES DATABASE - ELVIS"]
+                f = ["ECOLOGICAL VALUES DATABASE - ELVIS"]
                 writer.writerow(f)
 
                 ndate = datetime.date.today()
@@ -1376,8 +1378,6 @@ class ELVIS:
             if layerIterator.type() == QgsMapLayer.VectorLayer:
 #POINT PROCESSING NEW
                 if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
-                    #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
-                    #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
                     if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
                         layer = layerIterator
                         if layer:
@@ -1801,7 +1801,6 @@ class ELVIS:
     def readSQLiteDB(self):
         db = QSqlDatabase.addDatabase("QSQLITE");
         # Reuse the path to DB to set database name
-        #db.setDatabaseName("C:\\Users\\Default.Default-THINK\\.qgis2\\python\\plugins\\marine_values\\chinook.db")
         db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
         # Open the connection
         db.open()
@@ -2021,6 +2020,8 @@ class ELVIS:
         self.dlgsavesel.setModal(True)
         self.dlgsavesel.show()
         self.dlgsavesel.setWindowTitle("Manage Areas of interest")
+        self.dlgsavesel.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
+
         
         self.dlgsavesel.tableWidgetAOI.cellClicked.connect(self.tableWidgetAOIClicked)
         self.dlgsavesel.buttonSave.clicked.connect(self.buttonSaveClicked)

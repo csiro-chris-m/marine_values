@@ -31,5 +31,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .marine_values import ELVIS
+    from .ELVIS import ELVIS
     return ELVIS(iface)

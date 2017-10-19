@@ -27,12 +27,12 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ELVIS_dialog_base.ui'))
 
 
-class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
+class ELVISDialog(QtGui.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
-        super(CSIROMarineValuesDialog, self).__init__(parent, QtCore.Qt.WindowMinimizeButtonHint)
+        super(ELVISDialog, self).__init__(parent, QtCore.Qt.WindowMinimizeButtonHint)
         #Use this code to make it stay on top of all other UI windows:
-        #super(CSIROMarineValuesDialog, self).__init__(parent, QtCore.Qt.WindowStaysOnTopHint)
+        #super(ELVISDialog, self).__init__(parent, QtCore.Qt.WindowStaysOnTopHint)
 
         # Set up the user interface fr om Designer.
         # After setupUI you can access any designer object by doing
@@ -46,7 +46,7 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
         pal.setColor(role, QtGui.QColor(214, 211, 171))
         self.setPalette(pal)        
 
-        self.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/mv_icon32x32.png'))
+        self.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/ELVISicon32x32.png'))
 
         #Disable action of the close button 'x'. 
         #self._want_to_close = False
@@ -55,5 +55,5 @@ class CSIROMarineValuesDialog(QtGui.QDialog, FORM_CLASS):
 
     def closeEvent(self, evnt):
         print "*"
-        super(CSIROMarineValuesDialog, self).closeEvent(evnt)
+        super(ELVISDialog, self).closeEvent(evnt)
 
