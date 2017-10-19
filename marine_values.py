@@ -158,17 +158,18 @@ class CSIROMarineValues:
         self.grid1_display_state = "expanded"
         self.grid2_display_state = "expanded"
 
+        '''
         #ELVIS main window height
-        self.dh = 0
         self.px = 10
         self.py = 30
         self.pw = 350
+        self.dh = 693
         #Difference between min window height and screen-adjusted window height
         self.diff = 30
         #Height of first matrix
         self.matrix1_height = 381
         self.matrix2_height = 201
-
+        '''
 
     def tr(self, message):
         #Get the translation for a string using Qt translation API.
@@ -304,6 +305,10 @@ class CSIROMarineValues:
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
 
+        #self.dlg.resizeEvent.connect(self.mainDlgResize)
+        #QtCore.QObject.connect(self.dlg.resizeEvent.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.mainDlgResize)
+
+        '''
         self.dlg.butArea1Vis.clicked.connect(self.butArea1VisClicked)
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
         self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
@@ -311,13 +316,14 @@ class CSIROMarineValues:
         self.dlg.butArea2Vis.clicked.connect(self.butArea2VisClicked)
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
         self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
+        '''
 
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
         self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
         self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
         self.dlg.openProj.clicked.connect(self.openProjClicked)
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
-        self.dlg.flyout.clicked.connect(self.flyoutClicked)
+        #self.dlg.flyout.clicked.connect(self.flyoutClicked)
 
         rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
         self.dlg.btnInfo2.setIcon(QtGui.QIcon(rMyIcon))
@@ -409,26 +415,22 @@ class CSIROMarineValues:
 
         #Main window sizing and position
         if sys.platform == "win32": # Windows
-            try:
+#            try:
                 #Set ELVIS position and size
-                self.px = self.dlg.geometry().x = 10
-                self.py = self.dlg.geometry().y = 30
-                self.dw = self.dlg.width = 350
-                #dh = self.dlg.height = 960
-                self.dh = self.dlg.height = 693
-                sh = GetSystemMetrics(1) #Determine screen height
-                #if sh > 780:
-                #    twh = sh - self.dlg.tableWidgetDetailCounts.y() - 80
-                #    self.dlg.tableWidgetDetailCounts.setMinimumHeight(twh)
-                #    self.dlg.tableWidgetDetailCounts.setMaximumHeight(twh) 
-                #    self.dh = sh - 70
-                #else:
-                #    self.dlg.tableWidgetDetailCounts.height = 200
-                #    self.dh = 810
-                #    self.diff = 30;
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
-            except:
-                pass
+#                self.px = self.dlg.geometry().x = 10
+#                self.py = self.dlg.geometry().y = 30
+#                self.dw = self.dlg.width = 350
+#                self.dh = self.dlg.height = 693
+#                sh = GetSystemMetrics(1) #Determine screen height
+#                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
+                
+
+    
+#Good this:
+                #self.dlg.setGeometry(10, 30, 350, 700)
+            self.dlg.setGeometry(10, 30, self.dlg.width(), self.dlg.height())
+ #           except:
+ #               pass
 
         if sys.platform == "darwin": # OS X, MacOS
             pass
@@ -1840,7 +1842,7 @@ class CSIROMarineValues:
         db = QSqlDatabase.addDatabase("QSQLITE");
         # Reuse the path to DB to set database name
         #db.setDatabaseName("C:\\Users\\Default.Default-THINK\\.qgis2\\python\\plugins\\marine_values\\chinook.db")
-        db.setDatabaseName(self.plugin_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
         # Open the connection
         db.open()
         # query the table
@@ -2075,7 +2077,7 @@ class CSIROMarineValues:
 
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
-        db.setDatabaseName(self.plugin_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
         db.open()
         query = db.exec_("select * from area_selections")
         while query.next():
@@ -2119,7 +2121,7 @@ class CSIROMarineValues:
         itm = item.text()
         self.dlgsavesel.fldID.setText(itm)
 
-
+    '''
     def butArea1VisClicked(self):
 
         if self.grid1_display_state == "expanded":
@@ -2182,7 +2184,7 @@ class CSIROMarineValues:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh)
             else:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
-
+    '''
 
 #  Other Classes *********************************************************************
 # ************************************************************************************
