@@ -144,7 +144,7 @@
          <rect>
           <x>249</x>
           <y>83</y>
-          <width>81</width>
+          <width>80</width>
           <height>23</height>
          </rect>
         </property>
@@ -316,26 +316,19 @@
          <string/>
         </property>
        </widget>
-       <zorder>pushButtonExport</zorder>
-       <zorder>endButton</zorder>
-       <zorder>buttonOpenSaved</zorder>
-       <zorder>pushButtonZoomMinus</zorder>
-       <zorder>label_5</zorder>
-       <zorder>label_6</zorder>
-       <zorder>pushButtonOrigExtent</zorder>
-       <zorder>openProj</zorder>
-       <zorder>pushButtonZoomPlus</zorder>
-       <zorder>buttonCreateNewSOI</zorder>
-       <zorder>saveProject</zorder>
-       <zorder>delRubber</zorder>
-       <zorder>label_4</zorder>
-       <zorder>pushButtonSaveSel</zorder>
-       <zorder>rubberband</zorder>
-       <zorder>btnInfo2</zorder>
-       <zorder>pushButtonPan</zorder>
-       <zorder>label</zorder>
-       <zorder>error</zorder>
-       <zorder>tableView</zorder>
+       <widget class="QPushButton" name="ELVISInfo">
+        <property name="geometry">
+         <rect>
+          <x>249</x>
+          <y>110</y>
+          <width>80</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>About ELVIS</string>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -431,8 +424,6 @@
          </widget>
         </item>
        </layout>
-       <zorder>tableView</zorder>
-       <zorder>tableView</zorder>
       </widget>
      </item>
     </layout>

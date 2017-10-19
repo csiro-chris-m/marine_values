@@ -11,5 +11,6 @@
         <file>resources/sel_area2.png</file>
         <file>resources/zoomin.png</file>
         <file>resources/zoomout.png</file>
+        <file>resources/CSIROs.png</file>
     </qresource>
 </RCC>

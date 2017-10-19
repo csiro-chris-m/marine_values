@@ -73,7 +73,7 @@ import pyqtgraph as pg
 import time
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap 
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from ELVIS_dialog import ELVISDialog
@@ -258,6 +258,8 @@ class ELVIS:
         # connect to signal renderComplete which is emitted when canvas
         # rendering is done
         QtCore.QObject.connect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
+
+        self.dlg.ELVISInfo.clicked.connect(self.DoELVISProgramInfo)
 
         #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
@@ -676,6 +678,15 @@ class ELVIS:
             layer_f2 = treeLayer.layer()
             if layer_f2.name() == "rubber_band":
                 QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
+    def DoELVISProgramInfo(self):
+        self.elvinf = ELVISProgramInfo()
+        self.elvinf.setModal(True)
+        self.elvinf.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
+        pixmap = QPixmap(':/plugins/ELVIS/resources/CSIROs.png')
+        self.elvinf.lblCSIRO.setPixmap(pixmap)
+        self.elvinf.show()
 
 
     def btnInfo2Clicked(self):
@@ -2162,6 +2173,19 @@ class MVinfo2(QtGui.QDialog, FORM4_CLASS):
 
     def closeEvent(self, event):
         QApplication.restoreOverrideCursor()
+
+
+FORM5_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_prog_info.ui'))
+
+class ELVISProgramInfo(QtGui.QDialog, FORM5_CLASS):
+    def __init__(self, parent=None):
+        """Constructor."""
+        super(ELVISProgramInfo, self).__init__(parent)
+        self.setupUi(self)
+
+    def closeEvent(self, event):
+        QApplication.restoreOverrideCursor()
+
 
 
 class ModelObjInfo(QStandardItemModel):
