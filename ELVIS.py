@@ -305,10 +305,11 @@ class ELVIS:
 
         header = self.dlg.tableView.horizontalHeader()
         header.setResizeMode(QtGui.QHeaderView.Fixed)
-        self.dlg.tableView.setColumnWidth(0,230)
-        self.dlg.tableView.setColumnWidth(1,80)
-        self.dlg.tableView.setColumnWidth(2,0)
-        self.dlg.tableView.setColumnWidth(3,0)
+        self.dlg.tableView.setColumnWidth(0,30)  #Checkbox
+        self.dlg.tableView.setColumnWidth(1,0)   #Sort Key (hidden)
+        self.dlg.tableView.setColumnWidth(2,0)   #Checked (hidden)
+        self.dlg.tableView.setColumnWidth(3,80)  #Type of geometry
+        self.dlg.tableView.setColumnWidth(4,230) #Layer name
 
         self.dlg.tableView.verticalHeader().setMovable(True)
         self.dlg.tableView.verticalHeader().setDragEnabled(True)
@@ -742,21 +743,30 @@ class ELVIS:
             self.d = QStandardItem(fil)
             self.d.setTextAlignment(QtCore.Qt.AlignLeft)
             self.d.setText = "testing"
-            self.d.setCheckable(True) 
+            #self.d.setCheckable(True) 
             qsi = QStandardItem('unknown')
-            qsi.setBackground(QBrush(QColor.fromRgb(198,187,107)))
-            self.dlg.tableView.model().appendRow([self.d, qsi, QStandardItem('99999'), QStandardItem('not checked')])
+            sk = QStandardItem('99999')
+            sk.setCheckable(False)
+            tick = QStandardItem('')
+            tick.setCheckable(True)
+            self.dlg.tableView.model().appendRow([tick, sk, QStandardItem('not checked'), qsi, self.d])
+
         #Add row which is the divider between loaded and unloaded layers
-        self.dlg.tableView.model().appendRow([QStandardItem('Unloaded but available layers:'), QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked')])
+        self.dlg.tableView.model().appendRow([QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked'), QStandardItem(''), QStandardItem('Unloaded but available layers:')])
+
+
+#        rowPosition = self.dlg.tableView.model().rowCount()
+#        for col in range(0,3):
+#           self.dlg.tableView.model().item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
 
 
     def GUILayersResync(self):
         for treeLayer in self.project.layerTreeRoot().findLayers():
             layer = treeLayer.layer()
             for i in range(self.dlg.tableView.model().rowCount()):
-                item = self.dlg.tableView.model().item(i, 0)
+                item = self.dlg.tableView.model().item(i, 4)
                 #Skip the row which is the divider between loaded and unloaded items
-                it4 = self.dlg.tableView.model().item(i, 2)
+                it4 = self.dlg.tableView.model().item(i, 1)
                 it5 = it4.text()
                 if it5 == '90000':
                     pass
@@ -765,14 +775,14 @@ class ELVIS:
                         #self.layerInfo[item.text()] = self.getLayerInfo(layer)
                         self.dlg.tableView.model().item(i, 0).setCheckState(QtCore.Qt.Checked)
                         #Set column 4 to same as checkbox. Click on checkox is hard to catch so using this as indicator
-                        self.dlg.tableView.model().item(i, 3).setText(self.tr('checked'))
+                        self.dlg.tableView.model().item(i, 2).setText(self.tr('checked'))
 
-                        geometryType = self.dlg.tableView.model().item(i, 1)
+                        geometryType = self.dlg.tableView.model().item(i, 3)
                         geometryType.setText(self.geometryTypes[layer.geometryType()])
-                        sortOrder = self.dlg.tableView.model().item(i, 2)
+                        sortOrder = self.dlg.tableView.model().item(i, 1)
                         sortOrder.setText('{:05d}'.format(self.treeLayerIdx))
             self.treeLayerIdx += 1
-        self.dlg.tableView.model().sort(2)
+        self.dlg.tableView.model().sort(1)
 
 #    def getLayerInfo(self, layer):
         #layerInfo = []
@@ -799,7 +809,7 @@ class ELVIS:
             row = index.row()
             model = self.dlg.tableView.model()
 
-            valx = model.item(row, 0)
+            valx = model.item(row, 4)
             val = valx.text()
             if val != "Unloaded but available layers:":
                 val_wo_ext = os.path.splitext(val)[0]
@@ -816,7 +826,7 @@ class ELVIS:
                 #row was clicked elsewhere (which makes a layer active) we store the click
                 #status in column 3 and check the checkbox state against it to see if
                 #the checkbox was clicked.
-                v2 = model.item(row, 3)
+                v2 = model.item(row, 2)
                 v2a = v2.text()
 
                 #Was unchecked and has now been checked
@@ -831,34 +841,34 @@ class ELVIS:
                     #Previously loaded items are reordered starting with value 2
                     neworder = 2
                     for i in range(self.dlg.tableView.model().rowCount()):
-                        it4 = self.dlg.tableView.model().item(i, 2)
+                        it4 = self.dlg.tableView.model().item(i, 1)
                         it5 = it4.text()
                         if it5 == '90000': #Arrived at divider between loaded and unloaded layers
                             break
-                        model.item(i, 2).setText('{:05d}'.format(neworder))
+                        model.item(i, 1).setText('{:05d}'.format(neworder))
                         neworder += 1
 
-                    model.item(row, 3).setText(self.tr('checked'))
+                    model.item(row, 2).setText(self.tr('checked'))
                     #Newly loaded layer gets order 1, which is default QGIS behavious, set it on top
-                    model.item(row, 2).setText('{:05d}'.format(1)) 
+                    model.item(row, 1).setText('{:05d}'.format(1)) 
 
                     #Look up layer geometry type
                     root = QgsProject.instance().layerTreeRoot()
                     lyr3 = root.findLayer(lid).layer()
                     geot = self.geometryTypes[lyr3.geometryType()]
-                    model.item(row, 1).setText(self.tr(geot))
-                    self.dlg.tableView.model().sort(2)
+                    model.item(row, 3).setText(self.tr(geot))
+                    self.dlg.tableView.model().sort(1)
                     return
 
                 #Was checked and has now been unchecked
                 if v2a == "checked" and model.item(row,0).checkState() == QtCore.Qt.Unchecked:
-                    model.item(row, 3).setText(self.tr('not checked'))
+                    model.item(row, 2).setText(self.tr('not checked'))
                     for layer in QgsMapLayerRegistry.instance().mapLayers().values():
                         if val_wo_ext == layer.name():
                             QgsMapLayerRegistry.instance().removeMapLayer(layer)
                             self.treeLayerIdx -= 1
-                            model.item(row, 2).setText(self.tr('99999'))
-                            self.dlg.tableView.model().sort(2)
+                            model.item(row, 1).setText(self.tr('99999'))
+                            self.dlg.tableView.model().sort(1)
                             return
                 
                 #Checkbox has not been clicked. Process as set layer active   
@@ -866,41 +876,42 @@ class ELVIS:
                     pass
 
                 layer = self.iface.activeLayer()
-                lna = layer.name()
-                if lna.endswith('LLG'):
-                    self.cur_scale_id = "LLG"
-                if lna.endswith('Districts'):
-                    self.cur_scale_id = "Districts"
-                if lna.endswith('Features'):
-                    self.cur_scale_id = "Features"
-                if lna.endswith('ECOvalues'):
-                    self.cur_scale_id = "ECOvalues"
+                if layer:
+                    lna = layer.name()
+                    if lna.endswith('LLG'):
+                        self.cur_scale_id = "LLG"
+                    if lna.endswith('Districts'):
+                        self.cur_scale_id = "Districts"
+                    if lna.endswith('Features'):
+                        self.cur_scale_id = "Features"
+                    if lna.endswith('ECOvalues'):
+                        self.cur_scale_id = "ECOvalues"
 
-                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-                    if layer:
-                        iter = layer.getFeatures()
+#                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
+#                    if layer:
+#                        iter = layer.getFeatures()
 
                         #Using column names (to find index of column) rather than column ids.
                         #so can change column order but not names
-                        idx_spatfeat = layer.fieldNameIndex('spat_feat')
-                        if self.cur_scale_id == "LLG":
-                            idx_llg_dist = layer.fieldNameIndex('llg')
-                        if self.cur_scale_id == "Districts":
-                            idx_llg_dist = layer.fieldNameIndex('district')
-                        idx_foodsec = layer.fieldNameIndex('food_secur')
-                        idx_wellbeing = layer.fieldNameIndex('well_being')
-                        idx_income = layer.fieldNameIndex('income')
+#                        idx_spatfeat = layer.fieldNameIndex('spat_feat')
+#                        if self.cur_scale_id == "LLG":
+#                            idx_llg_dist = layer.fieldNameIndex('llg')
+#                        if self.cur_scale_id == "Districts":
+#                            idx_llg_dist = layer.fieldNameIndex('district')
+#                        idx_foodsec = layer.fieldNameIndex('food_secur')
+#                        idx_wellbeing = layer.fieldNameIndex('well_being')
+#                        idx_income = layer.fieldNameIndex('income')
 
-                        feat_count = 0
-                        attx3 = []
-                        attb = []
+#                        feat_count = 0
+#                        attx3 = []
+#                        attb = []
 
-                        imporval = None #Do not declare a type
+#                        imporval = None #Do not declare a type
 
-                        for feature in iter:
+#                        for feature in iter:
 
-                            feat_count += 1;
-                            geom = feature.geometry()
+#                            feat_count += 1;
+#                            geom = feature.geometry()
 
                             # show some information about the feature
                 #            if geom.type() == QGis.Point:
@@ -944,11 +955,11 @@ class ELVIS:
         model = self.dlg.tableView.model()
 
         for i in range(self.dlg.tableView.model().rowCount()):
-            it4 = self.dlg.tableView.model().item(i, 2)
+            it4 = self.dlg.tableView.model().item(i, 1)
             it5 = it4.text()
             if it5 == '90000': #Arrived at divider between loaded and unloaded layers
                 break
-            model.item(i, 2).setText('{:05d}'.format(neworder))
+            model.item(i, 1).setText('{:05d}'.format(neworder))
             neworder += 1
 
         #for layer in QgsMapLayerRegistry.instance().mapLayers().values():
@@ -2170,6 +2181,7 @@ class ELVIS:
                 self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
     '''
 
+
 #  Other Classes *********************************************************************
 # ************************************************************************************
 
@@ -2212,6 +2224,7 @@ class ModelObjInfo(QStandardItemModel):
         QtGui.QStandardItemModel.__init__(self)
         self.setColumnCount(3)
         #self.setHorizontalHeaderLabels(['Object'])
+
     def data(self, index, role):
         if index.isValid():
             return super(ModelObjInfo, self).data(index, QtCore.Qt.DisplayRole)
@@ -2222,7 +2235,8 @@ class Model(QStandardItemModel):
         self.filled = False
         QtGui.QStandardItemModel.__init__(self)
         self.setColumnCount(4)
-        self.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key'])
+        self.setHorizontalHeaderLabels(['', 'Sort Key', 'Clicked', 'Type', 'Layer'])
+
 
 #TESTTEST WFS
 #        tt = "MarineValuesNewBritainTestLLG"
