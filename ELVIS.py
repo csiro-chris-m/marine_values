@@ -283,6 +283,8 @@ class ELVIS:
         self.dlg.pushButtonExport.clicked.connect(self.pushButtonExportClicked)
         self.dlg.pushButtonExport.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/export.png'))
 
+        self.dlg.butClearError.clicked.connect(self.butClearErrorClicked)
+
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
 
         self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
@@ -340,6 +342,8 @@ class ELVIS:
         #Set background to white on graph control
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
+
+        self.dlg.error.setText("")
 
 
     def run(self):
@@ -511,6 +515,10 @@ class ELVIS:
 
     def doGraph(self):
 
+        self.dlg.graphicsView.clear()
+        self.dlg.lblWell.setText("")
+        self.dlg.lblInc.setText("")
+        self.dlg.lblFoosec.setText("")
         #Read output table to get values for graph
         firstmatrix = True
         quitproc = False
@@ -678,6 +686,10 @@ class ELVIS:
             layer_f2 = treeLayer.layer()
             if layer_f2.name() == "rubber_band":
                 QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
+    def butClearErrorClicked(self):
+        self.dlg.error.setText("")
 
 
     def DoELVISProgramInfo(self):
@@ -1998,18 +2010,25 @@ class ELVIS:
             fx = fx.replace("[", "")
             fx = fx.replace("]", "")
             fx = fx.replace("),(", ");(")
+            fx = fx.replace(" ", "")  # Remove all blanks
+            fx = ' '.join(fx.split()) # Remove all white spaces
+            fx = ''.join(fx.split())  # Remove all white spaces
+            print fx
             rub = []
             rub = fx.split(";")
             NewRubberBand = []
 
-            for el in rub:
-                lat, lng = map(float, el.strip('()').split(','))
-                rbPt = QgsPoint(lat, lng)
-                NewRubberBand.append(rbPt)
-            gPoly = QgsGeometry.fromPolygon(( [[ QgsPoint( pair[0], pair[1] ) for pair in NewRubberBand ]] ))
-            self.myRubberBand.addGeometry(gPoly, None)
-            self.RBMode = "saved"
-            self.procAreaSelection()
+            try:
+                for el in rub:
+                    lat, lng = map(float, el.strip('()').split(','))
+                    rbPt = QgsPoint(lat, lng)
+                    NewRubberBand.append(rbPt)
+                gPoly = QgsGeometry.fromPolygon(( [[ QgsPoint( pair[0], pair[1] ) for pair in NewRubberBand ]] ))
+                self.myRubberBand.addGeometry(gPoly, None)
+                self.RBMode = "saved"
+                self.procAreaSelection()
+            except ValueError:
+                self.dlg.error.setText("Point list could not be read. Please verify format.")                
             self.dlgsavesel.close()
 
         

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
-    <height>713</height>
+    <width>385</width>
+    <height>708</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@
               <string notr="true">QGroupBox {border: 0px}</string>
              </property>
              <property name="title">
-              <string>Contribution to overall:</string>
+              <string>Contribution to overall...</string>
              </property>
              <property name="flat">
               <bool>false</bool>
@@ -75,7 +75,7 @@
               <property name="geometry">
                <rect>
                 <x>215</x>
-                <y>14</y>
+                <y>16</y>
                 <width>90</width>
                 <height>16</height>
                </rect>
@@ -91,7 +91,7 @@
               <property name="geometry">
                <rect>
                 <x>109</x>
-                <y>14</y>
+                <y>16</y>
                 <width>90</width>
                 <height>16</height>
                </rect>
@@ -107,7 +107,7 @@
               <property name="geometry">
                <rect>
                 <x>5</x>
-                <y>14</y>
+                <y>16</y>
                 <width>90</width>
                 <height>16</height>
                </rect>
@@ -208,6 +208,30 @@
               </property>
               <property name="text">
                <string/>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label">
+              <property name="geometry">
+               <rect>
+                <x>191</x>
+                <y>-6</y>
+                <width>171</width>
+                <height>20</height>
+               </rect>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>6</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">color: rgb(128, 128, 128)</string>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;in graph use mouse pan and wheel to zoom&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </widget>
@@ -396,9 +420,9 @@
        <widget class="QPushButton" name="pushButtonExport">
         <property name="geometry">
          <rect>
-          <x>257</x>
+          <x>243</x>
           <y>18</y>
-          <width>121</width>
+          <width>115</width>
           <height>23</height>
          </rect>
         </property>
@@ -409,9 +433,9 @@
        <widget class="QPushButton" name="endButton">
         <property name="geometry">
          <rect>
-          <x>257</x>
+          <x>243</x>
           <y>110</y>
-          <width>121</width>
+          <width>115</width>
           <height>23</height>
          </rect>
         </property>
@@ -431,9 +455,9 @@
        <widget class="QPushButton" name="buttonOpenSaved">
         <property name="geometry">
          <rect>
-          <x>9</x>
+          <x>4</x>
           <y>64</y>
-          <width>121</width>
+          <width>130</width>
           <height>23</height>
          </rect>
         </property>
@@ -444,7 +468,7 @@
        <widget class="QPushButton" name="pushButtonZoomMinus">
         <property name="geometry">
          <rect>
-          <x>171</x>
+          <x>166</x>
           <y>18</y>
           <width>21</width>
           <height>23</height>
@@ -460,7 +484,7 @@
        <widget class="QLabel" name="label_5">
         <property name="geometry">
          <rect>
-          <x>157</x>
+          <x>152</x>
           <y>2</y>
           <width>31</width>
           <height>16</height>
@@ -473,20 +497,20 @@
        <widget class="QLabel" name="label_6">
         <property name="geometry">
          <rect>
-          <x>14</x>
+          <x>9</x>
           <y>1</y>
           <width>111</width>
           <height>16</height>
          </rect>
         </property>
         <property name="text">
-         <string>Area of interest (AOI)</string>
+         <string>Area of interest</string>
         </property>
        </widget>
        <widget class="QPushButton" name="pushButtonOrigExtent">
         <property name="geometry">
          <rect>
-          <x>155</x>
+          <x>150</x>
           <y>41</y>
           <width>80</width>
           <height>23</height>
@@ -499,9 +523,9 @@
        <widget class="QPushButton" name="openProj">
         <property name="geometry">
          <rect>
-          <x>257</x>
+          <x>243</x>
           <y>64</y>
-          <width>121</width>
+          <width>115</width>
           <height>23</height>
          </rect>
         </property>
@@ -512,7 +536,7 @@
        <widget class="QPushButton" name="pushButtonZoomPlus">
         <property name="geometry">
          <rect>
-          <x>148</x>
+          <x>143</x>
           <y>18</y>
           <width>21</width>
           <height>23</height>
@@ -528,9 +552,9 @@
        <widget class="QPushButton" name="buttonCreateNewSOI">
         <property name="geometry">
          <rect>
-          <x>9</x>
+          <x>4</x>
           <y>87</y>
-          <width>121</width>
+          <width>130</width>
           <height>23</height>
          </rect>
         </property>
@@ -541,9 +565,9 @@
        <widget class="QPushButton" name="saveProject">
         <property name="geometry">
          <rect>
-          <x>257</x>
+          <x>243</x>
           <y>41</y>
-          <width>121</width>
+          <width>115</width>
           <height>23</height>
          </rect>
         </property>
@@ -560,9 +584,9 @@
        <widget class="QPushButton" name="delRubber">
         <property name="geometry">
          <rect>
-          <x>9</x>
+          <x>4</x>
           <y>110</y>
-          <width>121</width>
+          <width>130</width>
           <height>23</height>
          </rect>
         </property>
@@ -573,7 +597,7 @@
        <widget class="QLabel" name="label_4">
         <property name="geometry">
          <rect>
-          <x>196</x>
+          <x>191</x>
           <y>2</y>
           <width>21</width>
           <height>16</height>
@@ -586,9 +610,9 @@
        <widget class="QPushButton" name="pushButtonSaveSel">
         <property name="geometry">
          <rect>
-          <x>9</x>
+          <x>4</x>
           <y>41</y>
-          <width>121</width>
+          <width>130</width>
           <height>23</height>
          </rect>
         </property>
@@ -602,9 +626,9 @@
        <widget class="QPushButton" name="rubberband">
         <property name="geometry">
          <rect>
-          <x>9</x>
+          <x>4</x>
           <y>18</y>
-          <width>121</width>
+          <width>130</width>
           <height>23</height>
          </rect>
         </property>
@@ -618,7 +642,7 @@
        <widget class="QPushButton" name="btnInfo2">
         <property name="geometry">
          <rect>
-          <x>218</x>
+          <x>213</x>
           <y>18</y>
           <width>21</width>
           <height>23</height>
@@ -631,7 +655,7 @@
        <widget class="QPushButton" name="pushButtonPan">
         <property name="geometry">
          <rect>
-          <x>195</x>
+          <x>190</x>
           <y>18</y>
           <width>21</width>
           <height>23</height>
@@ -647,9 +671,9 @@
        <widget class="QPushButton" name="ELVISInfo">
         <property name="geometry">
          <rect>
-          <x>257</x>
+          <x>243</x>
           <y>87</y>
-          <width>121</width>
+          <width>115</width>
           <height>23</height>
          </rect>
         </property>
@@ -660,7 +684,7 @@
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
-          <x>220</x>
+          <x>215</x>
           <y>2</y>
           <width>21</width>
           <height>16</height>
@@ -735,6 +759,9 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
           <property name="autoScroll">
            <bool>false</bool>
           </property>
@@ -747,6 +774,9 @@
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <attribute name="horizontalHeaderCascadingSectionResizes">
+           <bool>true</bool>
+          </attribute>
           <attribute name="horizontalHeaderDefaultSectionSize">
            <number>100</number>
           </attribute>
@@ -754,6 +784,9 @@
            <number>37</number>
           </attribute>
           <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
            <bool>false</bool>
           </attribute>
           <attribute name="verticalHeaderDefaultSectionSize">
@@ -769,64 +802,49 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <layout class="QGridLayout" name="gridLayout_6">
      <property name="sizeConstraint">
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
      <item row="0" column="0">
-      <widget class="QGroupBox" name="groupBox_4">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QGroupBox {border: 0px}</string>
-       </property>
-       <property name="title">
-        <string/>
-       </property>
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>2</y>
-          <width>101</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Last message:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="error">
-        <property name="geometry">
-         <rect>
-          <x>85</x>
-          <y>0</y>
-          <width>301</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(201, 196, 151)</string>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-       <zorder>label</zorder>
-       <zorder>label</zorder>
-       <zorder>error</zorder>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="error">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(201, 196, 151)</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="butClearError">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>33</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>clear</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
