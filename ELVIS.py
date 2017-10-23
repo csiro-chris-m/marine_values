@@ -73,7 +73,7 @@ import pyqtgraph as pg
 import time
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush, QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap 
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush,QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap, QTableWidgetItem, QFont 
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from ELVIS_dialog import ELVISDialog
@@ -155,6 +155,11 @@ class ELVIS:
         # Saving states of grid extension/collapse to know where to place element and how tall to make window
         self.grid1_display_state = "expanded"
         self.grid2_display_state = "expanded"
+
+        # In memory list of layers and associated info (ie which are loaded, sorting) that are available in the project dir
+        # 0 - sort key, 1 - loaded, 2 - type, 3 - layername
+        self.projectlayers = []
+
 
     def tr(self, message):
         #Get the translation for a string using Qt translation API.
@@ -335,6 +340,9 @@ class ELVIS:
         self.dlg.tableView.clicked.connect(self.tableViewClicked)
         QtCore.QObject.connect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
 
+        self.dlg.tableWidgetLayers.clicked.connect(self.tableWidgetLayersClicked)
+        QtCore.QObject.connect(self.dlg.tableWidgetLayers, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableWidgetLayersClicked)
+
         QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
 
         self.dlg.endButton.setDefault(True)
@@ -349,6 +357,15 @@ class ELVIS:
 
     def run(self):
         # Should not connect signals in the run function
+
+        self.dlg.tableWidgetLayers.setColumnWidth(0,20)
+        self.dlg.tableWidgetLayers.setColumnWidth(1,0)
+        self.dlg.tableWidgetLayers.setColumnWidth(2,0)
+        self.dlg.tableWidgetLayers.setColumnWidth(3,25)
+        self.dlg.tableWidgetLayers.setColumnWidth(4,0)
+        self.dlg.tableWidgetLayers.setColumnWidth(5,200)
+        #Do not set width on last column. It will be stretched with HorizontalHeaderStretchLastSection
+        #self.dlg.tableWidgetLayers.setColumnWidth(4,200)
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
         self.dlg.tableWidgetDetail.setColumnWidth(1,120)
@@ -446,6 +463,7 @@ class ELVIS:
         QtCore.QObject.disconnect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
         QtCore.QObject.disconnect(self.dlg.tableView.verticalHeader(), QtCore.SIGNAL("sectionMoved(int, int, int)"), self.tableViewRowMoved)        
         QtCore.QObject.disconnect(self.dlg.tableView, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableViewClicked)
+        QtCore.QObject.disconnect(self.dlg.tableWidgetLayers, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableWidgetLayersClicked)
         self._want_to_close = True
         self.dlg.close()
         #Must close current project and begin new empty project, otherwise QGIS stays open
@@ -486,7 +504,8 @@ class ELVIS:
 
         self.dlg.tableWidgetDetail.setRowCount(0)
         self.dlg.tableWidgetDetailCounts.setRowCount(0)
-        self.GUILoadProjectLayers()
+        self.InitLayerList()
+        #self.GUILoadProjectLayers()
         self.GUILayersResync()
 
 #TESTTEST WFS
@@ -510,7 +529,8 @@ class ELVIS:
             self.project.read(QFileInfo(fileo))
             self.dlg.tableWidgetDetail.setRowCount(0)
             self.dlg.tableWidgetDetailCounts.setRowCount(0)
-            self.GUILoadProjectLayers()
+            self.InitLayerList()
+            #self.GUILoadProjectLayers()
             self.GUILayersResync()
 
 
@@ -672,137 +692,34 @@ class ELVIS:
 #        self.dlg.graphicsView.setStyle(tickFont=font)
         
 
-    def listWidgetScaleNamesItemClicked(self, item):
-        self.redrawGraph(item.text())
-        print item.text()
+    def tableWidgetLayersClicked(self, index):
+        row = index.row()
+        cs = self.dlg.tableWidgetLayers.item(row, 0)
+        nam = self.dlg.tableWidgetLayers.item(row, 5).text() #with extension .shp
+        namwo = os.path.splitext(self.dlg.tableWidgetLayers.item(row, 5).text())[0] # w/o shp
 
+        #Was unchecked and has now been checked
+        if cs.checkState() == QtCore.Qt.Checked:
+            sfile = os.path.join(self.last_opened_project_dir, nam) + ".shp"
+            layer = self.iface.addVectorLayer(sfile, namwo, "ogr")
+            QgsMapLayerRegistry.instance().addMapLayer(layer)
+            for agl in range(len(self.projectlayers)):
+                if nam == self.projectlayers[agl][3]:
+                    self.projectlayers[agl][1] = 'loaded'
+            self.GUILayersResync()
+            return
 
-    def delRubberClicked(self):
-        self.delRubberband()
+        #Was checked and has now been unchecked
+        if cs.checkState() == QtCore.Qt.Unchecked:
+            for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+                if nam == layer.name():
+                    QgsMapLayerRegistry.instance().removeMapLayer(layer)
+            for agl in range(len(self.projectlayers)):
+                if nam == self.projectlayers[agl][3]:
+                    self.projectlayers[agl][1] = 'not loaded'
+            self.GUILayersResync()
+            return
 
-
-    def delRubberband(self):
-        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-        for treeLayer in self.project.layerTreeRoot().findLayers():                
-            layer_f2 = treeLayer.layer()
-            if layer_f2.name() == "rubber_band":
-                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
-
-
-    def butClearErrorClicked(self):
-        self.dlg.error.setText("")
-
-
-    def DoELVISProgramInfo(self):
-        self.elvinf = ELVISProgramInfo()
-        self.elvinf.setModal(True)
-        self.elvinf.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
-        pixmap = QPixmap(':/plugins/ELVIS/resources/CSIROs.png')
-        self.elvinf.lblCSIRO.setPixmap(pixmap)
-        self.elvinf.show()
-
-
-    def btnInfo2Clicked(self):
-        self.dlginfo2 = MVinfo2()
-        self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
-        self.dlginfo2.setModal(False)
-        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
-
-        QApplication.setOverrideCursor(Qt.WhatsThisCursor);
-        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
-        self.iface.mapCanvas().setMapTool(tool2)
-        self.dlginfo2.tableWidget.setColumnWidth(0,200)
-        self.dlginfo2.tableWidget.setColumnWidth(1,70)
-        self.dlginfo2.tableWidget.setColumnWidth(2,150)
-        self.dlginfo2.tableWidget.setColumnWidth(3,150)
-        self.dlginfo2.show()
-        self.dlginfo2.setWindowTitle("ELVIS feature info")
-
-
-    def butCloseInfo2Clicked(self):
-        self.dlginfo2.close()
-
-
-    def GUILoadProjectLayers(self):
-        self.treeLayerIdx = 0
-        position = {}
-        self.layerInfo = {}
-
-        onlyfiles = []
-        for f in listdir(self.last_opened_project_dir):
-            if isfile(join(self.last_opened_project_dir, f)):
-                if f.endswith('.shp'):
-                    #print basename(f)
-                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
-                        onlyfiles.append(f)
-
-        onlyfiles.sort()
-        #Clear pre-existing entries, ie from previously loaded project
-        self.dlg.tableView.model().setRowCount(0)
-        for fil in onlyfiles:
-            self.d = QStandardItem(fil)
-            self.d.setTextAlignment(QtCore.Qt.AlignLeft)
-            self.d.setText = "testing"
-            #self.d.setCheckable(True) 
-            qsi = QStandardItem('unknown')
-            sk = QStandardItem('99999')
-            sk.setCheckable(False)
-            tick = QStandardItem('')
-            tick.setCheckable(True)
-            self.dlg.tableView.model().appendRow([tick, sk, QStandardItem('not checked'), qsi, self.d])
-
-        #Add row which is the divider between loaded and unloaded layers
-        self.dlg.tableView.model().appendRow([QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked'), QStandardItem(''), QStandardItem('Unloaded but available layers:')])
-
-
-#        rowPosition = self.dlg.tableView.model().rowCount()
-#        for col in range(0,3):
-#           self.dlg.tableView.model().item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
-
-
-    def GUILayersResync(self):
-        for treeLayer in self.project.layerTreeRoot().findLayers():
-            layer = treeLayer.layer()
-            for i in range(self.dlg.tableView.model().rowCount()):
-                item = self.dlg.tableView.model().item(i, 4)
-                #Skip the row which is the divider between loaded and unloaded items
-                it4 = self.dlg.tableView.model().item(i, 1)
-                it5 = it4.text()
-                if it5 == '90000':
-                    pass
-                else:
-                    if item.text() in layer.source().split("|")[0]:
-                        #self.layerInfo[item.text()] = self.getLayerInfo(layer)
-                        self.dlg.tableView.model().item(i, 0).setCheckState(QtCore.Qt.Checked)
-                        #Set column 4 to same as checkbox. Click on checkox is hard to catch so using this as indicator
-                        self.dlg.tableView.model().item(i, 2).setText(self.tr('checked'))
-
-                        geometryType = self.dlg.tableView.model().item(i, 3)
-                        geometryType.setText(self.geometryTypes[layer.geometryType()])
-                        sortOrder = self.dlg.tableView.model().item(i, 1)
-                        sortOrder.setText('{:05d}'.format(self.treeLayerIdx))
-            self.treeLayerIdx += 1
-        self.dlg.tableView.model().sort(1)
-
-#    def getLayerInfo(self, layer):
-        #layerInfo = []
-        #request = QgsFeatureRequest()
-        #request.setSubsetOfAttributes(['name','id'],layer.pendingFields())
-        #request.setFlags(QgsFeatureRequest.NoGeometry)
-        #for feature in layer.getFeatures(request):
-        #    geom = feature.geometry()
-        #    if len(feature.attributes()) > 3:
-        #        layerInfo.append(feature.attributes()[3])
-        #        model = QStandardItemModel()
-        #        model.setColumnCount(3)
-        #        model.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key', 'Chk ind'])
-        #        item = QStandardItem("\n".join(layerInfo[0]))
-        #        model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
-        #        self.dlg.objectInfo.setModel(model)
-
-
-    def tableViewselectionChanged(self):
-        getLayerInfo()        
 
     def tableViewClicked(self, index):
         if QgsMapLayerRegistry.instance().mapLayers():
@@ -816,10 +733,6 @@ class ELVIS:
 
                 sfile = os.path.join(self.last_opened_project_dir, val)
 
-                ##############################################################
-                #This is how to read cell content of tableView
-                #it = model.item(row, 3)
-                #print it.text()
                 ##############################################################
                 #Since mouse click on tableView row cannot determine if the checkbox
                 #was clicked (which controls loading/unloading of layers) or if the 
@@ -887,53 +800,357 @@ class ELVIS:
                     if lna.endswith('ECOvalues'):
                         self.cur_scale_id = "ECOvalues"
 
-#                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
-#                    if layer:
-#                        iter = layer.getFeatures()
-
-                        #Using column names (to find index of column) rather than column ids.
-                        #so can change column order but not names
-#                        idx_spatfeat = layer.fieldNameIndex('spat_feat')
-#                        if self.cur_scale_id == "LLG":
-#                            idx_llg_dist = layer.fieldNameIndex('llg')
-#                        if self.cur_scale_id == "Districts":
-#                            idx_llg_dist = layer.fieldNameIndex('district')
-#                        idx_foodsec = layer.fieldNameIndex('food_secur')
-#                        idx_wellbeing = layer.fieldNameIndex('well_being')
-#                        idx_income = layer.fieldNameIndex('income')
-
-#                        feat_count = 0
-#                        attx3 = []
-#                        attb = []
-
-#                        imporval = None #Do not declare a type
-
-#                        for feature in iter:
-
-#                            feat_count += 1;
-#                            geom = feature.geometry()
-
-                            # show some information about the feature
-                #            if geom.type() == QGis.Point:
-                #                x = geom.asPoint()
-                #                #print "Point: " + str(x)
-                #            elif geom.type() == QGis.Line:
-                #                x = geom.asPolyline()
-                #                print "Line: %d points" % len(x)
-                #            elif geom.type() == QGis.Polygon:
-                #                x = geom.asPolygon()
-                #                numPts = 0
-                #                for ring in x:
-                #                    numPts += len(ring)
-                #                #print "Polygon: %d rings with %d points" % (len(x), numPts)
-                #            else:
-                #                pass #Dummy statement so next one can be rem'ed w/o failing
-                                #print "Unknown"
-
                     else:
                         self.dlg.error.setText("Layer not loaded.")
             else:
                 self.dlg.error.setText("No map layers.")
+
+
+    def listWidgetScaleNamesItemClicked(self, item):
+        self.redrawGraph(item.text())
+        #print item.text()
+
+
+    def delRubberClicked(self):
+        self.delRubberband()
+
+
+    def delRubberband(self):
+        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
+        for treeLayer in self.project.layerTreeRoot().findLayers():                
+            layer_f2 = treeLayer.layer()
+            if layer_f2.name() == "rubber_band":
+                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+
+    def butClearErrorClicked(self):
+        self.dlg.error.setText("")
+
+
+    def DoELVISProgramInfo(self):
+        self.elvinf = ELVISProgramInfo()
+        self.elvinf.setModal(True)
+        self.elvinf.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
+        pixmap = QPixmap(':/plugins/ELVIS/resources/CSIROs.png')
+        self.elvinf.lblCSIRO.setPixmap(pixmap)
+        self.elvinf.show()
+
+
+    def btnInfo2Clicked(self):
+        self.dlginfo2 = MVinfo2()
+        self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
+        self.dlginfo2.setModal(False)
+        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
+
+        QApplication.setOverrideCursor(Qt.WhatsThisCursor);
+        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
+        self.iface.mapCanvas().setMapTool(tool2)
+        self.dlginfo2.tableWidget.setColumnWidth(0,200)
+        self.dlginfo2.tableWidget.setColumnWidth(1,70)
+        self.dlginfo2.tableWidget.setColumnWidth(2,150)
+        self.dlginfo2.tableWidget.setColumnWidth(3,150)
+        self.dlginfo2.show()
+        self.dlginfo2.setWindowTitle("ELVIS feature info")
+
+
+    def butCloseInfo2Clicked(self):
+        self.dlginfo2.close()
+
+    def InitLayerList(self):
+        #In memory list of project layers and types
+        self.projectlayers = []
+        for f in listdir(self.last_opened_project_dir):
+            if isfile(join(self.last_opened_project_dir, f)):
+                shapef = join(self.last_opened_project_dir, f)
+                if f.endswith('.shp'):
+                    fo = os.path.splitext(f)[0] # w/o shp                    
+                    #print basename(f)
+                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
+                        cons = []
+                        cons.append('99999')       # 0 - sortkey
+                        cons.append('not loaded')  # 1 - loaded/ticked status
+                        tlayer = QgsVectorLayer(shapef, "testing_geometry", "ogr")
+                        if tlayer.wkbType() == 1:
+                            cons.append('point')       # 2 - type
+                        elif tlayer.wkbType() == 3:
+                            cons.append('polygon')     # 2 - type
+                        else:
+                            cons.append('unsupported') # 2 - type
+                        cons.append(fo)                 # 3 - layername with path
+                        self.projectlayers.append(cons)
+                        tlayer = None
+
+        #If layer is loaded in project, set it to loaded in projectlayer list 
+        for agl in self.projectlayers:
+            shp = os.path.splitext(agl[3])[0] #Get just filename
+            if QgsMapLayerRegistry.instance().mapLayersByName(shp):
+                agl[1] = 'loaded'
+        #Sort loaded layers first, then layer name
+        self.projectlayers = sorted(self.projectlayers, key = operator.itemgetter(1, 3))
+
+    def GUILoadProjectLayers(self):
+        self.treeLayerIdx = 0
+        position = {}
+        self.layerInfo = {}
+
+        onlyfiles = []
+        for f in listdir(self.last_opened_project_dir):
+            if isfile(join(self.last_opened_project_dir, f)):
+                if f.endswith('.shp'):
+                    #print basename(f)
+                    if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
+                        onlyfiles.append(f)
+
+        onlyfiles.sort()
+        #Clear pre-existing entries, ie from previously loaded project
+        self.dlg.tableView.model().setRowCount(0)
+        for fil in onlyfiles:
+            self.d = QStandardItem(fil)
+            self.d.setTextAlignment(QtCore.Qt.AlignLeft)
+            self.d.setText = "testing"
+            #self.d.setCheckable(True) 
+            sk = QStandardItem('99999')
+            sk.setCheckable(False)
+            tick = QStandardItem('')
+            tick.setCheckable(True)
+            ity = QStandardItem()
+            ity.setText("unknown")
+            self.dlg.tableView.model().appendRow([tick, sk, QStandardItem('not checked'), ity, self.d])
+            #self.dlg.tableView.model().appendRow([tick, sk, QStandardItem('not checked'), qsi, self.d])
+
+        #Add row which is the divider between loaded and unloaded layers
+        self.dlg.tableView.model().appendRow([QStandardItem(''), QStandardItem('90000'), QStandardItem('not checked'), QStandardItem(''), QStandardItem('Unloaded but available layers:')])
+
+
+#*********** xyxy:
+
+#May not need the following lines since the entries are rebuilt in the next function
+
+        self.projectlayers = sorted(self.projectlayers, key = operator.itemgetter(0, 1))
+        if self.projectlayers:
+            for ll in self.projectlayers:
+
+                chkBoxItem = QTableWidgetItem()
+                chkBoxItem.setFlags(Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
+                chkBoxItem.setCheckState(Qt.Unchecked)
+                icon_item = QTableWidgetItem()
+                if ll[2] == 'polygon':
+                    icon = QIcon(':/plugins/ELVIS/resources/polys.png')
+                elif ll[2] == 'point':
+                    icon = QIcon(':/plugins/ELVIS/resources/points.png')
+                icon_item.setIcon(icon)
+
+                rowPosition = self.dlg.tableWidgetLayers.rowCount()
+                self.dlg.tableWidgetLayers.insertRow(rowPosition)
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 0, chkBoxItem)
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 1, QtGui.QTableWidgetItem(ll[0]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 2, QtGui.QTableWidgetItem(ll[1]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 3, QtGui.QTableWidgetItem(icon_item))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 4, QtGui.QTableWidgetItem(ll[2]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 5, QtGui.QTableWidgetItem(ll[3]))
+                self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+
+        '''
+        onlyfiles.sort()
+        self.dlg.tableWidgetLayers.setRowCount(0)
+
+        for fil in onlyfiles:
+            chkBoxItem = QTableWidgetItem()
+            chkBoxItem.setFlags(Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
+            chkBoxItem.setCheckState(Qt.Unchecked)
+
+            icon_item = QTableWidgetItem()
+            icon = QIcon(':/plugins/ELVIS/resources/polys.png')
+            icon_item.setIcon(icon)
+
+            rowPosition = self.dlg.tableWidgetLayers.rowCount()
+            self.dlg.tableWidgetLayers.insertRow(rowPosition)
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 0, chkBoxItem)
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 1, QtGui.QTableWidgetItem('99999'))
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 2, QtGui.QTableWidgetItem('not checked'))
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 3, QtGui.QTableWidgetItem(icon_item))
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 4, QtGui.QTableWidgetItem('unknown'))
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 5, QtGui.QTableWidgetItem(fil))
+            self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+
+
+
+        redcol = QColor.fromRgb(188,69,57)
+        whtcol = QColor.fromRgb(255,255,255)
+        xFont=QtGui.QFont()
+        xFont.setBold(True)
+
+        rowPosition = self.dlg.tableWidgetLayers.rowCount()
+        self.dlg.tableWidgetLayers.insertRow(rowPosition)
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 0, chkBoxItem)
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 1, QtGui.QTableWidgetItem('90000'))
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 2, QtGui.QTableWidgetItem('not checked'))
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 3, QtGui.QTableWidgetItem(' '))
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 4, QtGui.QTableWidgetItem(' '))
+        self.dlg.tableWidgetLayers.setItem(rowPosition, 5, QtGui.QTableWidgetItem('Unloaded but available layers:'))
+        self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+        for col in range(1, 6):
+            self.dlg.tableWidgetLayers.item(rowPosition, col).setBackground(QBrush(redcol))
+            self.dlg.tableWidgetLayers.item(rowPosition, col).setForeground(QBrush(whtcol))
+            self.dlg.tableWidgetLayers.item(rowPosition, col).setFont(xFont)
+        '''
+#***********
+
+
+
+
+    def GUILayersResync(self):
+#OLD DISCARD LATER
+        for treeLayer in self.project.layerTreeRoot().findLayers():
+            layer = treeLayer.layer()
+            for i in range(self.dlg.tableView.model().rowCount()):
+                item = self.dlg.tableView.model().item(i, 4)
+                #Skip the row which is the divider between loaded and unloaded items
+                it4 = self.dlg.tableView.model().item(i, 1)
+                it5 = it4.text()
+                if it5 == '90000':
+                    pass
+                else:
+                    if item.text() in layer.source().split("|")[0]:
+                        #self.layerInfo[item.text()] = self.getLayerInfo(layer)
+                        self.dlg.tableView.model().item(i, 0).setCheckState(QtCore.Qt.Checked)
+                        #Set column 4 to same as checkbox. Click on checkox is hard to catch so using this as indicator
+                        self.dlg.tableView.model().item(i, 2).setText(self.tr('checked'))
+
+                        geometryType = self.dlg.tableView.model().item(i, 3)
+                        geometryType.setText(self.geometryTypes[layer.geometryType()])
+                        sortOrder = self.dlg.tableView.model().item(i, 1)
+                        sortOrder.setText('{:05d}'.format(self.treeLayerIdx))
+            self.treeLayerIdx += 1
+        self.dlg.tableView.model().sort(1)
+#**************
+
+
+#*********** xyxy:
+
+        self.projectlayers = sorted(self.projectlayers, key = operator.itemgetter(0, 1))
+
+        grecol = QColor.fromRgb(152,152,152)
+        whtcol = QColor.fromRgb(255,255,255)
+        xFont=QtGui.QFont()
+        xFont.setBold(True)
+        self.dlg.tableWidgetLayers.setRowCount(0)
+        divider_inserted = False
+        if self.projectlayers:
+            for ll in self.projectlayers:
+                #Insert divider before first unloaded layer
+                if ll[1] == 'not loaded' and not divider_inserted:
+                    rowPosition = self.dlg.tableWidgetLayers.rowCount()
+                    self.dlg.tableWidgetLayers.insertRow(rowPosition)
+                    self.dlg.tableWidgetLayers.setItem(rowPosition, 0, QtGui.QTableWidgetItem('Unloaded but available layers:'))
+                    self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+                    self.dlg.tableWidgetLayers.item(rowPosition, 0).setBackground(QBrush(grecol))
+                    self.dlg.tableWidgetLayers.item(rowPosition, 0).setForeground(QBrush(whtcol))
+                    self.dlg.tableWidgetLayers.item(rowPosition, 0).setFont(xFont)
+                    self.dlg.tableWidgetLayers.setSpan(rowPosition, 0, 1, 6)
+                    divider_inserted = True
+                chkBoxItem = QTableWidgetItem()
+                chkBoxItem.setFlags(Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
+                if ll[1] == 'not loaded':
+                    chkBoxItem.setCheckState(Qt.Unchecked)
+                if ll[1] == 'loaded':
+                    chkBoxItem.setCheckState(Qt.Checked)
+                icon_item = QTableWidgetItem()
+                if ll[2] == 'polygon':
+                    icon = QIcon(':/plugins/ELVIS/resources/polys.png')
+                elif ll[2] == 'point':
+                    icon = QIcon(':/plugins/ELVIS/resources/points.png')
+                icon_item.setIcon(icon)
+                rowPosition = self.dlg.tableWidgetLayers.rowCount()
+                self.dlg.tableWidgetLayers.insertRow(rowPosition)
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 0, chkBoxItem)
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 1, QtGui.QTableWidgetItem(ll[0]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 2, QtGui.QTableWidgetItem(ll[1]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 3, QtGui.QTableWidgetItem(icon_item))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 4, QtGui.QTableWidgetItem(ll[2]))
+                self.dlg.tableWidgetLayers.setItem(rowPosition, 5, QtGui.QTableWidgetItem(ll[3]))
+                self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+
+        if not divider_inserted:
+            rowPosition = self.dlg.tableWidgetLayers.rowCount()
+            self.dlg.tableWidgetLayers.insertRow(rowPosition)
+            self.dlg.tableWidgetLayers.setItem(rowPosition, 0, QtGui.QTableWidgetItem('Unloaded but available layers:'))
+            self.dlg.tableWidgetLayers.setRowHeight(rowPosition,17) 
+            self.dlg.tableWidgetLayers.item(rowPosition, 0).setBackground(QBrush(grecol))
+            self.dlg.tableWidgetLayers.item(rowPosition, 0).setForeground(QBrush(whtcol))
+            self.dlg.tableWidgetLayers.item(rowPosition, 0).setFont(xFont)
+            self.dlg.tableWidgetLayers.setSpan(rowPosition, 0, 1, 6)
+
+
+        #for ty in self.projectlayers:
+        #    if ty[1] == 'loaded':
+        #        for i in range(self.dlg.tableWidgetLayers.rowCount()):
+        #            item = self.dlg.tableWidgetLayers.item(i, 5).text()
+        #            if item == ty[3]:
+        #                self.dlg.tableWidgetLayers.item(i, 2).setText(self.tr('loaded'))
+
+
+
+
+
+
+
+
+
+        #Sort and add divider
+
+
+        '''
+        #For each layer that is open in the project
+        for treeLayer in self.project.layerTreeRoot().findLayers():
+            layer = treeLayer.layer()
+            layname = layer.name()
+            if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                for i in range(self.dlg.tableWidgetLayers.rowCount()):
+                    item = self.dlg.tableWidgetLayers.item(i, 1).text()
+
+                    if item == 90000:
+                        pass
+                    else:
+                        ite = layer.source().split("|")[0]
+                        if ite:
+                            twi = self.dlg.tableWidgetLayers.item(i, 0)
+                            if twi:
+                                self.dlg.tableWidgetLayers.item(i, 0).setCheckState(QtCore.Qt.Checked)
+                                self.dlg.tableWidgetLayers.item(i, 2).setText(self.tr('checked'))
+                                geo = self.geometryTypes[layer.geometryType()]
+                                self.dlg.tableWidgetLayers.item(i, 4).setText(geo)
+                                icon = QIcon()
+                                if geo == 'polygon':
+                                    icon = QIcon(':/plugins/ELVIS/resources/polys.png')
+                                if geo == 'point':
+                                    icon = QIcon(':/plugins/ELVIS/resources/points.png')
+                                self.dlg.tableWidgetLayers.item(i, 3).setIcon(icon)
+                    '''
+#***********
+
+
+
+#    def getLayerInfo(self, layer):
+        #layerInfo = []
+        #request = QgsFeatureRequest()
+        #request.setSubsetOfAttributes(['name','id'],layer.pendingFields())
+        #request.setFlags(QgsFeatureRequest.NoGeometry)
+        #for feature in layer.getFeatures(request):
+        #    geom = feature.geometry()
+        #    if len(feature.attributes()) > 3:
+        #        layerInfo.append(feature.attributes()[3])
+        #        model = QStandardItemModel()
+        #        model.setColumnCount(3)
+        #        model.setHorizontalHeaderLabels(['Layer', 'Type', 'Sort Key', 'Chk ind'])
+        #        item = QStandardItem("\n".join(layerInfo[0]))
+        #        model.appendRow([item, QStandardItem('unknown'), QStandardItem('99999')])
+        #        self.dlg.objectInfo.setModel(model)
+
+
+    def tableViewselectionChanged(self):
+        getLayerInfo()        
+
 
     def saveProjectClicked(self):
         if self.project.write():
@@ -2024,7 +2241,7 @@ class ELVIS:
             fx = fx.replace(" ", "")  # Remove all blanks
             fx = ' '.join(fx.split()) # Remove all white spaces
             fx = ''.join(fx.split())  # Remove all white spaces
-            print fx
+            #print fx
             rub = []
             rub = fx.split(";")
             NewRubberBand = []

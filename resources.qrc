@@ -12,5 +12,7 @@
         <file>resources/zoomin.png</file>
         <file>resources/zoomout.png</file>
         <file>resources/CSIROs.png</file>
+        <file>resources/points.png</file>
+        <file>resources/polys.png</file>
     </qresource>
 </RCC>
