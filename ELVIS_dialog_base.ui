@@ -504,7 +504,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Area of interest</string>
+         <string>Areas of Interest</string>
         </property>
        </widget>
        <widget class="QPushButton" name="pushButtonOrigExtent">

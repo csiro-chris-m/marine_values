@@ -1818,9 +1818,6 @@ class ELVIS:
             self.dlgsavesel.buttonSave.setVisible(True)
             self.dlgsavesel.pushButtonReadShp.setVisible(False)
 
-            self.dlgsavesel.textAOIShortT.setStyleSheet("background-color: #e5996e;")
-            self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
-
             rbp = str(self.rubberbandPoints)
             #print rbp
             rbp = rbp.translate(None, '\'')
@@ -1866,8 +1863,6 @@ class ELVIS:
         self.dlgsavesel.labelDate.setVisible(False)
         self.dlgsavesel.fldID.setVisible(True)
         self.dlgsavesel.pushButtonReadShp.setVisible(True)
-        self.dlgsavesel.textAOIShortT.setStyleSheet("background-color: #e5996e;")
-        self.dlgsavesel.textAOIDesc.setStyleSheet("background-color: #e5996e;")
 
 
     def pushButtonOKClicked(self):
@@ -1910,7 +1905,7 @@ class ELVIS:
         self.dlgsavesel = ELVISSaveSel()
         self.dlgsavesel.setModal(True)
         self.dlgsavesel.show()
-        self.dlgsavesel.setWindowTitle("Manage Areas of interest")
+        self.dlgsavesel.setWindowTitle("Manage Areas of Interest")
         self.dlgsavesel.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
         
