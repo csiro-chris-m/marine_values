@@ -1317,7 +1317,8 @@ class ELVIS:
                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetail.setSpan(rowPosition, 0, 1, 3)
                                 for col in range(0,3):
-                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor(188,69,57)))
+                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(30,106,175)))
                                 self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
                                 self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
@@ -1514,7 +1515,8 @@ class ELVIS:
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 2)
                                 for colc in range(0,3):
-                                    self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setBackground(QBrush(QColor.fromRgb(188,69,57)))
+                                    self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+                                    self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setBackground(QBrush(QColor.fromRgb(30,106,175)))
                                 self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
                                 self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
 
