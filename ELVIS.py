@@ -1677,12 +1677,13 @@ class ELVIS:
 #            layer_f2 = treeLayer.layer()
 #            if layer_f2.name() == "rubber_band":
 #                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+        self.dlg.activateWindow()
 
 
     def readSQLiteDB(self):
         db = QSqlDatabase.addDatabase("QSQLITE");
         # Reuse the path to DB to set database name
-        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
         # Open the connection
         db.open()
         # query the table
@@ -1830,7 +1831,7 @@ class ELVIS:
     def buttonSaveClicked(self):
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
-        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
         db.open()
 
         if self.dlgsavesel.textAOIShortT.toPlainText() and self.dlgsavesel.textAOIDesc.toPlainText() and self.dlgsavesel.textAOIPtLst.toPlainText():
@@ -1926,7 +1927,7 @@ class ELVIS:
 
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
-        db.setDatabaseName(self.last_opened_project_dir + "\\marine_values.db")
+        db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
         db.open()
         query = db.exec_("select * from area_selections")
         while query.next():
