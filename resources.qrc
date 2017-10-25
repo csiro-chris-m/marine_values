@@ -14,5 +14,6 @@
         <file>resources/CSIROs.png</file>
         <file>resources/points.png</file>
         <file>resources/polys.png</file>
+        <file>resources/open.png</file>
     </qresource>
 </RCC>

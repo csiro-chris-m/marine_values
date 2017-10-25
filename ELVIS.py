@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-*    CSIRO Commonwealth Scientific and Industrial Research Organisation    *
-*    ELVIS EnvironmentaL Values Interrogation System                       *
+*    CSIRO - Commonwealth Scientific and Industrial Research Organisation  *
+*    ELVIS - EnvironmentaL Values Interrogation System                     *
 *    A QGIS plugin                                                         *
 * ------------------------------------------------------------------------ *
 *        begin                : 2016-12-25                                 *
@@ -262,14 +262,12 @@ class ELVIS:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-        # Define Set signal only in iniGui
-        # connect to signal renderComplete which is emitted when canvas
-        # rendering is done
+        # Define Set signal only in iniGui. Connect to signal renderComplete which is emitted when canvas rendering is done
         QtCore.QObject.connect(self.iface.mapCanvas(), QtCore.SIGNAL("renderComplete(QPainter *)"), self.renderTest)
 
         self.dlg.ELVISInfo.clicked.connect(self.DoELVISProgramInfo)
+        self.dlg.ELVISInfo.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
-        #self.dlg.loadProject.clicked.connect(self.loadProjectClicked)
         self.dlg.saveProject.clicked.connect(self.saveProjectClicked)
         self.dlg.saveProject.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/save.png'))
 
@@ -294,10 +292,12 @@ class ELVIS:
         self.dlg.butClearError.clicked.connect(self.butClearErrorClicked)
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
+        
         self.dlg.openProj.clicked.connect(self.openProjClicked)
+        self.dlg.openProj.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/open.png'))
+
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
 
-        #rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\info.png");
         self.dlg.btnInfo2.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/info.png'))
         self.dlg.btnInfo2.clicked.connect(self.btnInfo2Clicked)
 
@@ -309,8 +309,9 @@ class ELVIS:
         QtCore.QObject.connect(self.dlg.tableWidgetLayers, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableWidgetLayersClicked)
 
         QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
-
-        self.dlg.tableWidgetLayers.setEditTriggers(QAbstractItemView.NoEditTriggers) #Prevent tableWidgetLayers from being user edited
+        
+        #Prevent tableWidgetLayers from being user edited
+        self.dlg.tableWidgetLayers.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
@@ -330,9 +331,7 @@ class ELVIS:
         self.dlg.tableWidgetLayers.setColumnWidth(2,0)
         self.dlg.tableWidgetLayers.setColumnWidth(3,30)
         self.dlg.tableWidgetLayers.setColumnWidth(4,0)
-        self.dlg.tableWidgetLayers.setColumnWidth(5,200)
-        #Do not set width on last column. It will be stretched with HorizontalHeaderStretchLastSection
-        #self.dlg.tableWidgetLayers.setColumnWidth(4,200)
+        self.dlg.tableWidgetLayers.setColumnWidth(5,200) #Will be stretched with HorizontalHeaderStretchLastSection
 
         self.dlg.tableWidgetDetail.setColumnWidth(0,120)
         self.dlg.tableWidgetDetail.setColumnWidth(1,120)
@@ -360,7 +359,6 @@ class ELVIS:
         self.rubberbandPoints = []
 
         #Read database with ELVIS value details and keep in memory for quick access.
-        #Read only required fields
         self.dlg.list_of_values = []
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
@@ -387,15 +385,14 @@ class ELVIS:
             pass
 
         #Set mouse pointer in case we crashed and pointer was still in rubberband mode
-        #Does not work
         self.iface.actionPan().trigger()
 
-        ## show the dialog
+        #Show the dialog
         self.dlg.show()
 
         self.OrigExtent()
 
-        # Run the dialog event loop
+        #Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
 
@@ -421,7 +418,6 @@ class ELVIS:
         self.xclosing()
 
     def xclosing(self):
-        #print "ELVIS unloading..."
         self.treeLayerIdx = 0
         """Removes the ELVIS plugin icon from QGIS GUI."""
         #for action in self.actions:
@@ -432,12 +428,10 @@ class ELVIS:
         self._want_to_close = True
         self.dlg.close()
         #Must close current project and begin new empty project, otherwise QGIS stays open
-        #with current project and running ELVIS again causes unexpected behaviour, i.e. 
-        #clear the main map window
+        #with current project and running ELVIS again causes unexpected behaviour, i.e. clear the main map window
         self.iface.newProject()
 
     def manageLayer(self, x, index):
-        #Write code here to load and unload layers and save project
         try:
             x
         except IOError:
@@ -673,7 +667,6 @@ class ELVIS:
 
     def listWidgetScaleNamesItemClicked(self, item):
         self.redrawGraph(item.text())
-        #print item.text()
 
 
     def delRubberClicked(self):
@@ -729,7 +722,6 @@ class ELVIS:
                 shapef = join(self.last_opened_project_dir, f)
                 if f.endswith('.shp'):
                     fo = os.path.splitext(f)[0] # w/o shp                    
-                    #print basename(f)
                     if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
                         cons = []
                         cons.append('99999')       # 0 - sortkey
@@ -818,342 +810,346 @@ class ELVIS:
     def renderTest(self, painter):
         #Use painter for drawing to map canvas
         pass
-        #print ""
 
     def pushButtonExportClicked(self):
         path = QtGui.QFileDialog.getSaveFileName(None,"Export data",self.plugin_dir,"Comma Separated Values Spreadsheet (*.csv);;""All Files (*)")
         if not path:
             return
         else:
-            with open(unicode(path), 'wb') as stream:
-                writer = csv.writer(stream, delimiter=',')
+            try:
+                with open(unicode(path), 'wb') as stream:
+                    writer = csv.writer(stream, delimiter=',')
 
-                f = ["ECOLOGICAL VALUES DATABASE - ELVIS"]
-                writer.writerow(f)
+                    f = ["ECOLOGICAL VALUES DATABASE - ELVIS"]
+                    writer.writerow(f)
 
-                ndate = datetime.date.today()
-                n_day = "%02d" % (ndate.day,) 
-                n_mon = "%02d" % (ndate.month,) 
-                n_yea = "%04d" % (ndate.year,) 
-                ntime = datetime.datetime.now()
-                n_hou = "%02d" % (ntime.hour,) 
-                n_min = "%02d" % (ntime.minute,) 
-                n_sec = "%02d" % (ntime.second,) 
-                dt = n_day + "/" + n_mon + "/" + n_yea +  " " + n_hou + ":" + n_min + ":" + n_sec
-                f = ["Output created:", dt]
-                writer.writerow(f)
-                scalet = "Scale type: " + self.cur_scale_id
-                f = [scalet]
-                writer.writerow(f)
+                    ndate = datetime.date.today()
+                    n_day = "%02d" % (ndate.day,) 
+                    n_mon = "%02d" % (ndate.month,) 
+                    n_yea = "%04d" % (ndate.year,) 
+                    ntime = datetime.datetime.now()
+                    n_hou = "%02d" % (ntime.hour,) 
+                    n_min = "%02d" % (ntime.minute,) 
+                    n_sec = "%02d" % (ntime.second,) 
+                    dt = n_day + "/" + n_mon + "/" + n_yea +  " " + n_hou + ":" + n_min + ":" + n_sec
+                    f = ["Output created:", dt]
+                    writer.writerow(f)
+                    scalet = "Scale type: " + self.cur_scale_id
+                    f = [scalet]
+                    writer.writerow(f)
 
-                writer.writerow("")
-                f = ["AREA SELECTED COORDINATES"]
-                writer.writerow(f)
+                    writer.writerow("")
+                    f = ["AREA SELECTED COORDINATES"]
+                    writer.writerow(f)
 
-                f = ["Selection coordinates:"]
-                writer.writerow(f)
-                f = ["Longitude", "Latitude"]
-                writer.writerow(f)
+                    f = ["Selection coordinates:"]
+                    writer.writerow(f)
+                    f = ["Longitude", "Latitude"]
+                    writer.writerow(f)
 
-                for pt in self.rubberbandPoints:
-                    rowdata = []
-                    px = "{0:.5f}".format(round(float(str(pt[0])),5))
-                    rowdata.append(px)
-                    py = "{0:.5f}".format(round(float(str(pt[1])),5))
-                    rowdata.append(py)  
-                    writer.writerow(rowdata)
+                    for pt in self.rubberbandPoints:
+                        rowdata = []
+                        px = "{0:.5f}".format(round(float(str(pt[0])),5))
+                        rowdata.append(px)
+                        py = "{0:.5f}".format(round(float(str(pt[1])),5))
+                        rowdata.append(py)  
+                        writer.writerow(rowdata)
 
-                writer.writerow("")
-                h = ["AREA VALUES"]
-                writer.writerow("")
-                h = ["Natural resource values"]
-                writer.writerow(h)
-                writer.writerow("")
+                    writer.writerow("")
+                    h = ["AREA VALUES"]
+                    writer.writerow("")
+                    h = ["Natural resource values"]
+                    writer.writerow(h)
+                    writer.writerow("")
 
-                h = ["Contribution of EGS"]
-                writer.writerow(h)
+                    h = ["Contribution of EGS"]
+                    writer.writerow(h)
 
-                wellb_whole_scale = 0
-                wellb_sel_area = 0
-                wellb_sel_are_perc = 0
+                    wellb_whole_scale = 0
+                    wellb_sel_area = 0
+                    wellb_sel_are_perc = 0
 
-                income_whole_scale = 0
-                income_sel_area = 0
-                income_sel_are_perc = 0
+                    income_whole_scale = 0
+                    income_sel_area = 0
+                    income_sel_are_perc = 0
 
-                foodsec_whole_scale = 0
-                foodsec_sel_area = 0
-                foodsec_sel_are_perc = 0
+                    foodsec_whole_scale = 0
+                    foodsec_sel_area = 0
+                    foodsec_sel_are_perc = 0
 
-                h = ["Scale name","Spatial feature/Value","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
-                writer.writerow(h)
+                    h = ["Scale name","Spatial feature/Value","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
+                    writer.writerow(h)
 
-                #For summarizing later
-                totalmatrix = []
-                firstmatrix = True
-                quitproc =  False
+                    #For summarizing later
+                    totalmatrix = []
+                    firstmatrix = True
+                    quitproc =  False
 
-                for row in range(self.dlg.tableWidgetDetail.rowCount()):
-                    rowdata = []
-                    isfirstcol = True
-                    for column in range(self.dlg.tableWidgetDetail.columnCount()):
-                        item = self.dlg.tableWidgetDetail.item(row, column)
-                        if item is not None:
-                            if '---------------------------------' in item.text() and not firstmatrix:
-                                quitproc = True
+                    for row in range(self.dlg.tableWidgetDetail.rowCount()):
+                        rowdata = []
+                        isfirstcol = True
+                        for column in range(self.dlg.tableWidgetDetail.columnCount()):
+                            item = self.dlg.tableWidgetDetail.item(row, column)
+                            if item is not None:
+                                if '---------------------------------' in item.text() and not firstmatrix:
+                                    quitproc = True
+                                    break
+                                firstmatrix = False
+                                rowdata.append(unicode(item.text()).encode('utf8'))
+                                if isfirstcol:
+                                    totalmatrix.append(rowdata)
+                                    isfirstcol = False
+                            else:
+                                rowdata.append('')
+                            if quitproc:
                                 break
-                            firstmatrix = False
-                            rowdata.append(unicode(item.text()).encode('utf8'))
-                            if isfirstcol:
-                                totalmatrix.append(rowdata)
-                                isfirstcol = False
-                        else:
-                            rowdata.append('')
+                            isfirstcol = False
                         if quitproc:
                             break
-                        isfirstcol = False
-                    if quitproc:
-                        break
-                    writer.writerow(rowdata)
-                writer.writerow("")
-
-                #Sums per contribution
-                sum_col2 = 0.0
-                sum_col3 = 0.0
-                sum_col4 = 0.0
-                sum_col5 = 0.0
-                sum_col6 = 0.0
-                sum_col7 = 0.0
-                sum_col8 = 0.0
-                sum_col9 = 0.0
-                for i in range(len(totalmatrix)):
-                    for j in range(len(totalmatrix[i])):
-                        if totalmatrix[i][j]:
-                            if j == 2:
-                                sum_col2 = sum_col2 + float(totalmatrix[i][j])
-                            if j == 3:
-                                sum_col3 = sum_col3 + float(totalmatrix[i][j])
-                            if j == 4:
-                                sum_col4 = sum_col4 + float(totalmatrix[i][j])
-                            if j == 5:
-                                sum_col5 = sum_col5 + float(totalmatrix[i][j])
-                            if j == 6:
-                                sum_col6 = sum_col6 + float(totalmatrix[i][j])
-                            if j == 7:
-                                sum_col7 = sum_col7 + float(totalmatrix[i][j])
-                            if j == 8:
-                                sum_col8 = sum_col8 + float(totalmatrix[i][j])
-                            if j == 9:
-                                sum_col9 = sum_col9 + float(totalmatrix[i][j])
-
-                #Sums per contribution and scale
-                sum_contsca_col2 = []
-                for i in range(len(totalmatrix)):
-                    if '---------------------------------' in totalmatrix[i][0]:
-                        pass
-                    else:
-                        upd4 = False
-                        for srw in sum_contsca_col2:
-                            if totalmatrix[i][0] == srw[0]:
-                                srw[2] = srw[2] + float(totalmatrix[i][2])
-                                srw[3] = srw[3] + float(totalmatrix[i][3])
-                                srw[4] = srw[4] + float(totalmatrix[i][4])
-                                srw[5] = srw[5] + float(totalmatrix[i][5])
-                                srw[6] = srw[6] + float(totalmatrix[i][6])
-                                srw[7] = srw[7] + float(totalmatrix[i][7])
-                                srw[8] = srw[8] + float(totalmatrix[i][8])
-                                srw[9] = srw[9] + float(totalmatrix[i][9])
-                                upd4 = True
-                        if not upd4:
-                            rowda = []
-                            pval = totalmatrix[i][0]
-                            rowda.append(pval)
-                            rowda.append("") #Placeholder for unused column 1. So indices match up with totalmatrix eventhough we don't have spatial feature/value
-
-                            for g in (2,3,4,5,6,7,8,9):
-                                pval = totalmatrix[i][g]
-                                if pval:
-                                    rowda.append(float(pval))
-                                else:
-                                    rowda.append(0)
-                            sum_contsca_col2.append(rowda)
-
-                f = ["Contribution of N.R. to Overall Wellbeing (%)"]
-                writer.writerow(f)
-                writer.writerow("")
-                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
-                writer.writerow(f)
-                rwd3 = []
-                if sum_contsca_col2:
-                    for srw in sum_contsca_col2:
-                        rwd3.append(unicode(srw[0]).encode('utf8'))
-                        rwd3.append("")
-                        rwd3.append(unicode(srw[2]).encode('utf8'))
-                        rwd3.append(unicode(srw[3]).encode('utf8'))
-                        if srw[2] != 0:
-                            perse = srw[3] / srw[2] * 100
-                        else:
-                            perse = 0
-                        rwd3.append(unicode(perse).encode('utf8'))
-                        writer.writerow(rwd3)
-                        rwd3 = []
-                writer.writerow("")
-
-                f = ["Contribution of N.R. to Overall Income (%)"]
-                writer.writerow(f)
-                writer.writerow("")
-                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
-                writer.writerow(f)
-                rwd3 = []
-                if sum_contsca_col2:
-                    for srw in sum_contsca_col2:
-                        rwd3.append(unicode(srw[0]).encode('utf8'))
-                        rwd3.append("")
-                        rwd3.append(unicode(srw[4]).encode('utf8'))
-                        rwd3.append(unicode(srw[5]).encode('utf8'))
-                        if srw[4] != 0:
-                            perse = srw[5] / srw[4] * 100
-                        else:
-                            perse - 0
-                        rwd3.append(unicode(perse).encode('utf8'))
-                        writer.writerow(rwd3)
-                        rwd3 = []
+                        writer.writerow(rowdata)
                     writer.writerow("")
 
-                f = ["Contribution of N.R. to Overall Food security (%)"]
-                writer.writerow(f)
-                writer.writerow("")
-                f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
-                writer.writerow(f)
-                rwd3 = []
-                if sum_contsca_col2:
-                    for srw in sum_contsca_col2:
-                        rwd3.append(unicode(srw[0]).encode('utf8'))
-                        rwd3.append("")
-                        rwd3.append(unicode(srw[6]).encode('utf8'))
-                        rwd3.append(unicode(srw[7]).encode('utf8'))
-                        if srw[6] != 0:
-                            perse = srw[7] / srw[6] * 100
-                        else:
-                            perse = 0
-                        rwd3.append(unicode(perse).encode('utf8'))
-                        writer.writerow(rwd3)
-                        rwd3 = []
-                    writer.writerow("")
-
-                h = ["Contribution of Features (%)"]
-                writer.writerow(h)
-                writer.writerow("")
-                h = ["Scale name","Spatial feature","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
-                writer.writerow(h)
-                tt = []
-                rd = []
-                for i in range(len(totalmatrix)):
-                    if '---------------------------------' in totalmatrix[i][0]:
-                        pass
-                    else:
+                    #Sums per contribution
+                    sum_col2 = 0.0
+                    sum_col3 = 0.0
+                    sum_col4 = 0.0
+                    sum_col5 = 0.0
+                    sum_col6 = 0.0
+                    sum_col7 = 0.0
+                    sum_col8 = 0.0
+                    sum_col9 = 0.0
+                    for i in range(len(totalmatrix)):
                         for j in range(len(totalmatrix[i])):
                             if totalmatrix[i][j]:
-                                rd.append(unicode(totalmatrix[i][j]).encode('utf8'))
+                                if j == 2:
+                                    sum_col2 = sum_col2 + float(totalmatrix[i][j])
+                                if j == 3:
+                                    sum_col3 = sum_col3 + float(totalmatrix[i][j])
+                                if j == 4:
+                                    sum_col4 = sum_col4 + float(totalmatrix[i][j])
+                                if j == 5:
+                                    sum_col5 = sum_col5 + float(totalmatrix[i][j])
+                                if j == 6:
+                                    sum_col6 = sum_col6 + float(totalmatrix[i][j])
+                                if j == 7:
+                                    sum_col7 = sum_col7 + float(totalmatrix[i][j])
+                                if j == 8:
+                                    sum_col8 = sum_col8 + float(totalmatrix[i][j])
+                                if j == 9:
+                                    sum_col9 = sum_col9 + float(totalmatrix[i][j])
+
+                    #Sums per contribution and scale
+                    sum_contsca_col2 = []
+                    for i in range(len(totalmatrix)):
+                        if '---------------------------------' in totalmatrix[i][0]:
+                            pass
+                        else:
+                            upd4 = False
+                            for srw in sum_contsca_col2:
+                                if totalmatrix[i][0] == srw[0]:
+                                    srw[2] = srw[2] + float(totalmatrix[i][2])
+                                    srw[3] = srw[3] + float(totalmatrix[i][3])
+                                    srw[4] = srw[4] + float(totalmatrix[i][4])
+                                    srw[5] = srw[5] + float(totalmatrix[i][5])
+                                    srw[6] = srw[6] + float(totalmatrix[i][6])
+                                    srw[7] = srw[7] + float(totalmatrix[i][7])
+                                    srw[8] = srw[8] + float(totalmatrix[i][8])
+                                    srw[9] = srw[9] + float(totalmatrix[i][9])
+                                    upd4 = True
+                            if not upd4:
+                                rowda = []
+                                pval = totalmatrix[i][0]
+                                rowda.append(pval)
+                                rowda.append("") #Placeholder for unused column 1. So indices match up with totalmatrix eventhough we don't have spatial feature/value
+
+                                for g in (2,3,4,5,6,7,8,9):
+                                    pval = totalmatrix[i][g]
+                                    if pval:
+                                        rowda.append(float(pval))
+                                    else:
+                                        rowda.append(0)
+                                sum_contsca_col2.append(rowda)
+
+                    f = ["Contribution of N.R. to Overall Wellbeing (%)"]
+                    writer.writerow(f)
+                    writer.writerow("")
+                    f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                    writer.writerow(f)
+                    rwd3 = []
+                    if sum_contsca_col2:
+                        for srw in sum_contsca_col2:
+                            rwd3.append(unicode(srw[0]).encode('utf8'))
+                            rwd3.append("")
+                            rwd3.append(unicode(srw[2]).encode('utf8'))
+                            rwd3.append(unicode(srw[3]).encode('utf8'))
+                            if srw[2] != 0:
+                                perse = srw[3] / srw[2] * 100
                             else:
-                                rd.append("")
-                        tt.append(rd)
-                        rd = []
-                vv = []
-                #Sort matrix on columns 1 and 2
-                vv = sorted(tt, key = operator.itemgetter(0, 1))
-                for e4 in vv:
-                    writer.writerow(e4)
-                writer.writerow("")
+                                perse = 0
+                            rwd3.append(unicode(perse).encode('utf8'))
+                            writer.writerow(rwd3)
+                            rwd3 = []
+                    writer.writerow("")
 
-                h = ["Contribution of EGS"]
-                writer.writerow(h)
+                    f = ["Contribution of N.R. to Overall Income (%)"]
+                    writer.writerow(f)
+                    writer.writerow("")
+                    f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                    writer.writerow(f)
+                    rwd3 = []
+                    if sum_contsca_col2:
+                        for srw in sum_contsca_col2:
+                            rwd3.append(unicode(srw[0]).encode('utf8'))
+                            rwd3.append("")
+                            rwd3.append(unicode(srw[4]).encode('utf8'))
+                            rwd3.append(unicode(srw[5]).encode('utf8'))
+                            if srw[4] != 0:
+                                perse = srw[5] / srw[4] * 100
+                            else:
+                                perse - 0
+                            rwd3.append(unicode(perse).encode('utf8'))
+                            writer.writerow(rwd3)
+                            rwd3 = []
+                        writer.writerow("")
 
-                tmatrix = []
-                firstmat = True
-                endproc = False
-                for row in range(self.dlg.tableWidgetDetail.rowCount()):
-                    esc = False
-                    rowdata = []
-                    for column in range(self.dlg.tableWidgetDetail.columnCount()):
-                        item = self.dlg.tableWidgetDetail.item(row, column)
-                        if item is not None:
-                            if '---------------------------------' in item.text():
-                                if firstmat:
-                                    firstmat = False
+                    f = ["Contribution of N.R. to Overall Food security (%)"]
+                    writer.writerow(f)
+                    writer.writerow("")
+                    f = ["Scale name", "", "For whole scale name (%)", "In selected area (%)", "% in selected area"]
+                    writer.writerow(f)
+                    rwd3 = []
+                    if sum_contsca_col2:
+                        for srw in sum_contsca_col2:
+                            rwd3.append(unicode(srw[0]).encode('utf8'))
+                            rwd3.append("")
+                            rwd3.append(unicode(srw[6]).encode('utf8'))
+                            rwd3.append(unicode(srw[7]).encode('utf8'))
+                            if srw[6] != 0:
+                                perse = srw[7] / srw[6] * 100
+                            else:
+                                perse = 0
+                            rwd3.append(unicode(perse).encode('utf8'))
+                            writer.writerow(rwd3)
+                            rwd3 = []
+                        writer.writerow("")
+
+                    h = ["Contribution of Features (%)"]
+                    writer.writerow(h)
+                    writer.writerow("")
+                    h = ["Scale name","Spatial feature","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected","Area of spatial feature selected km2","Area of spatial feature total km2"]
+                    writer.writerow(h)
+                    tt = []
+                    rd = []
+                    for i in range(len(totalmatrix)):
+                        if '---------------------------------' in totalmatrix[i][0]:
+                            pass
+                        else:
+                            for j in range(len(totalmatrix[i])):
+                                if totalmatrix[i][j]:
+                                    rd.append(unicode(totalmatrix[i][j]).encode('utf8'))
                                 else:
-                                    endproc = True
+                                    rd.append("")
+                            tt.append(rd)
+                            rd = []
+                    vv = []
+                    #Sort matrix on columns 1 and 2
+                    vv = sorted(tt, key = operator.itemgetter(0, 1))
+                    for e4 in vv:
+                        writer.writerow(e4)
+                    writer.writerow("")
+
+                    h = ["Contribution of EGS"]
+                    writer.writerow(h)
+
+                    tmatrix = []
+                    firstmat = True
+                    endproc = False
+                    for row in range(self.dlg.tableWidgetDetail.rowCount()):
+                        esc = False
+                        rowdata = []
+                        for column in range(self.dlg.tableWidgetDetail.columnCount()):
+                            item = self.dlg.tableWidgetDetail.item(row, column)
+                            if item is not None:
+                                if '---------------------------------' in item.text():
+                                    if firstmat:
+                                        firstmat = False
+                                    else:
+                                        endproc = True
+                                        break
+                                    esc = True
                                     break
-                                esc = True
-                                break
-                            rowdata.append(unicode(item.text()).encode('utf8'))
+                                rowdata.append(unicode(item.text()).encode('utf8'))
+                            else:
+                                rowdata.append("")
+                        if endproc:
+                            break
+                        if not esc:
+                            tmatrix.append(rowdata)
+
+                    #Add first column text to sub-items
+                    titl = ""
+                    for i in range(len(tmatrix)):
+                        if tmatrix[i][0]:
+                            titl = tmatrix[i][0]
+                            tmatrix[i][0] = "" #Clear text in first cell just so we can delete this sum row later by searching for empty cell
                         else:
-                            rowdata.append("")
-                    if endproc:
-                        break
-                    if not esc:
-                        tmatrix.append(rowdata)
-
-                #Add first column text to sub-items
-                titl = ""
-                for i in range(len(tmatrix)):
-                    #print "%d: %d" % (i, len(tmatrix[i]))
-                    if tmatrix[i][0]:
-                        titl = tmatrix[i][0]
-                        tmatrix[i][0] = "" #Clear text in first cell just so we can delete this sum row later by searching for empty cell
-                    else:
-                        tmatrix[i][0] = titl
-                #Now remove higher level items (features)
-                newm = []
-                for i in range(len(tmatrix)):
-                    if tmatrix[i][0] is not "":
-                        newm.append(tmatrix[i])
-                #Sort matrix on columns 1 and 2
-                gg = []
-                gg = sorted(newm, key = operator.itemgetter(0, 1))
+                            tmatrix[i][0] = titl
+                    #Now remove higher level items (features)
+                    newm = []
+                    for i in range(len(tmatrix)):
+                        if tmatrix[i][0] is not "":
+                            newm.append(tmatrix[i])
+                    #Sort matrix on columns 1 and 2
+                    gg = []
+                    gg = sorted(newm, key = operator.itemgetter(0, 1))
 
 
-                writer.writerow("")
-                h = ["Scale name","EGS","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected"]
-                writer.writerow(h)
-                roawda4 = []
-                for i in range(len(gg)):
-                    lin = []
-                    for de in range(len(gg[i])):
-                        lin.append(unicode(gg[i][de]).encode('utf8'))
-                    writer.writerow(lin)
-                writer.writerow("")
+                    writer.writerow("")
+                    h = ["Scale name","EGS","Wellbeing value for Scale-name","Well-being value for scale name in area selected","Income value for Scale-name","Income value for scale name in area selected","Food security value for Scale-name","Food security value for scale name in area selected"]
+                    writer.writerow(h)
+                    roawda4 = []
+                    for i in range(len(gg)):
+                        lin = []
+                        for de in range(len(gg[i])):
+                            lin.append(unicode(gg[i][de]).encode('utf8'))
+                        writer.writerow(lin)
+                    writer.writerow("")
 
-                isheader = False
-                for row in range(self.dlg.tableWidgetDetailCounts.rowCount()):
-                    rowdata2 = []
-                    it = self.dlg.tableWidgetDetailCounts.item(row, 1).text()
-                    if it == "": #This is a header row
-                        isheader = True
-                        writer.writerow("") #Leading blank line
-                    else:
-                        isheader = False
-                    for column in range(self.dlg.tableWidgetDetailCounts.columnCount()):
-                        item = self.dlg.tableWidgetDetailCounts.item(row, column)
-                        if item is not None:
-                            rowdata2.append(unicode(item.text()).encode('utf8'))
+                    isheader = False
+                    for row in range(self.dlg.tableWidgetDetailCounts.rowCount()):
+                        rowdata2 = []
+                        it = self.dlg.tableWidgetDetailCounts.item(row, 1).text()
+                        if it == "": #This is a header row
+                            isheader = True
+                            writer.writerow("") #Leading blank line
                         else:
-                            rowdata2.append("")
-                    writer.writerow(rowdata2)
-                    if isheader:
-                        writer.writerow("") #Leading blank line
-                        h = ["Scale name","Value locations","Count"]
-                        writer.writerow(h)
+                            isheader = False
+                        for column in range(self.dlg.tableWidgetDetailCounts.columnCount()):
+                            item = self.dlg.tableWidgetDetailCounts.item(row, column)
+                            if item is not None:
+                                rowdata2.append(unicode(item.text()).encode('utf8'))
+                            else:
+                                rowdata2.append("")
+                        writer.writerow(rowdata2)
+                        if isheader:
+                            writer.writerow("") #Leading blank line
+                            h = ["Scale name","Value locations","Count"]
+                            writer.writerow(h)
+            except:
+                self.dlg.error.setText("Error while exporting. Ensure that an area is selected.")
 
 
     def pushButtonPanClicked(self):
         self.iface.actionPan().trigger()
 
+
     def pushButtonZoomPlusClicked(self):
         self.iface.actionZoomIn().trigger()
 
+
     def pushButtonZoomMinusClicked(self):
         self.iface.actionZoomOut().trigger()
+
 
     def rubberbandClicked(self):
         #Delete any pre-existing rubberband layer
@@ -1244,7 +1240,7 @@ class ELVIS:
             layname = layerIterator.name()
             #Only processing vector layers
             if layerIterator.type() == QgsMapLayer.VectorLayer:
-#POINT PROCESSING NEW
+#POINT PROCESSING
                 if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
                     if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
                         layer = layerIterator
@@ -1489,11 +1485,11 @@ class ELVIS:
 
     #****COUNTS************************************************************************
 
-                            #For layers which are processed in counts: Features
+    #For layers which are processed in counts: Features
 
                             if self.cur_scale_id == "Features" or self.cur_scale_id == "ECOvalues":
     # H E A D E R
-                                #Red header for each layer
+                                #Read header for each layer
                                 rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
                                 self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname + " ----------------------------------"))
@@ -1648,22 +1644,13 @@ class ELVIS:
                                 if layer_f2.name() == "Clipped":
                                     QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
 
-
-
         #Create graph
         if self.dlg.tableWidgetDetail.columnCount() > 1:
             self.doGraph()
 
-
         if self.RBMode == "user":
             self.myMapTool.deleteLater()
 
-#        self.iface.mapCanvas().scene().removeItem(self.myRubberBand)
-
-#        for treeLayer in self.project.layerTreeRoot().findLayers():                
-#            layer_f2 = treeLayer.layer()
-#            if layer_f2.name() == "rubber_band":
-#                QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
         self.dlg.activateWindow()
 
 
@@ -1761,13 +1748,10 @@ class ELVIS:
         mc = self.iface.mapCanvas() 
         mc.setExtent(mapExtentRect)
         self.iface.mapCanvas().zoomScale(1600000)
-#        self.dlg.list_of_values = []
-#        line = np.genfromtxt('temp.txt', usecols=3, dtype=[('floatname','float')], skip_header=1)
-#        list_of_values.append(line)
 
 
 #***********************************************
-# Code for 'Manage Areas of Interest' dialog
+# Code for 'Manage saved areas' dialog
 #***********************************************
 
     def pushButtonReadShpClicked(self):
@@ -1775,7 +1759,6 @@ class ELVIS:
         title = 'Select shapefile'
         path = ""
         fn = QFileDialog.getOpenFileName(qfd, title, path)
-        #print fn
         layer = QgsVectorLayer(fn, 'polygon', 'ogr')
         if not layer.isValid():
             pass
@@ -1790,7 +1773,6 @@ class ELVIS:
                 pts = pts.replace(" ","")
                 self.dlgsavesel.textAOIPtLst.clear()
                 self.dlgsavesel.textAOIPtLst.appendPlainText(pts)
-
                 #Only read first polygon
                 return
 
@@ -1851,14 +1833,6 @@ class ELVIS:
 
 
     def butNewAreaClicked(self):
-        #self.dlgsavesel.pushButtonOK.setEnabled(False)
-        #self.dlgsavesel.tableWidgetAOI.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        #self.dlgsavesel.tableWidgetAOI.setEnabled(False)
-        #self.dlgsavesel.labelSOA.setEnabled(False)
-        #self.dlgsavesel.label_4.setEnabled(False)
-        #self.dlgsavesel.labelDate.setEnabled(False)
-        #self.dlgsavesel.fldID.setEnabled(True)
-        #self.dlgsavesel.pushButtonReadShp.setEnabled(True)
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
         db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
@@ -1893,7 +1867,6 @@ class ELVIS:
             fx = fx.replace(" ", "")  # Remove all blanks
             fx = ' '.join(fx.split()) # Remove all white spaces
             fx = ''.join(fx.split())  # Remove all white spaces
-            #print fx
             rub = []
             rub = fx.split(";")
             NewRubberBand = []
@@ -1921,7 +1894,6 @@ class ELVIS:
 
 
     def setupDia(self):
-        #if self.rubberbandPoints:
         self.dlgsavesel = ELVISSaveSel()
         pal=QtGui.QPalette()
         role = QtGui.QPalette.Background
@@ -2018,72 +1990,6 @@ class ELVIS:
 #***********************************************
 
 
-    '''
-    def butArea1VisClicked(self):
-
-        if self.grid1_display_state == "expanded":
-            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollOut.png");
-            self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
-            self.dlg.butArea1Vis.setText("show")
-            self.grid1_display_state = "collapsed"
-            self.dlg.tableWidgetDetail.height = 20
-            self.dlg.tableWidgetDetail.setMinimumHeight(20)
-            self.dlg.tableWidgetDetail.setMaximumHeight(20)
-            a_y = 730 - (self.matrix1_height - 20)
-            self.dlg.label_3.setGeometry(10,a_y,111,16)
-            b_y = 728 - (self.matrix1_height - 20)
-            self.dlg.butArea2Vis.setGeometry(280,b_y,61,20)
-            c_y = 750 - (self.matrix1_height - 20)
-            self.dlg.tableWidgetDetailCounts.setGeometry(10,c_y,331,201)
-            if self.grid2_display_state == "collapsed":
-               self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix1_height - self.matrix2_height - self.diff + 20)
-            else:
-               self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix1_height + 20)
-        else:
-            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
-            self.dlg.butArea1Vis.setIcon(QtGui.QIcon(rMyIcon))
-            self.dlg.butArea1Vis.setText("hide")
-            self.grid1_display_state = "expanded"
-            self.dlg.tableWidgetDetail.height = 381
-            self.dlg.tableWidgetDetail.setMinimumHeight(381)
-            self.dlg.tableWidgetDetail.setMaximumHeight(381)
-            self.dlg.tableWidgetDetailCounts.y = 750
-            self.dlg.label_3.setGeometry(10,730,111,16)
-            self.dlg.butArea2Vis.setGeometry(280,728,61,20)
-            self.dlg.tableWidgetDetailCounts.setGeometry(10,750,331,201)
-            if self.grid2_display_state == "collapsed":
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height - self.diff + 20)
-            else:
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff + 20)
-
-    def butArea2VisClicked(self):
-        if self.grid2_display_state == "expanded":
-            self.dlg.tableWidgetDetailCounts.height = 20
-            self.dlg.tableWidgetDetailCounts.setMinimumHeight(20)
-            self.dlg.tableWidgetDetailCounts.setMaximumHeight(20) 
-            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollOut.png");
-            self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
-            self.dlg.butArea2Vis.setText("show")
-            self.grid2_display_state = "collapsed"
-            if self.grid1_display_state == "expanded":
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height + 20 - self.diff)
-            else:
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.matrix2_height + 20 - self.diff - self.matrix1_height)
-        else:
-            self.dlg.tableWidgetDetailCounts.height = 201
-            self.dlg.tableWidgetDetailCounts.setMinimumHeight(201)
-            self.dlg.tableWidgetDetailCounts.setMaximumHeight(201) 
-            rMyIcon = QtGui.QPixmap(self.plugin_dir + "\\resources\\RollUp.png");
-            self.dlg.butArea2Vis.setIcon(QtGui.QIcon(rMyIcon))
-            self.dlg.butArea2Vis.setText("show")
-            self.grid2_display_state = "expanded"
-            if self.grid1_display_state == "expanded":
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh)
-            else:
-                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh - self.diff - self.matrix1_height)
-    '''
-
-
 #  Other Classes *********************************************************************
 # ************************************************************************************
 
@@ -2118,7 +2024,6 @@ class ELVISProgramInfo(QtGui.QDialog, FORM5_CLASS):
 
     def closeEvent(self, event):
         QApplication.restoreOverrideCursor()
-
 
 
 class ModelObjInfo(QStandardItemModel):
@@ -2171,14 +2076,9 @@ class PointTool2(QgsMapTool):
         self.info_window = info_window
 
     def canvasReleaseEvent(self, event):
-        #Get the click
         x = event.pos().x()
         y = event.pos().y()
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        #print ""
-        #print "************************"
-        #print ""
-        #print point
         self.info_window.tableWidget.setRowCount(0)
 
         regmap = QgsMapLayerRegistry.instance().mapLayers().values()
@@ -2186,9 +2086,8 @@ class PointTool2(QgsMapTool):
         col_alt = True
         for lay in regmap:
             layname = lay.name()
+
             #Only processing vector layers
-
-
             if lay.type() == QgsMapLayer.VectorLayer:
                 #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                 #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
@@ -2273,10 +2172,9 @@ class PointTool2(QgsMapTool):
                                                                 self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
                                                         idx = idx + 1
                                                     col_alt = not col_alt
+
         #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
         pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
         self.info_window.labelCoord.setText(pttxt)
         self.info_window.show()
         self.info_window.activateWindow()
-
-
