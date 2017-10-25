@@ -90,9 +90,9 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_7">
-   <item row="5" column="0">
+   <item row="6" column="0">
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QGroupBox" name="groupBox_6">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -102,14 +102,14 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>80</width>
-         <height>100</height>
+         <width>160</width>
+         <height>75</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>80</width>
-         <height>100</height>
+         <height>75</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -124,8 +124,8 @@
        <widget class="QPushButton" name="pushButtonCancel">
         <property name="geometry">
          <rect>
-          <x>1</x>
-          <y>51</y>
+          <x>82</x>
+          <y>50</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -140,8 +140,8 @@
        <widget class="QPushButton" name="pushButtonOK">
         <property name="geometry">
          <rect>
-          <x>1</x>
-          <y>1</y>
+          <x>82</x>
+          <y>2</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -150,23 +150,10 @@
          <string>Open</string>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButtonReadShp">
-        <property name="geometry">
-         <rect>
-          <x>1</x>
-          <y>76</y>
-          <width>75</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Read shp</string>
-        </property>
-       </widget>
        <widget class="QPushButton" name="buttonSave">
         <property name="geometry">
          <rect>
-          <x>1</x>
+          <x>82</x>
           <y>26</y>
           <width>75</width>
           <height>23</height>
@@ -176,9 +163,35 @@
          <string>Save</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="butDelete">
+        <property name="geometry">
+         <rect>
+          <x>2</x>
+          <y>2</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Delete</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="butNewArea">
+        <property name="geometry">
+         <rect>
+          <x>1</x>
+          <y>26</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>New</string>
+        </property>
+       </widget>
       </widget>
      </item>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -196,14 +209,10 @@
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="labelSOA">
-       <property name="text">
-        <string>Saved Areas of interest:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
       <widget class="QTableWidget" name="tableWidgetAOI">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
@@ -293,8 +302,6 @@
          <string>Short text</string>
         </property>
        </widget>
-       <zorder>label_2</zorder>
-       <zorder>label_2</zorder>
       </widget>
      </item>
     </layout>
@@ -361,13 +368,13 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>15</height>
+         <height>47</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>15</height>
+         <height>47</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -380,13 +387,39 @@
         <property name="geometry">
          <rect>
           <x>5</x>
-          <y>1</y>
-          <width>341</width>
+          <y>28</y>
+          <width>231</width>
           <height>16</height>
          </rect>
         </property>
         <property name="text">
          <string>Point list. Format: [(lon1,lat1),(lon2,lat2)...]</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="butInsLastSelArea">
+        <property name="geometry">
+         <rect>
+          <x>244</x>
+          <y>1</y>
+          <width>141</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Insert last selected area</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButtonReadShp">
+        <property name="geometry">
+         <rect>
+          <x>244</x>
+          <y>25</y>
+          <width>141</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Read shp</string>
         </property>
        </widget>
       </widget>
@@ -411,6 +444,19 @@
    </item>
    <item row="4" column="0">
     <layout class="QGridLayout" name="gridLayout_6">
+     <item row="0" column="1">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
      <item row="0" column="0">
       <widget class="QGroupBox" name="groupBox_2">
        <property name="minimumSize">
@@ -507,26 +553,18 @@
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
-       <zorder>label_4</zorder>
-       <zorder>labelDate</zorder>
-       <zorder>label</zorder>
-       <zorder>fldID</zorder>
-       <zorder>groupBox</zorder>
-       <zorder>groupBox</zorder>
       </widget>
      </item>
-     <item row="0" column="1">
-      <spacer name="horizontalSpacer">
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <layout class="QGridLayout" name="gridLayout_8">
+     <item row="0" column="0">
+      <widget class="Line" name="line_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
     </layout>
    </item>

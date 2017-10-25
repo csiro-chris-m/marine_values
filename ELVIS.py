@@ -71,13 +71,16 @@ import operator
 import qgis.utils
 import pyqtgraph as pg
 import time
+#import Tkinter
+#from Tkinter import *
+#from tkMessageBox import *
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush,QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap, QTableWidgetItem, QFont 
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush,QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap, QTableWidgetItem, QFont, QAbstractItemView
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from ELVIS_dialog import ELVISDialog
-from PyQt4.QtSql import QSqlDatabase #For SQLite DB access
+from PyQt4.QtSql import QSqlDatabase, QSqlQuery
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from os import listdir
@@ -291,10 +294,6 @@ class ELVIS:
         self.dlg.butClearError.clicked.connect(self.butClearErrorClicked)
 
         self.dlg.pushButtonOrigExtent.clicked.connect(self.pushButtonOrigExtentClicked)
-
-        self.dlg.pushButtonSaveSel.clicked.connect(self.pushButtonSaveSelClicked)
-        self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
-        self.dlg.buttonCreateNewSOI.clicked.connect(self.buttonCreateNewSOIClicked)
         self.dlg.openProj.clicked.connect(self.openProjClicked)
         self.dlg.delRubber.clicked.connect(self.delRubberClicked)
 
@@ -302,12 +301,16 @@ class ELVIS:
         self.dlg.btnInfo2.setIcon(QtGui.QIcon(':/plugins/ELVIS/resources/info.png'))
         self.dlg.btnInfo2.clicked.connect(self.btnInfo2Clicked)
 
+        self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
+
         self.dlg.tableWidgetSpatialFeature.setColumnWidth(0,120)
 
         self.dlg.tableWidgetLayers.clicked.connect(self.tableWidgetLayersClicked)
         QtCore.QObject.connect(self.dlg.tableWidgetLayers, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableWidgetLayersClicked)
 
         QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
+
+        self.dlg.tableWidgetLayers.setEditTriggers(QAbstractItemView.NoEditTriggers) #Prevent tableWidgetLayers from being user edited
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
@@ -325,7 +328,7 @@ class ELVIS:
         self.dlg.tableWidgetLayers.setColumnWidth(0,20)
         self.dlg.tableWidgetLayers.setColumnWidth(1,0)
         self.dlg.tableWidgetLayers.setColumnWidth(2,0)
-        self.dlg.tableWidgetLayers.setColumnWidth(3,25)
+        self.dlg.tableWidgetLayers.setColumnWidth(3,30)
         self.dlg.tableWidgetLayers.setColumnWidth(4,0)
         self.dlg.tableWidgetLayers.setColumnWidth(5,200)
         #Do not set width on last column. It will be stretched with HorizontalHeaderStretchLastSection
@@ -636,52 +639,36 @@ class ELVIS:
         foodsec = pg.BarGraphItem(x=x3-0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
         self.dlg.graphicsView.addItem(foodsec)
 
-#        xScale = pg.AxisItem(orientation='bottom')
-#        xScale.setRange(1, 10)
-#        self.dlg.graphicsView.addItem(xScale, 1, 1)
-
-        #axa = pg.AxisItem(orientation='bottom', pen=pg.mkPen(color=(0,255,0), width=1), maxTickLength=0)
-        #axa.setTicks([1,2,3,4,5,6,7,8,9,10])
-        #self.dlg.graphicsView.addItem(axa, row=1, col=0, axisItems={'bottom': axa})
-        #Reference for properties to use in axis items is at:
-        #www.pyqtgraph.org/documentation/graphicsItems/axisitem.html
-        
-        #Takes up too much space on left, pushing graph to left. Should put elsewhere
-        #self.dlg.graphicsView.setLabel('left', 'Contrib. in sel. area', units='%')
-
-#        font=QtGui.QFont()
-#        font.setPixelSize(6)
-#        self.dlg.graphicsView.setStyle(tickFont=font)
-        
 
     def tableWidgetLayersClicked(self, index):
         row = index.row()
         cs = self.dlg.tableWidgetLayers.item(row, 0)
-        chk = self.dlg.tableWidgetLayers.item(row, 2).text()
-        nam = self.dlg.tableWidgetLayers.item(row, 5).text() #with extension .shp
-        namwo = os.path.splitext(self.dlg.tableWidgetLayers.item(row, 5).text())[0] # w/o shp
+        if self.dlg.tableWidgetLayers.item(row, 0).text() != 'Unloaded but available layers:':
+            chk = self.dlg.tableWidgetLayers.item(row, 2).text()
+            nam = self.dlg.tableWidgetLayers.item(row, 5).text() #with extension .shp
+            namwo = os.path.splitext(self.dlg.tableWidgetLayers.item(row, 5).text())[0] # w/o shp
 
-        #Was unchecked and has now been checked
-        if chk == 'not loaded' and cs.checkState() == QtCore.Qt.Checked:
-            sfile = os.path.join(self.last_opened_project_dir, nam) + ".shp"
-            layer = self.iface.addVectorLayer(sfile, namwo, "ogr")
-            QgsMapLayerRegistry.instance().addMapLayer(layer)
-            for agl in range(len(self.projectlayers)):
-                if nam == self.projectlayers[agl][3]:
-                    self.projectlayers[agl][1] = 'loaded'
-            self.GUILayersResync()
-            return
+            #Was unchecked and has now been checked
+            if chk == 'not loaded' and cs.checkState() == QtCore.Qt.Checked:
+                sfile = os.path.join(self.last_opened_project_dir, nam) + ".shp"
+                layer = self.iface.addVectorLayer(sfile, namwo, "ogr")
+                QgsMapLayerRegistry.instance().addMapLayer(layer)
+                for agl in range(len(self.projectlayers)):
+                    if nam == self.projectlayers[agl][3]:
+                        self.projectlayers[agl][1] = 'loaded'
+                self.GUILayersResync()
+                return
 
-        #Was checked and has now been unchecked
-        if chk == 'loaded' and cs.checkState() == QtCore.Qt.Unchecked:
-            for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-                if nam == layer.name():
-                    QgsMapLayerRegistry.instance().removeMapLayer(layer)
-            for agl in range(len(self.projectlayers)):
-                if nam == self.projectlayers[agl][3]:
-                    self.projectlayers[agl][1] = 'not loaded'
-            self.GUILayersResync()
-            return
+            #Was checked and has now been unchecked
+            if chk == 'loaded' and cs.checkState() == QtCore.Qt.Unchecked:
+                for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+                    if nam == layer.name():
+                        QgsMapLayerRegistry.instance().removeMapLayer(layer)
+                for agl in range(len(self.projectlayers)):
+                    if nam == self.projectlayers[agl][3]:
+                        self.projectlayers[agl][1] = 'not loaded'
+                self.GUILayersResync()
+                return
 
 
     def listWidgetScaleNamesItemClicked(self, item):
@@ -1315,10 +1302,9 @@ class ELVIS:
                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname + " ---------------------------------"))
                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 1, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetail.setItem(rowPosition, 2, QtGui.QTableWidgetItem(""))
-                                self.dlg.tableWidgetDetail.setSpan(rowPosition, 0, 1, 3)
-                                for col in range(0,3):
-                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setForeground(QBrush(QColor.fromRgb(255,255,255)))
-                                    self.dlg.tableWidgetDetail.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+                                self.dlg.tableWidgetDetail.setSpan(rowPosition, 0, 1, 10)
+                                self.dlg.tableWidgetDetail.item(rowPosition,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+                                self.dlg.tableWidgetDetail.item(rowPosition,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
                                 self.dlg.tableWidgetDetail.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetail.verticalHeader().minimumSectionSize())
                                 self.dlg.tableWidgetDetail.setRowHeight(rowPosition,17)
 
@@ -1513,10 +1499,9 @@ class ELVIS:
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname + " ----------------------------------"))
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
                                 self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
-                                self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 2)
-                                for colc in range(0,3):
-                                    self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setForeground(QBrush(QColor.fromRgb(255,255,255)))
-                                    self.dlg.tableWidgetDetailCounts.item(rowPositionC,colc).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+                                self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 10)
+                                self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+                                self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
                                 self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
                                 self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
 
@@ -1781,6 +1766,10 @@ class ELVIS:
 #        list_of_values.append(line)
 
 
+#***********************************************
+# Code for 'Manage Areas of Interest' dialog
+#***********************************************
+
     def pushButtonReadShpClicked(self):
         qfd = QFileDialog()
         title = 'Select shapefile'
@@ -1799,35 +1788,77 @@ class ELVIS:
                 pts = pts.replace("[[","[")
                 pts = pts.replace("]]","]")
                 pts = pts.replace(" ","")
+                self.dlgsavesel.textAOIPtLst.clear()
                 self.dlgsavesel.textAOIPtLst.appendPlainText(pts)
 
                 #Only read first polygon
                 return
 
-    def pushButtonSaveSelClicked(self):
 
-        if str(self.rubberbandPoints) != '[]':
-            self.setupDia()
-            self.dlgsavesel.pushButtonOK.setVisible(False)
-            self.dlgsavesel.tableWidgetAOI.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-            self.dlgsavesel.tableWidgetAOI.setVisible(False)
-            self.dlgsavesel.labelSOA.setVisible(False)
-            self.dlgsavesel.label_4.setVisible(False)
-            self.dlgsavesel.labelDate.setVisible(False)
-            self.dlgsavesel.fldID.setVisible(False)
-            self.dlgsavesel.buttonSave.setVisible(True)
-            self.dlgsavesel.pushButtonReadShp.setVisible(False)
+    def butDeleteClicked(self):
+        #tkMessageBox.showinfo("Title", "a Tk MessageBox")
+        try: 
+            delid = str(int(self.dlgsavesel.fldID.text()))
+            db = QSqlDatabase.addDatabase("QSQLITE");
+            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+            db.open()
+            sqls = "delete from area_selections where id = " + delid
+            query = db.exec_(sqls)
+            db.commit()
+            self.reqaoirecs()
+            self.dlgsavesel.tableWidgetAOI.selectRow(0)
+            self.tableWidgetAOIClicked(0, 0)
+        except ValueError:
+            self.dlg.error.setText("Select the area to be deleted in the list at the top.")
 
-            rbp = str(self.rubberbandPoints)
-            #print rbp
-            rbp = rbp.translate(None, '\'')
-            rbp = rbp.replace(" ","")
-            self.dlgsavesel.textAOIPtLst.appendPlainText(rbp)
-
-        else:
-            self.dlg.error.setText("No area selected recently.")
 
     def buttonSaveClicked(self):
+        try: 
+            delid = str(int(self.dlgsavesel.fldID.text()))
+            print delid
+            db = QSqlDatabase.addDatabase("QSQLITE");
+            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+            db.open()
+            print self.dlgsavesel.textAOIShortT.toPlainText() 
+            print self.dlgsavesel.textAOIDesc.toPlainText()
+            print self.dlgsavesel.textAOIPtLst.toPlainText()
+            sqls = "update area_selections set short_name = '" + self.dlgsavesel.textAOIShortT.toPlainText() + "' , description = '" + self.dlgsavesel.textAOIDesc.toPlainText() + "', point_list = '" + self.dlgsavesel.textAOIPtLst.toPlainText() + "' where id = " + delid
+            print sqls
+            query = db.exec_(sqls)
+            db.commit()
+            self.reqaoirecs()
+            self.dlgsavesel.tableWidgetAOI.selectRow(0)
+            self.tableWidgetAOIClicked(0, 0)
+        #Save as new record if getting the ID in the form fails or for any other reason
+        except ValueError:
+            AOIs = []
+            db = QSqlDatabase.addDatabase("QSQLITE");
+            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+            db.open()
+
+            if self.dlgsavesel.textAOIShortT.toPlainText() and self.dlgsavesel.textAOIDesc.toPlainText() and self.dlgsavesel.textAOIPtLst.toPlainText():
+                ndate = datetime.date.today()
+                n_day = "%02d" % (ndate.day,) 
+                n_mon = "%02d" % (ndate.month,) 
+                n_yea = "%04d" % (ndate.year,) 
+                fdat1 = n_day + "/" + n_mon + "/" + n_yea
+                sqls = "insert into area_selections (crea_date, short_name, description, point_list) values ('" + fdat1 + "','" + self.dlgsavesel.textAOIShortT.toPlainText() + "','" + self.dlgsavesel.textAOIDesc.toPlainText() + "','" + self.dlgsavesel.textAOIPtLst.toPlainText() + "')"
+                query = db.exec_(sqls)
+                db.commit()
+                self.dlgsavesel.close()
+            else:
+                self.dlg.error.setText("To save area ensure all required text is filled.")
+
+
+    def butNewAreaClicked(self):
+        #self.dlgsavesel.pushButtonOK.setEnabled(False)
+        #self.dlgsavesel.tableWidgetAOI.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        #self.dlgsavesel.tableWidgetAOI.setEnabled(False)
+        #self.dlgsavesel.labelSOA.setEnabled(False)
+        #self.dlgsavesel.label_4.setEnabled(False)
+        #self.dlgsavesel.labelDate.setEnabled(False)
+        #self.dlgsavesel.fldID.setEnabled(True)
+        #self.dlgsavesel.pushButtonReadShp.setEnabled(True)
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
         db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
@@ -1839,30 +1870,16 @@ class ELVIS:
             n_mon = "%02d" % (ndate.month,) 
             n_yea = "%04d" % (ndate.year,) 
             fdat1 = n_day + "/" + n_mon + "/" + n_yea
+
             sqls = "insert into area_selections (crea_date, short_name, description, point_list) values ('" + fdat1 + "','" + self.dlgsavesel.textAOIShortT.toPlainText() + "','" + self.dlgsavesel.textAOIDesc.toPlainText() + "','" + self.dlgsavesel.textAOIPtLst.toPlainText() + "')"
             query = db.exec_(sqls)
             db.commit()
-            self.dlgsavesel.close()
+
+            self.reqaoirecs()
+            self.dlgsavesel.tableWidgetAOI.selectRow(0)
+            self.tableWidgetAOIClicked(0, 0)
         else:
-            self.dlg.error.setText("To save area ensure all required text is filled.")
-
-
-    def buttonOpenSavedClicked(self):
-        self.setupDia()
-        self.dlgsavesel.buttonSave.setVisible(False)
-        self.dlgsavesel.pushButtonReadShp.setVisible(False)
-
-
-    def buttonCreateNewSOIClicked(self):
-        self.setupDia()
-        self.dlgsavesel.pushButtonOK.setVisible(False)
-        self.dlgsavesel.tableWidgetAOI.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.dlgsavesel.tableWidgetAOI.setVisible(False)
-        self.dlgsavesel.labelSOA.setVisible(False)
-        self.dlgsavesel.label_4.setVisible(False)
-        self.dlgsavesel.labelDate.setVisible(False)
-        self.dlgsavesel.fldID.setVisible(True)
-        self.dlgsavesel.pushButtonReadShp.setVisible(True)
+            self.dlg.error.setText("To save a new area ensure all required text is filled.")
 
 
     def pushButtonOKClicked(self):
@@ -1899,15 +1916,22 @@ class ELVIS:
         self.dlgsavesel.close()
 
 
-    def setupDia(self):
+    def buttonOpenSavedClicked(self):
+        self.setupDia()
 
+
+    def setupDia(self):
         #if self.rubberbandPoints:
         self.dlgsavesel = ELVISSaveSel()
+        pal=QtGui.QPalette()
+        role = QtGui.QPalette.Background
+        pal.setColor(role, QtGui.QColor(214, 211, 171))
+        self.dlgsavesel.setPalette(pal)        
+
         self.dlgsavesel.setModal(True)
         self.dlgsavesel.show()
-        self.dlgsavesel.setWindowTitle("Manage Areas of Interest")
+        self.dlgsavesel.setWindowTitle("Manage saved areas")
         self.dlgsavesel.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
-
         
         self.dlgsavesel.tableWidgetAOI.cellClicked.connect(self.tableWidgetAOIClicked)
         self.dlgsavesel.buttonSave.clicked.connect(self.buttonSaveClicked)
@@ -1915,6 +1939,9 @@ class ELVIS:
         self.dlgsavesel.pushButtonOK.clicked.connect(self.pushButtonOKClicked)
         self.dlgsavesel.pushButtonCancel.clicked.connect(self.pushButtonCancelClicked)
         self.dlgsavesel.pushButtonReadShp.clicked.connect(self.pushButtonReadShpClicked)
+        self.dlgsavesel.butDelete.clicked.connect(self.butDeleteClicked)
+        self.dlgsavesel.butNewArea.clicked.connect(self.butNewAreaClicked)
+        self.dlgsavesel.butInsLastSelArea.clicked.connect(self.butInsLastSelAreaClicked)
 
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(0,30)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(1,70)
@@ -1922,6 +1949,21 @@ class ELVIS:
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(3,0)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(4,0)
 
+        self.reqaoirecs()        
+
+
+    def butInsLastSelAreaClicked(self):
+        if str(self.rubberbandPoints) != '[]':
+            rbp = str(self.rubberbandPoints)
+            rbp = rbp.translate(None, '\'')
+            rbp = rbp.replace(" ","")
+            self.dlgsavesel.textAOIPtLst.clear()
+            self.dlgsavesel.textAOIPtLst.appendPlainText(rbp)
+        else:
+            self.dlg.error.setText("No area selected recently.")
+
+
+    def reqaoirecs(self):
         AOIs = []
         db = QSqlDatabase.addDatabase("QSQLITE");
         db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
@@ -1932,6 +1974,7 @@ class ELVIS:
             listv = [str(record.value(0)), str(record.value(1)), str(record.value(2)), str(record.value(3)), str(record.value(4))]
             AOIs.append(listv)
 
+        self.dlgsavesel.tableWidgetAOI.setRowCount(0)
         for ele in AOIs:
             rowPosition = self.dlgsavesel.tableWidgetAOI.rowCount()
             self.dlgsavesel.tableWidgetAOI.insertRow(rowPosition)
@@ -1944,6 +1987,9 @@ class ELVIS:
 
 
     def tableWidgetAOIClicked(self, row, column):
+
+        self.dlgsavesel.butNewArea.setEnabled(False)
+
         item = self.dlgsavesel.tableWidgetAOI.item(row, 2)
         itm = item.text()
         self.dlgsavesel.textAOIShortT.clear()
@@ -1967,6 +2013,10 @@ class ELVIS:
         item = self.dlgsavesel.tableWidgetAOI.item(row, 0)
         itm = item.text()
         self.dlgsavesel.fldID.setText(itm)
+
+#***********************************************
+#***********************************************
+
 
     '''
     def butArea1VisClicked(self):
