@@ -310,8 +310,11 @@ class ELVIS:
 
         QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
         
-        #Prevent tableWidgetLayers from being user edited
+        #Prevent tables from being user edited
         self.dlg.tableWidgetLayers.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.dlg.tableWidgetDetail.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.dlg.tableWidgetSpatialFeature.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.dlg.tableWidgetDetailCounts.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.dlg.endButton.setDefault(True)
         self.dlg.endButton.setAutoDefault(True)
@@ -568,70 +571,73 @@ class ELVIS:
 
     def redrawGraph(self, scalename):
 
-        self.dlg.lblWell.setText("")
-        self.dlg.lblInc.setText("")
-        self.dlg.lblFoosec.setText("")
+        try:
+            self.dlg.lblWell.setText("")
+            self.dlg.lblInc.setText("")
+            self.dlg.lblFoosec.setText("")
 
-        self.dlg.tableWidgetSpatialFeature.setRowCount(0)
-        self.dlg.graphicsView.clear()
+            self.dlg.tableWidgetSpatialFeature.setRowCount(0)
+            self.dlg.graphicsView.clear()
 
-        #Get unique spatial features for this scale name and sort
-        fl = []
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                fl.append(str(it[1]))
-        lst3 = set(fl)
-        lst4 = sorted(lst3, key = operator.itemgetter(0))
+            #Get unique spatial features for this scale name and sort
+            fl = []
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    fl.append(str(it[1]))
+            lst3 = set(fl)
+            lst4 = sorted(lst3, key = operator.itemgetter(0))
 
-        for it in lst4:
-                rowPosition = self.dlg.tableWidgetSpatialFeature.rowCount()
-                self.dlg.tableWidgetSpatialFeature.insertRow(rowPosition)
-                self.dlg.tableWidgetSpatialFeature.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
-                self.dlg.tableWidgetSpatialFeature.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSpatialFeature.verticalHeader().minimumSectionSize())
-                self.dlg.tableWidgetSpatialFeature.setRowHeight(rowPosition,17)
+            for it in lst4:
+                    rowPosition = self.dlg.tableWidgetSpatialFeature.rowCount()
+                    self.dlg.tableWidgetSpatialFeature.insertRow(rowPosition)
+                    self.dlg.tableWidgetSpatialFeature.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
+                    self.dlg.tableWidgetSpatialFeature.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSpatialFeature.verticalHeader().minimumSectionSize())
+                    self.dlg.tableWidgetSpatialFeature.setRowHeight(rowPosition,17)
 
-        well = []
-        wellt = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                well.append(float(it[3])) #Wellb for scale in sel area
-                wellt = wellt + float(it[3])
-        self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
+            well = []
+            wellt = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    well.append(float(it[3])) #Wellb for scale in sel area
+                    wellt = wellt + float(it[3])
+            self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
 
-        inc = []
-        inct = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                inc.append(float(it[5])) #Income for scale in sel area
-                inct = inct + float(it[5])
-        self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
+            inc = []
+            inct = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    inc.append(float(it[5])) #Income for scale in sel area
+                    inct = inct + float(it[5])
+            self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
 
-        fsec = []
-        fsect = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                fsec.append(float(it[7])) #Income for scale in sel area
-                fsect = fsect + float(it[7])
-        self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
+            fsec = []
+            fsect = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    fsec.append(float(it[7])) #Income for scale in sel area
+                    fsect = fsect + float(it[7])
+            self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
 
-        #Wellbeing
-        x1 = numpy.array(range(1,len(well)))
-        y1 = numpy.array(well)
-        wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
-        self.dlg.graphicsView.addItem(wellb)
+            #Wellbeing
+            x1 = numpy.array(range(1,len(well)))
+            y1 = numpy.array(well)
+            wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
+            self.dlg.graphicsView.addItem(wellb)
 
 
-        #Income
-        x2 = numpy.array(range(1,len(inc)))
-        y2 = numpy.array(inc)
-        income = pg.BarGraphItem(x=x2+0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
-        self.dlg.graphicsView.addItem(income)
+            #Income
+            x2 = numpy.array(range(1,len(inc)))
+            y2 = numpy.array(inc)
+            income = pg.BarGraphItem(x=x2+0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
+            self.dlg.graphicsView.addItem(income)
 
-        #Food security
-        x3 = numpy.array(range(1,len(fsec)))
-        y3 = numpy.array(fsec)
-        foodsec = pg.BarGraphItem(x=x3-0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
-        self.dlg.graphicsView.addItem(foodsec)
+            #Food security
+            x3 = numpy.array(range(1,len(fsec)))
+            y3 = numpy.array(fsec)
+            foodsec = pg.BarGraphItem(x=x3-0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
+            self.dlg.graphicsView.addItem(foodsec)
+        except:
+            self.dlg.error.setText("Error drawing graph. Select a simple area with >2 points.")
 
 
     def tableWidgetLayersClicked(self, index):
@@ -1220,7 +1226,6 @@ class ELVIS:
 
         #Getting coordinates to save rubber band to tableViewRB
         clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
-
 
         cfeat = clay.getFeatures()
         temp_geom = []
@@ -1920,6 +1925,9 @@ class ELVIS:
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(2,200)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(3,0)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(4,0)
+
+        #Prevent table from being edited
+        self.dlgsavesel.tableWidgetAOI.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.reqaoirecs()        
 
