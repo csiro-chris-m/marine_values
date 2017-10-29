@@ -299,7 +299,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Short text</string>
+         <string>Name</string>
         </property>
        </widget>
       </widget>

@@ -15,5 +15,10 @@
         <file>resources/points.png</file>
         <file>resources/polys.png</file>
         <file>resources/open.png</file>
+        <file>resources/ausaid.png</file>
+        <file>resources/cepa2.png</file>
+        <file>resources/tnc2.png</file>
+        <file>resources/enb2.png</file>
+        <file>resources/wnb2.png</file>
     </qresource>
 </RCC>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>385</width>
-    <height>828</height>
+    <height>699</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -93,7 +93,7 @@
                <string/>
               </property>
              </widget>
-             <widget class="QLabel" name="lblInc">
+             <widget class="QLabel" name="lblWell">
               <property name="geometry">
                <rect>
                 <x>109</x>
@@ -109,7 +109,7 @@
                <string/>
               </property>
              </widget>
-             <widget class="QLabel" name="lblWell">
+             <widget class="QLabel" name="lblInc">
               <property name="geometry">
                <rect>
                 <x>5</x>
@@ -701,18 +701,34 @@
      <item row="0" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="error">
+        <widget class="QPlainTextEdit" name="error">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>18</height>
+          </size>
+         </property>
          <property name="autoFillBackground">
           <bool>false</bool>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(201, 196, 151)</string>
+          <string notr="true">background-color: rgb(214, 211, 171);
+border: none</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="text">
-          <string/>
          </property>
         </widget>
        </item>
