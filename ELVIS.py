@@ -71,12 +71,9 @@ import operator
 import qgis.utils
 import pyqtgraph as pg
 import time
-#import Tkinter
-#from Tkinter import *
-#from tkMessageBox import *
 
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo, QAbstractItemModel, Qt, QVariant, QPyNullVariant, QDir
-from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush,QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap, QTableWidgetItem, QFont, QAbstractItemView, QMessageBox
+from PyQt4.QtGui import QAction, QIcon, QStandardItemModel, QStandardItem, QHeaderView, QColor, QBrush,QDialogButtonBox, QFileDialog, QToolBar, QApplication, QListWidgetItem, QTreeWidgetItem, QPixmap, QTableWidgetItem, QFont, QAbstractItemView, QMessageBox, QPen
 from qgis.gui import QgsRubberBand, QgsMapToolEmitPoint, QgsMapCanvas, QgsMapToolZoom, QgsLayerTreeMapCanvasBridge, QgsMapTool
 from PyQt4 import uic
 from ELVIS_dialog import ELVISDialog
@@ -154,10 +151,6 @@ class ELVIS:
         self.menu = self.tr(u'&CSIRO ELVIS')
         self.toolbar = self.iface.addToolBar(u'CSIRO ELVIS')
         self.toolbar.setObjectName(u'CSIRO ELVIS')
-
-        # Saving states of grid extension/collapse to know where to place element and how tall to make window
-        self.grid1_display_state = "expanded"
-        self.grid2_display_state = "expanded"
 
         # In memory list of layers and associated info (ie which are loaded, sorting) that are available in the project dir
         # 0 - sort key, 1 - loaded, 2 - type, 3 - layername
@@ -303,17 +296,20 @@ class ELVIS:
 
             self.dlg.buttonOpenSaved.clicked.connect(self.buttonOpenSavedClicked)
 
-            self.dlg.tableWidgetSpatialFeature.setColumnWidth(0,120)
+            #self.dlg.tableWidgetSF.setColumnWidth(20,120)
 
             self.dlg.tableWidgetLayers.clicked.connect(self.tableWidgetLayersClicked)
+
             QtCore.QObject.connect(self.dlg.tableWidgetLayers, QtCore.SIGNAL("clicked(const QModelIndex & index)"), self.tableWidgetLayersClicked)
 
-            QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked);
+            QtCore.QObject.connect(self.dlg.listWidgetScaleNames, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.listWidgetScaleNamesItemClicked)
+
+            self.dlg.tableWidgetSF.cellClicked.connect(self.tableWidgetSFClicked)
             
             #Prevent tables from being user edited
             self.dlg.tableWidgetLayers.setEditTriggers(QAbstractItemView.NoEditTriggers)
             self.dlg.tableWidgetDetail.setEditTriggers(QAbstractItemView.NoEditTriggers)
-            self.dlg.tableWidgetSpatialFeature.setEditTriggers(QAbstractItemView.NoEditTriggers)
+            self.dlg.tableWidgetSF.setEditTriggers(QAbstractItemView.NoEditTriggers)
             self.dlg.tableWidgetDetailCounts.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
             self.dlg.endButton.setDefault(True)
@@ -322,6 +318,8 @@ class ELVIS:
             #Set background to white on graph control
             pg.setConfigOption('background', 'w')
             pg.setConfigOption('foreground', 'k')
+
+            self.sfr = ""
 
             self.dlg.error.setPlainText("")
         except:
@@ -368,23 +366,17 @@ class ELVIS:
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
+        #Define file ending list for which files ELVIS recognises as special files and which type 
+        #of processing can be performed. All other shp files are ignored.
+        self.SpatialProcessingAreas = ['_LLG','_DIS'] # Shapefiles ending in _LLG and _DIS are processed as area-dependent
+        self.SpatialProcessingPoint = ['_ECO'] # Shapefiles ending in _ECO are processed as counts
+
         #List for items to graph
         self.graphItemsList = []
 
         #Main window sizing and position
         if sys.platform == "win32": # Windows
-#            try:
-                #Set ELVIS position and size
-#                self.px = self.dlg.geometry().x = 10
-#                self.py = self.dlg.geometry().y = 30
-#                self.dw = self.dlg.width = 350
-#                self.dh = self.dlg.height = 693
-#                sh = GetSystemMetrics(1) #Determine screen height
-#                self.dlg.setGeometry( self.px, self.py, self.dw, self.dh )
-#                self.dlg.setGeometry(10, 30, 350, 700)
             self.dlg.setGeometry(10, 30, self.dlg.width(), self.dlg.height())
- #           except:
- #               pass
 
         if sys.platform == "darwin": # OS X, MacOS
             pass
@@ -408,19 +400,15 @@ class ELVIS:
 
     def unload(self):
         pass
-        """Removes the plugin menu item and icon from QGIS GUI."""
-#        for action in self.actions:
-#            self.iface.removePluginMenu(
-#                self.tr(u'&CSIRO ELVIS'), action)
-#            self.iface.removeToolBarIcon(action)
-        # remove the toolbar
-#        del self.toolbar
+
 
     def endButtonClicked(self):
         self.xclosing()
 
+
     def closeEvent(self, event):
         self.xclosing()
+
 
     def xclosing(self):
         self.treeLayerIdx = 0
@@ -435,6 +423,7 @@ class ELVIS:
         #Must close current project and begin new empty project, otherwise QGIS stays open
         #with current project and running ELVIS again causes unexpected behaviour, i.e. clear the main map window
         self.iface.newProject()
+
 
     def manageLayer(self, x, index):
         try:
@@ -478,6 +467,7 @@ class ELVIS:
     #        vlayer = QgsVectorLayer(uri, "MarineValuesNewBritainTestLLG", "WFS")
     #        QgsMapLayerRegistry.instance().addMapLayer(vlayer)
     #TESTTEST
+
         except:
             self.dlg.error.setPlainText("Error loading project. [5]")
 
@@ -497,7 +487,7 @@ class ELVIS:
             self.dlg.tableWidgetDetail.setRowCount(0)
             self.dlg.tableWidgetDetailCounts.setRowCount(0)
             self.dlg.listWidgetScaleNames.clear()
-            self.dlg.tableWidgetSpatialFeature.setRowCount(0)
+            self.dlg.tableWidgetSF.setRowCount(0)
             self.dlg.graphicsView.clear()
             self.dlg.lblWell.setText("")
             self.dlg.lblInc.setText("")
@@ -572,7 +562,7 @@ class ELVIS:
                 item = QListWidgetItem(telem)
                 self.dlg.listWidgetScaleNames.addItem(item)
 
-            self.dlg.tableWidgetSpatialFeature.setRowCount(0)
+            self.dlg.tableWidgetSF.setRowCount(0)
 
             if len(lst4) > 0:
                 self.dlg.listWidgetScaleNames.setCurrentRow(0);
@@ -580,112 +570,130 @@ class ELVIS:
         except:
             self.dlg.error.setPlainText("General error drawing graph. [17]")
 
-
-
-
-
-        #la = self.dlg.graphicsView.getAxis(left)
-        labelStyle = {'color': '#333', 'font-size': '8pt', 'margin': '0', 'padding': '0', 'border-style': 'none'}
-        self.dlg.graphicsView.setLabel('left', text='testing', units=None, unitPrefix=None, **labelStyle)
-        
-        #Refer to these pages for reference on Axis item parameters
+        #Styling graph labels and axis ***************************************
+        #*********************************************************************
+        #Refer to these pages for reference on axis and label item parameters
         #http://www.pyqtgraph.org/documentation/graphicsItems/axisitem.html
         #http://www.pyqtgraph.org/documentation/_modules/pyqtgraph/graphicsItems/AxisItem.html
+        labelStyle = {'color': '#333', 'font-size': '7pt', 'margin': '0', 'padding': '0', 'border-style': 'none'}
+
+        self.dlg.graphicsView.setLabel('left', text='Contribution in sel. area', units='%', unitPrefix=None, **labelStyle)
+        #This sets the space between the legend and the ticks. It is huge by default and needs to be reduced.
+        self.dlg.graphicsView.getAxis('left').setWidth(w=34)
         
-
-        #fontCss = {'font-family': 'Times New Roman','font-size': '14pt', "color": 'white'}
-        #kwds = {'tickTextOffset': [5, 2]}
-
-        #Works
+        self.dlg.graphicsView.setLabel('bottom', text='Spatial feature (legend see below)', units=None, unitPrefix=None, **labelStyle)
+        #This sets the space between the legend and the ticks. It is huge by default and needs to be reduced.
+        self.dlg.graphicsView.getAxis('bottom').setHeight(h=24)
+        
+        #These were tested and they work. They are not used but should be retained for possible future use 
+        #since they are difficult to find on the web
         #self.dlg.graphicsView.setFixedWidth(200)
-
-        self.dlg.graphicsView.getAxis('left').setWidth(w=30)
-        #This works
         #self.dlg.graphicsView.getAxis('left').setStyle(tickTextOffset = -10)
 
-        #Does nothing
-        #self.dlg.graphicsView.getAxis('left').setStyle(tickTextWidth = 10)
+        #Trying to color one tick item. Does not work.
+        #self.dlg.graphicsView.tickSliderItem(orientation='bottom', allowAdd=False)
+        #w3 = pg.GradientWidget(orientation='bottom')
+        #w3.setTickColor(2, QColor(255,0,0))
+        #self.dlg.graphicsView.addWidget(w3,0,1)
+        
 
-        #Does nothing
-        #self.dlg.graphicsView.getAxis('left').setStyle(tickTextHeight= 10)
-        #self.dlg.graphicsView.getAxis('left').setStyle(autoExpandTextSpace= False)
+    def doGraphPointer(self, xseries):
 
+        #So it will run. Remove when ready to develop more.
+        pass
 
-
-
+        plt = self.dlg.graphicsView
+        # Anchor doesn't draw anything, it just tracks a position in the viewbox
+        anchor = Anchor(plt.plotItem.vb, [xseries, 1], x=True, y=True)
+        anchor.setParentItem(plt.plotItem)
+        # Attach any shape to the anchor
+        marker = pg.QtGui.QGraphicsEllipseItem(-10, -10, 20, 20)
+        marker.setPos(20, 0)
+        marker.setPen(pg.mkPen('y', width=3))
+        marker.setParentItem(anchor)
+        
 
 
     def redrawGraph(self, scalename):
-        try:
-            self.dlg.lblWell.setText("")
-            self.dlg.lblInc.setText("")
-            self.dlg.lblFoosec.setText("")
+#        try:
+        self.sfr = scalename
 
-            self.dlg.tableWidgetSpatialFeature.setRowCount(0)
-            self.dlg.graphicsView.clear()
+        self.dlg.lblWell.setText("")
+        self.dlg.lblInc.setText("")
+        self.dlg.lblFoosec.setText("")
 
-            #Get unique spatial features for this scale name and sort
-            fl = []
-            for it in self.graphItemsList:
-                if it[0] == scalename:
-                    fl.append(str(it[1]))
-            lst3 = set(fl)
-            lst4 = sorted(lst3, key = operator.itemgetter(0))
+        self.dlg.tableWidgetSF.setRowCount(0)
+        self.dlg.graphicsView.clear()
 
-            for it in lst4:
-                    rowPosition = self.dlg.tableWidgetSpatialFeature.rowCount()
-                    self.dlg.tableWidgetSpatialFeature.insertRow(rowPosition)
-                    self.dlg.tableWidgetSpatialFeature.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
-                    self.dlg.tableWidgetSpatialFeature.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSpatialFeature.verticalHeader().minimumSectionSize())
-                    self.dlg.tableWidgetSpatialFeature.setRowHeight(rowPosition,17)
+        #Get unique spatial features for this scale name and sort
+        fl = []
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                fl.append(str(it[1]))
+        lst3 = set(fl)
+        lst4 = sorted(lst3, key = operator.itemgetter(0))
 
-            well = []
-            wellt = 0
-            for it in self.graphItemsList:
-                if it[0] == scalename:
-                    well.append(float(it[3])) #Wellb for scale in sel area
-                    wellt = wellt + float(it[3])
-            self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
-            self.dlg.lblWell.setStyleSheet("QLabel {color: #1e6aaf;}")
+        for it in lst4:
+                rowPosition = self.dlg.tableWidgetSF.rowCount()
+                self.dlg.tableWidgetSF.insertRow(rowPosition)
+                self.dlg.tableWidgetSF.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
+                self.dlg.tableWidgetSF.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSF.verticalHeader().minimumSectionSize())
+                self.dlg.tableWidgetSF.setRowHeight(rowPosition,17)
 
-            inc = []
-            inct = 0
-            for it in self.graphItemsList:
-                if it[0] == scalename:
-                    inc.append(float(it[5])) #Income for scale in sel area
-                    inct = inct + float(it[5])
-            self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
-            self.dlg.lblInc.setStyleSheet("QLabel {color: #e58e4c;}")
+        well = []
+        wellt = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                well.append(float(it[3])) #Wellb for scale in sel area
+                wellt = wellt + float(it[3])
+        self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
+        self.dlg.lblWell.setStyleSheet("QLabel {color: #1e6aaf;}")
 
-            fsec = []
-            fsect = 0
-            for it in self.graphItemsList:
-                if it[0] == scalename:
-                    fsec.append(float(it[7])) #Income for scale in sel area
-                    fsect = fsect + float(it[7])
-            self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
-            self.dlg.lblFoosec.setStyleSheet("QLabel {color: #a5a5a5;}")
+        inc = []
+        inct = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                inc.append(float(it[5])) #Income for scale in sel area
+                inct = inct + float(it[5])
+        self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
+        self.dlg.lblInc.setStyleSheet("QLabel {color: #e58e4c;}")
 
-            #Wellbeing
-            x1 = numpy.array(range(1,len(well)))
-            y1 = numpy.array(well)
-            wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
-            self.dlg.graphicsView.addItem(wellb)
+        fsec = []
+        fsect = 0
+        for it in self.graphItemsList:
+            if it[0] == scalename:
+                fsec.append(float(it[7])) #Income for scale in sel area
+                fsect = fsect + float(it[7])
+        self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
+        self.dlg.lblFoosec.setStyleSheet("QLabel {color: #a5a5a5;}")
 
-            #Income
-            x2 = numpy.array(range(1,len(inc)))
-            y2 = numpy.array(inc)
-            income = pg.BarGraphItem(x=x2-0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
-            self.dlg.graphicsView.addItem(income)
+        #Wellbeing
+        x1 = numpy.array(range(1,len(well)))
+        y1 = numpy.array(well)
+#        for t in range(1,len(well)):
+#            par[t] = QPen(QColor(255, 0, 0))
+        wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
+        #wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)), pens=par)
+        self.dlg.graphicsView.addItem(wellb)
 
-            #Food security
-            x3 = numpy.array(range(1,len(fsec)))
-            y3 = numpy.array(fsec)
-            foodsec = pg.BarGraphItem(x=x3+0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
-            self.dlg.graphicsView.addItem(foodsec)
+        #Income
+        x2 = numpy.array(range(1,len(inc)))
+        y2 = numpy.array(inc)
+        income = pg.BarGraphItem(x=x2-0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
+        self.dlg.graphicsView.addItem(income)
 
-        except:
-            self.dlg.error.setPlainText("Error drawing graph. Select a simple area with >2 points. [27]")
+        #Food security
+        x3 = numpy.array(range(1,len(fsec)))
+        y3 = numpy.array(fsec)
+        foodsec = pg.BarGraphItem(x=x3+0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
+        self.dlg.graphicsView.addItem(foodsec)
+
+
+    def tableWidgetSFClicked(self, row, column):
+        pass
+        #Deactivate for now since this requires more development such as deleting the previous shapes when running again
+        #self.redrawGraph(self.sfr)
+        #self.doGraphPointer(row+1)
 
 
     def tableWidgetLayersClicked(self, index):
@@ -759,6 +767,8 @@ class ELVIS:
             self.elvinf.lblENB.setPixmap(pixmap)
             pixmap = QPixmap(':/plugins/ELVIS/resources/wnb2.png')
             self.elvinf.lblWNB.setPixmap(pixmap)
+            pixmap = QPixmap(':/plugins/ELVIS/resources/cti2.png')
+            self.elvinf.lblCTI.setPixmap(pixmap)
             self.elvinf.show()
         except:
             self.dlg.error.setPlainText("Could not open info window. [59]")
@@ -1342,8 +1352,6 @@ class ELVIS:
                                 for feature in iter:
                                     geom_feat = feature.geometry()
                                 
-                                #No sure why this test was here. There are problems using it (no feature selected with smaller rubberband area)
-                                #if geom_rb.intersects(geom_feat):
                                 overlay_layer = QgsVectorLayer()
 
                                 for treeLayer in self.project.layerTreeRoot().findLayers():                
@@ -1355,10 +1363,15 @@ class ELVIS:
 
                                     if layer_t6.name() == "rubber_band":
                                         layer_to_clip = layer_t6
+    #********** TEST NEW for using complex polygon in shapefile rahter than rubberband
+    #                            layer_to_clip = QgsMapLayerRegistry.instance().mapLayersByName("test")[0]
+    #********** END TEST NEW
 
                                 #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
                                 processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
+                                                            
                                 xres_lay = QgsMapLayerRegistry.instance().mapLayersByName("Clipped")
+
                                 res_lay = QgsVectorLayer()
                                 #Get first layer that is returned (because maplayersbyname returns a list). Syntaxt ("Clipped")[0] does not work in somce QGIS versions
                                 for itl in xres_lay:
@@ -1541,21 +1554,21 @@ class ELVIS:
                                                                 cwellb = "{0:.4f}".format(round(cwellb,4))
                                                             except TypeError:
                                                                 cwellb = "Error"
-                                                                self.dlg.error.setPlainText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting. [42]")
+                                                                self.dlg.error.setPlainText("Some errors occurred while calculating wellbeing values. Values from this run are valid, except for those marked with 'Error'. [42-1]")
 
                                                             try:
                                                                 cinc = float(cg[5]) * rub / float(shapar)
                                                                 cinc = "{0:.4f}".format(round(cinc,4))
                                                             except TypeError:
                                                                 cinc = "Error"
-                                                                self.dlg.error.setPlainText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting. [42]")
+                                                                self.dlg.error.setPlainText("Some errors occurred while calculating income values. Values from this run are valid, except for those marked with 'Error'. [42-2]")
 
                                                             try:
                                                                 cfsec = float(cg[6]) * rub / float(shapar)
                                                                 cfsec = "{0:.4f}".format(round(cfsec,4))
                                                             except TypeError:
                                                                 cfsec = "Error"
-                                                                self.dlg.error.setPlainText("Error calculating area. Invalid rubberband geometry. Select an area that has at least three points and is not self-intersecting. [42]")
+                                                                self.dlg.error.setPlainText("Some errors occurred while calculating food security values. Values from this run are valid, except for those marked with 'Error'. [42-3]")
 
                                                             rowPosition = self.dlg.tableWidgetDetail.rowCount()
                                                             self.dlg.tableWidgetDetail.insertRow(rowPosition)
@@ -2061,6 +2074,7 @@ class ELVIS:
         self.dlgsavesel.butDelete.clicked.connect(self.butDeleteClicked)
         self.dlgsavesel.butNewArea.clicked.connect(self.butNewAreaClicked)
         self.dlgsavesel.butInsLastSelArea.clicked.connect(self.butInsLastSelAreaClicked)
+        self.dlgsavesel.butShapefile.clicked.connect(self.butShapefileClicked)
 
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(0,30)
         self.dlgsavesel.tableWidgetAOI.setColumnWidth(1,70)
@@ -2072,6 +2086,14 @@ class ELVIS:
         self.dlgsavesel.tableWidgetAOI.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.reqaoirecs()        
+
+
+    def butShapefileClicked(self):
+        fileo = QtGui.QFileDialog.getOpenFileName(None, 'Select shapefile with area of interest.', '', '*.shp')
+        filep = QDir.toNativeSeparators(fileo)
+        self.dlgsavesel.textAOIPtLst.clear()
+        self.dlgsavesel.textAOIPtLst.appendPlainText(filep)
+
 
 
     def butInsLastSelAreaClicked(self):
@@ -2329,3 +2351,24 @@ class PointTool2(QgsMapTool):
         self.info_window.labelCoord.setText(pttxt)
         self.info_window.show()
         self.info_window.activateWindow()
+
+class Anchor(pg.ItemGroup):
+    #Graphics item that anchors its position to the coordinate system inside a view box.
+    def __init__(self, view, pos, x=True, y=True):
+        pg.ItemGroup.__init__(self)
+        self.view = view
+        self.anchorPos = pg.Point(pos)
+        self.anchorAxes = (x, y)
+        view.sigRangeChanged.connect(self.updatePosition)
+
+    def updatePosition(self):
+        pos = self.pos()
+        anchorPos = self.parentItem().mapFromScene(self.view.mapViewToScene(self.anchorPos))
+        x, y = self.anchorAxes
+        if x:
+            pos.setX(anchorPos.x())
+        if y:
+            pos.setY(anchorPos.y())
+        self.setPos(pos)
+        print "pos upd"
+

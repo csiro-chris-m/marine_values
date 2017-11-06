@@ -54,6 +54,5 @@ class ELVISDialog(QtGui.QDialog, FORM_CLASS):
         #print self.defaultPath.toPlainText()
 
     def closeEvent(self, evnt):
-        print "*"
         super(ELVISDialog, self).closeEvent(evnt)
 

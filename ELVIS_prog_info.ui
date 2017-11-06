@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>367</width>
+    <width>384</width>
     <height>613</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>36</x>
      <y>580</y>
      <width>341</width>
      <height>32</height>
@@ -32,8 +32,8 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>139</x>
-     <y>39</y>
+     <x>151</x>
+     <y>33</y>
      <width>241</width>
      <height>51</height>
     </rect>
@@ -45,7 +45,7 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>204</x>
      <y>120</y>
      <width>21</width>
      <height>431</height>
@@ -58,25 +58,30 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>130</y>
+     <x>226</x>
+     <y>100</y>
      <width>131</width>
-     <height>361</height>
+     <height>441</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
    <property name="text">
-    <string>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris eu consequat lorem. Sed luctus mi vitae consectetur iaculis. Proin ut massa vel lacus suscipit imperdiet et ac orci. Donec sagittis tempor nisi non auctor. Integer auctor mauris posuere, blandit risus id, consequat sapien. Fusce volutpat enim vitae bibendum eleifend. Etiam quis ligula sit amet risus tristique dignissim non vel enim. Vivamus ut metus efficitur, malesuada nibh ac, dapibus ligula. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Proin at scelerisque risus. Quisque ipsum dui, interdum sed eros at, sagittis blandit enim. Suspendisse semper pharetra tellus, in feugiat massa tincidunt quis.</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Calibri,sans-serif'; color:#000000;&quot;&gt;This plugin was written by CSIRO O&amp;amp;A as part of the Values project which is a component of the Coral Triangle Initiative and funded jointly by Ausaid and CSIRO.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Calibri,sans-serif'; color:#000000;&quot;&gt;CSIRO wishes to thank our collaborators The Nature Conservancy, PNG and Australia.  We are grateful to the government of PNG, the provincial and local governments of West and East New Britain for their assistance with the implementation of the New Britain Values Database.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Calibri,sans-serif'; color:#000000;&quot;&gt;For more information please contact &lt;/span&gt;&lt;a href=&quot;mailto:donna.hayes@csiro.au&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;donna.hayes@csiro.au&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>14</x>
+     <x>21</x>
      <y>20</y>
-     <width>172</width>
+     <width>182</width>
      <height>541</height>
     </rect>
    </property>
@@ -108,12 +113,12 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="lblTNC">
+     <widget class="QLabel" name="lblCTI">
       <property name="text">
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>resources/tnc2.png</pixmap>
+       <pixmap>resources/cti2.png</pixmap>
       </property>
      </widget>
     </item>
@@ -150,6 +155,19 @@
       </property>
       <property name="pixmap">
        <pixmap>resources/wnb2.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="lblTNC">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap>resources/tnc2.png</pixmap>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>

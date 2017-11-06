@@ -20,5 +20,6 @@
         <file>resources/tnc2.png</file>
         <file>resources/enb2.png</file>
         <file>resources/wnb2.png</file>
+        <file>resources/cti2.png</file>
     </qresource>
 </RCC>
