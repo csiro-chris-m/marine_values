@@ -360,11 +360,6 @@ class ELVIS:
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
-#        #Define file ending list for which files ELVIS recognises as special files and which type 
-#        #of processing can be performed. All other shp files are ignored.
-#        self.SpatialProcessingAreas = ['_LLG','_DIS'] # Shapefiles ending in _LLG and _DIS are processed as area-dependent
-#        self.SpatialProcessingPoint = ['_ECO'] # Shapefiles ending in _ECO are processed as counts
-
         #List for items to graph
         self.graphItemsList = []
 
@@ -385,9 +380,8 @@ class ELVIS:
 
         #Run the dialog event loop
         result = self.dlg.exec_()
-        # See if OK was pressed
 
-        #if result:
+        # See if OK was pressed. If yes, the main function is terminated.
         if result == 1:
             pass
 
@@ -769,23 +763,28 @@ class ELVIS:
 
 
     def btnInfo2Clicked(self):
-        self.dlginfo2 = MVinfo2()
-        self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
-        self.dlginfo2.setModal(False)
-        self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
+        try:
+            if self.dlginfo2:
+                self.dlginfo2.activateWindow()
+        except: #If try fails then the window is not open. So we open a new instance.
+            self.dlginfo2 = MVinfo2()
+            self.dlginfo2.butCloseInfo2.clicked.connect(self.butCloseInfo2Clicked)
+            self.dlginfo2.setModal(False)
+            self.dlginfo2.setWindowIcon(QtGui.QIcon(':/plugins/ELVIS/resources/ELVIS16.png'))
 
-        QApplication.setOverrideCursor(Qt.WhatsThisCursor);
-        tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
-        self.iface.mapCanvas().setMapTool(tool2)
-        self.dlginfo2.tableWidget.setColumnWidth(0,200)
-        self.dlginfo2.tableWidget.setColumnWidth(1,70)
-        self.dlginfo2.tableWidget.setColumnWidth(2,150)
-        self.dlginfo2.tableWidget.setColumnWidth(3,150)
-        self.dlginfo2.show()
-        self.dlginfo2.setWindowTitle("ELVIS feature info")
+            QApplication.setOverrideCursor(Qt.WhatsThisCursor);
+            self.tool2 = PointTool2(self.iface.mapCanvas(), self.dlg.list_of_values, self.dlg.list_of_values_fields, self.dlginfo2)
+            self.iface.mapCanvas().setMapTool(self.tool2)
+            self.dlginfo2.tableWidget.setColumnWidth(0,200)
+            self.dlginfo2.tableWidget.setColumnWidth(1,70)
+            self.dlginfo2.tableWidget.setColumnWidth(2,150)
+            self.dlginfo2.tableWidget.setColumnWidth(3,150)
+            self.dlginfo2.show()
+            self.dlginfo2.setWindowTitle("ELVIS feature info")
 
 
     def butCloseInfo2Clicked(self):
+        self.iface.mapCanvas().unsetMapTool(self.tool2)
         self.dlginfo2.close()
 
     def InitLayerList(self):
@@ -1264,12 +1263,12 @@ class ELVIS:
         if clickedButton == Qt.LeftButton:
             self.myRubberBand.addPoint(currentPos)
 
-
         if clickedButton == Qt.RightButton:
             self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
             self.iface.mapCanvas().setMapTool(self.previousMapTool)
             self.RBMode = "user"
             self.procAreaSelection()
+
 
     def procAreaSelection(self):
         try:
@@ -2159,20 +2158,20 @@ class ELVIS:
 # ************************************************************************************
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_save_sel.ui'))
-
 class ELVISSaveSel(QtGui.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(ELVISSaveSel, self).__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setupUi(self)
 
 
 FORM4_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_info2.ui'))
-
 class MVinfo2(QtGui.QDialog, FORM4_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(MVinfo2, self).__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setupUi(self)
 
     def closeEvent(self, event):
@@ -2180,11 +2179,11 @@ class MVinfo2(QtGui.QDialog, FORM4_CLASS):
 
 
 FORM5_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ELVIS_prog_info.ui'))
-
 class ELVISProgramInfo(QtGui.QDialog, FORM5_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(ELVISProgramInfo, self).__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setupUi(self)
 
     def closeEvent(self, event):
