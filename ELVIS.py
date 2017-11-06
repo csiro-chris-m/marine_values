@@ -46,12 +46,6 @@
  *   -------------------------------------------------------------------   *
  *   Project files should be write-protected so user can not make changes  *
  *   -------------------------------------------------------------------   *
- *   Shapefile naming convention:                                          *
- *      ending in ... .LLG       - Processing as per LLGs                  *
- *      ending in ... .Districts - Processing as per Disctrics             *
- *      ending in ... .Features  - Processing as per countable features    *
- *      ending in ... .ECOvalues - Processing as per countable features    *
- *                                 without scale                           *
  *                                                                         *
  ***************************************************************************/
 """
@@ -366,10 +360,10 @@ class ELVIS:
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
-        #Define file ending list for which files ELVIS recognises as special files and which type 
-        #of processing can be performed. All other shp files are ignored.
-        self.SpatialProcessingAreas = ['_LLG','_DIS'] # Shapefiles ending in _LLG and _DIS are processed as area-dependent
-        self.SpatialProcessingPoint = ['_ECO'] # Shapefiles ending in _ECO are processed as counts
+#        #Define file ending list for which files ELVIS recognises as special files and which type 
+#        #of processing can be performed. All other shp files are ignored.
+#        self.SpatialProcessingAreas = ['_LLG','_DIS'] # Shapefiles ending in _LLG and _DIS are processed as area-dependent
+#        self.SpatialProcessingPoint = ['_ECO'] # Shapefiles ending in _ECO are processed as counts
 
         #List for items to graph
         self.graphItemsList = []
@@ -803,7 +797,7 @@ class ELVIS:
                     shapef = join(self.last_opened_project_dir, f)
                     if f.endswith('.shp'):
                         fo = os.path.splitext(f)[0] # w/o shp                    
-                        if basename(f).endswith('Districts.shp') or basename(f).endswith('Features.shp') or basename(f).endswith('LLG.shp') or basename(f).endswith('ECOvalues.shp'):
+                        if basename(f).endswith('_DIS.shp') or basename(f).endswith('_ECO.shp') or basename(f).endswith('_LLG.shp'):
                             cons = []
                             cons.append('99999')       # 0 - sortkey
                             cons.append('not loaded')  # 1 - loaded/ticked status
@@ -1335,17 +1329,15 @@ class ELVIS:
                 if layerIterator.type() == QgsMapLayer.VectorLayer:
     #POINT PROCESSING
                     if layerIterator.geometryType() == 2 or layerIterator.geometryType() == QGis.Point:
-                        if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                        if layname.endswith('_LLG') or layname.endswith('_DIS') or layname.endswith('_ECO'):
                             layer = layerIterator
                             if layer:
-                                if layname.endswith('LLG'):
+                                if layname.endswith('_LLG'):
                                     self.cur_scale_id = "LLG"
-                                if layname.endswith('Districts'):
-                                    self.cur_scale_id = "Districts"
-                                if layname.endswith('Features'):
-                                    self.cur_scale_id = "Features"
-                                if layname.endswith('ECOvalues'):
-                                    self.cur_scale_id = "ECOvalues"
+                                if layname.endswith('_DIS'):
+                                    self.cur_scale_id = "DIS"
+                                if layname.endswith('_ECO'):
+                                    self.cur_scale_id = "ECO"
 
                                 clp_lay = layer.name()
                                 iter = layer.getFeatures()
@@ -1385,8 +1377,8 @@ class ELVIS:
                                 model = QStandardItemModel(1,1)
 
         #***** AREA PERCENTAGES *************************************************************************************************
-                                #For layers which are processed spatially, ie area proportions are calculated for features: LLG and Districts
-                                if self.cur_scale_id == "LLG" or self.cur_scale_id == "Districts":
+                                #For layers which are processed area dependent
+                                if self.cur_scale_id == "LLG" or self.cur_scale_id == "DIS":
         # H E A D E R
                                     #Red header for each layer
                                     rowPosition = self.dlg.tableWidgetDetail.rowCount()
@@ -1404,7 +1396,7 @@ class ELVIS:
                                     idx_spatfeat = res_lay.fieldNameIndex('spat_feat')
                                     if self.cur_scale_id == "LLG":
                                         idx_llg_dist = res_lay.fieldNameIndex('llg')
-                                    if self.cur_scale_id == "Districts":
+                                    if self.cur_scale_id == "DIS":
                                         idx_llg_dist = res_lay.fieldNameIndex('district')
                                     idx_shapar = res_lay.fieldNameIndex('shape_area')
                                     idx_foodsec = res_lay.fieldNameIndex('food_secur')
@@ -1450,7 +1442,7 @@ class ELVIS:
                                                     # 6 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
 
                                                     for cgs in self.dlg.area_value_matrix:
-                                                        if (cgs[3] == "llg" and self.cur_scale_id == "LLG") or (cgs[3] == "dist" and self.cur_scale_id == "Districts"):
+                                                        if (cgs[3] == "llg" and self.cur_scale_id == "LLG") or (cgs[3] == "dist" and self.cur_scale_id == "DIS"):
                                                             #Looking for all that are in the same spatial_feature category
                                                             if cgs[1] == attry[idx_spatfeat]:
                                                                 #Looking for all that are in the same LLG/District
@@ -1543,7 +1535,7 @@ class ELVIS:
 
                                             #Process details
                                             for cg in self.dlg.area_value_matrix:
-                                                if (cg[3] == "llg" and self.cur_scale_id == "LLG") or (cg[3] == "dist" and self.cur_scale_id == "Districts"):
+                                                if (cg[3] == "llg" and self.cur_scale_id == "LLG") or (cg[3] == "dist" and self.cur_scale_id == "DIS"):
                                                     #Looking for all that are in the same spatial_feature category
                                                     if cg[1] == attry[idx_spatfeat]:
                                                         #Looking for all that are in the same LLG/District
@@ -1584,9 +1576,9 @@ class ELVIS:
 
         #****COUNTS************************************************************************
 
-        #For layers which are processed in counts: Features
+        #For layers which are processed in counts:
 
-                                if self.cur_scale_id == "Features" or self.cur_scale_id == "ECOvalues":
+                                if self.cur_scale_id == "ECO":
         # H E A D E R
                                     #Read header for each layer
                                     rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
@@ -2264,7 +2256,7 @@ class PointTool2(QgsMapTool):
             if lay.type() == QgsMapLayer.VectorLayer:
                 #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                 #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
-                if layname.endswith('LLG') or layname.endswith('Districts') or layname.endswith('Features') or layname.endswith('ECOvalues'):
+                if layname.endswith('_LLG') or layname.endswith('_DIS') or layname.endswith('_ECO'):
                     if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
                         fiter = lay.getFeatures()
                         for feature in fiter:
