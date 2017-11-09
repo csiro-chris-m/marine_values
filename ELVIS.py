@@ -51,7 +51,9 @@
 
 /***************************************************************************
  *   Known problems:                                                       *
- *                                                                         *
+ *   Inexplicable slow behaviour in previously fast functions (like        *
+ *   project load, area selection and info function could be caused by     *
+ *   the plugin reloader. Ensure that the newest version is in use.        *
  ***************************************************************************/
 
 """
@@ -485,27 +487,29 @@ class ELVIS:
 
 
     def openProjClicked(self):
-        fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
-        if fileo:
-            filep = QDir.toNativeSeparators(fileo)
-            qset = QSettings()
-            self.last_opened_project = qset.setValue("ELVIS/last_opened_project", filep)
-            self.last_opened_project_dir = ntpath.dirname(filep)
+        try:
+            fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
+            if fileo:
+                filep = QDir.toNativeSeparators(fileo)
+                qset = QSettings()
+                self.last_opened_project = qset.setValue("ELVIS/last_opened_project", filep)
+                self.last_opened_project_dir = ntpath.dirname(filep)
 
-            #Must instantiate bridge to sync stand-alone project with map tree        
-            bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
-            self.project.read(QFileInfo(fileo))
-            self.dlg.tableWidgetDetail.setRowCount(0)
-            self.dlg.tableWidgetDetailCounts.setRowCount(0)
-            self.dlg.listWidgetScaleNames.clear()
-            self.dlg.tableWidgetSF.setRowCount(0)
-            self.dlg.graphicsView.clear()
-            self.dlg.lblWell.setText("")
-            self.dlg.lblInc.setText("")
-            self.dlg.lblFoosec.setText("")
-            self.InitLayerList()
-            self.GUILayersResync()
-
+                #Must instantiate bridge to sync stand-alone project with map tree        
+                bridge = QgsLayerTreeMapCanvasBridge(self.project.layerTreeRoot(), self.iface.mapCanvas())
+                self.project.read(QFileInfo(fileo))
+                self.dlg.tableWidgetDetail.setRowCount(0)
+                self.dlg.tableWidgetDetailCounts.setRowCount(0)
+                self.dlg.listWidgetScaleNames.clear()
+                self.dlg.tableWidgetSF.setRowCount(0)
+                self.dlg.graphicsView.clear()
+                self.dlg.lblWell.setText("")
+                self.dlg.lblInc.setText("")
+                self.dlg.lblFoosec.setText("")
+                self.InitLayerList()
+                self.GUILayersResync()
+        except:
+            self.dlg.error.setPlainText("Error opening project. [55]")
 
     def doGraph(self):
         try:
@@ -624,81 +628,80 @@ class ELVIS:
         marker.setParentItem(anchor)
         
 
-
     def redrawGraph(self, scalename):
-#        try:
-        self.sfr = scalename
+        try:
+            self.sfr = scalename
 
-        self.dlg.lblWell.setText("")
-        self.dlg.lblInc.setText("")
-        self.dlg.lblFoosec.setText("")
+            self.dlg.lblWell.setText("")
+            self.dlg.lblInc.setText("")
+            self.dlg.lblFoosec.setText("")
 
-        self.dlg.tableWidgetSF.setRowCount(0)
-        self.dlg.graphicsView.clear()
+            self.dlg.tableWidgetSF.setRowCount(0)
+            self.dlg.graphicsView.clear()
 
-        #Get unique spatial features for this scale name and sort
-        fl = []
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                fl.append(str(it[1]))
-        lst3 = set(fl)
-        lst4 = sorted(lst3, key = operator.itemgetter(0))
+            #Get unique spatial features for this scale name and sort
+            fl = []
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    fl.append(str(it[1]))
+            lst3 = set(fl)
+            lst4 = sorted(lst3, key = operator.itemgetter(0))
 
-        for it in lst4:
-                rowPosition = self.dlg.tableWidgetSF.rowCount()
-                self.dlg.tableWidgetSF.insertRow(rowPosition)
-                self.dlg.tableWidgetSF.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
-                self.dlg.tableWidgetSF.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSF.verticalHeader().minimumSectionSize())
-                self.dlg.tableWidgetSF.setRowHeight(rowPosition,17)
+            for it in lst4:
+                    rowPosition = self.dlg.tableWidgetSF.rowCount()
+                    self.dlg.tableWidgetSF.insertRow(rowPosition)
+                    self.dlg.tableWidgetSF.setItem(rowPosition, 0, QtGui.QTableWidgetItem(it))
+                    self.dlg.tableWidgetSF.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetSF.verticalHeader().minimumSectionSize())
+                    self.dlg.tableWidgetSF.setRowHeight(rowPosition,17)
 
-        well = []
-        wellt = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                well.append(float(it[3])) #Wellb for scale in sel area
-                wellt = wellt + float(it[3])
-        self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
-        self.dlg.lblWell.setStyleSheet("QLabel {color: #1e6aaf;}")
+            well = []
+            wellt = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    well.append(float(it[3])) #Wellb for scale in sel area
+                    wellt = wellt + float(it[3])
+            self.dlg.lblWell.setText('Wellbeing:' + '{:6.2f}'.format(wellt))
+            self.dlg.lblWell.setStyleSheet("QLabel {color: #1e6aaf;}")
 
-        inc = []
-        inct = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                inc.append(float(it[5])) #Income for scale in sel area
-                inct = inct + float(it[5])
-        self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
-        self.dlg.lblInc.setStyleSheet("QLabel {color: #e58e4c;}")
+            inc = []
+            inct = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    inc.append(float(it[5])) #Income for scale in sel area
+                    inct = inct + float(it[5])
+            self.dlg.lblInc.setText('Income:' + '{:6.2f}'.format(inct))
+            self.dlg.lblInc.setStyleSheet("QLabel {color: #e58e4c;}")
 
-        fsec = []
-        fsect = 0
-        for it in self.graphItemsList:
-            if it[0] == scalename:
-                fsec.append(float(it[7])) #Income for scale in sel area
-                fsect = fsect + float(it[7])
-        self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
-        self.dlg.lblFoosec.setStyleSheet("QLabel {color: #a5a5a5;}")
+            fsec = []
+            fsect = 0
+            for it in self.graphItemsList:
+                if it[0] == scalename:
+                    fsec.append(float(it[7])) #Income for scale in sel area
+                    fsect = fsect + float(it[7])
+            self.dlg.lblFoosec.setText('Food sec.:' + '{:6.2f}'.format(fsect))
+            self.dlg.lblFoosec.setStyleSheet("QLabel {color: #a5a5a5;}")
 
-        #Wellbeing
-        x1 = numpy.array(range(1,len(well)))
-        y1 = numpy.array(well)
-#        for t in range(1,len(well)):
-#            par[t] = QPen(QColor(255, 0, 0))
-        wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
-        #wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)), pens=par)
-        self.dlg.graphicsView.addItem(wellb)
+            #Wellbeing
+            x1 = numpy.array(range(1,len(well)))
+            y1 = numpy.array(well)
 
-        #Income
-        x2 = numpy.array(range(1,len(inc)))
-        y2 = numpy.array(inc)
-        income = pg.BarGraphItem(x=x2-0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
-        self.dlg.graphicsView.addItem(income)
+            wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)))
+            #wellb = pg.BarGraphItem(x=x1, height=y1, width=0.2, brush=QBrush(QColor.fromRgb(30,106,175)), pens=par)
+            self.dlg.graphicsView.addItem(wellb)
 
-        #Food security
-        x3 = numpy.array(range(1,len(fsec)))
-        y3 = numpy.array(fsec)
-        foodsec = pg.BarGraphItem(x=x3+0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
-        self.dlg.graphicsView.addItem(foodsec)
+            #Income
+            x2 = numpy.array(range(1,len(inc)))
+            y2 = numpy.array(inc)
+            income = pg.BarGraphItem(x=x2-0.2, height=y2, width=0.2, brush=QBrush(QColor.fromRgb(229,142,76)))
+            self.dlg.graphicsView.addItem(income)
 
+            #Food security
+            x3 = numpy.array(range(1,len(fsec)))
+            y3 = numpy.array(fsec)
+            foodsec = pg.BarGraphItem(x=x3+0.2, height=y3, width=0.2, brush=QBrush(QColor.fromRgb(165,165,165)))
+            self.dlg.graphicsView.addItem(foodsec)
+        except:
+            self.dlg.error.setPlainText("Error redrawing graph. [96]")
 
     def tableWidgetSFClicked(self, row, column):
         pass
@@ -1812,53 +1815,53 @@ class ELVIS:
 
 
     def readSQLiteDB(self):
+        try:
+            if self.testReadELVISdb():
+                db = QSqlDatabase.addDatabase("QSQLITE");
+                # Reuse the path to DB to set database name
+                db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+                # Open the connection
+                db.open()
+                query = QSqlQuery(db)
+                query.exec_("select * from marine_values_all")
 
+                while query.next():
 
-        if self.testReadELVISdb():
-            db = QSqlDatabase.addDatabase("QSQLITE");
-            # Reuse the path to DB to set database name
-            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
-            # Open the connection
-            db.open()
-            query = QSqlQuery(db)
-            query.exec_("select * from marine_values_all")
+                    record = query.record()
+                    # **************************************************************************
+                    # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygons and points in the shapefiles)
+                    listv = [str(record.value(17)),      # 0 - Spatial feature name
+                       str(record.value(8)),               # 1 - Scale name
+                       str(record.value(7)),                # 2 - Scale id
+                       str(record.value(1)),                 # 3 - Value name
+                       str(record.value(12)),            # 4 - Value metric score
+                       str(record.value(4)),                # 5 - Value type
+                       str(record.value(10)),             # 6 - Value metric description
+                       str(record.value(18)),     # 7 - Spatial feature id
+                       str(record.value(2)),          # 8 - Value category
+                       str(record.value(6)),              # 9 - Scale type
+                       str(record.value(11)),       #10 - Value metric units
+                       str(record.value(19)),           #11 - Spatial feature description
+                       str(record.value(21)),          #12 - Date collected
+                       str(record.value(22)),      #13 - Metric score source
+                       str(record.value(23))]     #14 - Metric score contact
+                    # **************************************************************************
+                    self.dlg.list_of_values.append(listv)
 
-            while query.next():
-
-                record = query.record()
-                # **************************************************************************
-                # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygons and points in the shapefiles)
-                listv = [str(record.value(17)),      # 0 - Spatial feature name
-                   str(record.value(8)),               # 1 - Scale name
-                   str(record.value(7)),                # 2 - Scale id
-                   str(record.value(1)),                 # 3 - Value name
-                   str(record.value(12)),            # 4 - Value metric score
-                   str(record.value(4)),                # 5 - Value type
-                   str(record.value(10)),             # 6 - Value metric description
-                   str(record.value(18)),     # 7 - Spatial feature id
-                   str(record.value(2)),          # 8 - Value category
-                   str(record.value(6)),              # 9 - Scale type
-                   str(record.value(11)),       #10 - Value metric units
-                   str(record.value(19)),           #11 - Spatial feature description
-                   str(record.value(21)),          #12 - Date collected
-                   str(record.value(22)),      #13 - Metric score source
-                   str(record.value(23))]     #14 - Metric score contact
-                # **************************************************************************
-                self.dlg.list_of_values.append(listv)
-
-            query2 = db.exec_("select * from marine_values_value_matrix")
-            while query2.next():
-                recorda = query2.record()
-                # 1 - value_name
-                # 2 - spatial_feature_name
-                # 3 - scale_name
-                # 4 - scale_id
-                # 5 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
-                # 6 - income (= value_metric_score of records where value_metric_description = "Importance for income")
-                # 7 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
-                listw = [str(recorda.value(0)), str(recorda.value(1)), str(recorda.value(2)), str(recorda.value(3)), str(recorda.value(4)), str(recorda.value(5)), str(recorda.value(6))]
-                self.dlg.area_value_matrix.append(listw)
-
+                query2 = db.exec_("select * from marine_values_value_matrix")
+                while query2.next():
+                    recorda = query2.record()
+                    # 1 - value_name
+                    # 2 - spatial_feature_name
+                    # 3 - scale_name
+                    # 4 - scale_id
+                    # 5 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
+                    # 6 - income (= value_metric_score of records where value_metric_description = "Importance for income")
+                    # 7 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
+                    listw = [str(recorda.value(0)), str(recorda.value(1)), str(recorda.value(2)), str(recorda.value(3)), str(recorda.value(4)), str(recorda.value(5)), str(recorda.value(6))]
+                    self.dlg.area_value_matrix.append(listw)
+        except:
+            self.dlg.error.setPlainText("Error during read test of ELVIS database. [35]")
 
     def pushButtonOrigExtentClicked(self):
         self.OrigExtent()
@@ -2242,109 +2245,111 @@ class PointTool2(QgsMapTool):
         self.info_window = info_window
 
     def canvasReleaseEvent(self, event):
-        x = event.pos().x()
-        y = event.pos().y()
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        self.info_window.tableWidget.setRowCount(0)
+        try:
+            x = event.pos().x()
+            y = event.pos().y()
+            point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+            self.info_window.tableWidget.setRowCount(0)
 
-        regmap = QgsMapLayerRegistry.instance().mapLayers().values()
-        curcol = QColor.fromRgb(198,187,107)
-        col_alt = True
-        for lay in regmap:
-            layname = lay.name()
+            regmap = QgsMapLayerRegistry.instance().mapLayers().values()
+            curcol = QColor.fromRgb(198,187,107)
+            col_alt = True
+            for lay in regmap:
+                layname = lay.name()
 
-            #Only processing vector layers
-            if lay.type() == QgsMapLayer.VectorLayer:
-                #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
-                #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
-                if layname.endswith('_LLG') or layname.endswith('_DIS') or layname.endswith('_ECO'):
-                    if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
-                        fiter = lay.getFeatures()
-                        for feature in fiter:
-                            fgem = feature.geometry()
-                            #Does this polygon contain the mouse click ?
+                #Only processing vector layers
+                if lay.type() == QgsMapLayer.VectorLayer:
+                    #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
+                    #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
+                    if layname.endswith('_LLG') or layname.endswith('_DIS') or layname.endswith('_ECO'):
+                        if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
+                            fiter = lay.getFeatures()
+                            for feature in fiter:
+                                fgem = feature.geometry()
+                                #Does this polygon contain the mouse click ?
 
-                            isIn = False
-                            if lay.geometryType() == QGis.Point:
-                                buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
-                                if buf.contains(point):
-                                    isIn = True
+                                isIn = False
+                                if lay.geometryType() == QGis.Point:
+                                    buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
+                                    if buf.contains(point):
+                                        isIn = True
 
-                            if lay.geometryType() == 2:
-                                if fgem.contains(point): #Point is in polygon feature
-                                    isIn = True
+                                if lay.geometryType() == 2:
+                                    if fgem.contains(point): #Point is in polygon feature
+                                        isIn = True
 
-                            if isIn:
-                                if feature.attributes:
-                                    poly_id = ""
-                                    point_id = ""
-                                    idx_poly_id = lay.fieldNameIndex('poly_id')
-                                    idx_point_id = lay.fieldNameIndex('point_1')
-                                    idx_value_type = lay.fieldNameIndex('value_type')
-                                    proc_type = ""
-                                    attry = feature.attributes()
-                                    value_type = str(attry[idx_value_type])
-                                    poly_or_point_id = ""
+                                if isIn:
+                                    if feature.attributes:
+                                        poly_id = ""
+                                        point_id = ""
+                                        idx_poly_id = lay.fieldNameIndex('poly_id')
+                                        idx_point_id = lay.fieldNameIndex('point_1')
+                                        idx_value_type = lay.fieldNameIndex('value_type')
+                                        proc_type = ""
+                                        attry = feature.attributes()
+                                        value_type = str(attry[idx_value_type])
+                                        poly_or_point_id = ""
 
-                                    if attry[idx_poly_id] == None or idx_poly_id == -1:
-                                        if idx_point_id > -1: #Point ID field found
-                                            proc_type = "POINT"
-                                            point_id = "PNT_" + str(attry[idx_point_id])
-                                            poly_or_point_id = "PNT_" + str(attry[idx_point_id])
+                                        if attry[idx_poly_id] == None or idx_poly_id == -1:
+                                            if idx_point_id > -1: #Point ID field found
+                                                proc_type = "POINT"
+                                                point_id = "PNT_" + str(attry[idx_point_id])
+                                                poly_or_point_id = "PNT_" + str(attry[idx_point_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
                                         else:
-                                            proc_type = "NONE" #Could not find any point or poly fields
-                                    else:
-                                        if idx_poly_id > -1: #Poly ID field found
-                                            proc_type = "POLY"
-                                            poly_id = "POLY_" + str(attry[idx_poly_id])
-                                            poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
-                                        else:
-                                            proc_type = "NONE" #Could not find any point or poly fields
+                                            if idx_poly_id > -1: #Poly ID field found
+                                                proc_type = "POLY"
+                                                poly_id = "POLY_" + str(attry[idx_poly_id])
+                                                poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
+                                            else:
+                                                proc_type = "NONE" #Could not find any point or poly fields
 
-                                    if proc_type != "NONE":
-                                        for cfs in self.dlist_of_values:
-                                            cc = str(cfs[7])
-                                            if (value_type == str(cfs[5])):
-                                                if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
-                                                    if col_alt:
-                                                        curcol = QColor.fromRgb(198,187,107)
-                                                    else:
-                                                        curcol = QColor.fromRgb(255,255,255)
+                                        if proc_type != "NONE":
+                                            for cfs in self.dlist_of_values:
+                                                cc = str(cfs[7])
+                                                if (value_type == str(cfs[5])):
+                                                    if (proc_type == "POLY" and poly_id == cc) or (proc_type == "POINT" and point_id == cc):
+                                                        if col_alt:
+                                                            curcol = QColor.fromRgb(198,187,107)
+                                                        else:
+                                                            curcol = QColor.fromRgb(255,255,255)
 
-                                                    idx = 0
-                                                    for val in self.dlist_of_values_fields:
-                                                        if (val[0] == 'Value name' 
-                                                        or val[0] == 'Value category' 
-                                                        or val[0] == 'Value type' 
-                                                        or val[0] == 'Scale type'
-                                                        or val[0] == 'Scale name'
-                                                        or val[0] == 'Value metric description'
-                                                        or val[0] == 'Value metric units'
-                                                        or val[0] == 'Value metric score'
-                                                        or val[0] == 'Spatial feature name'
-                                                        or val[0] == 'Spatial feature description'
-                                                        or val[0] == 'Date collected'
-                                                        or val[0] == 'Metric score source'
-                                                        or val[0] == 'Metric score contact'):
+                                                        idx = 0
+                                                        for val in self.dlist_of_values_fields:
+                                                            if (val[0] == 'Value name' 
+                                                            or val[0] == 'Value category' 
+                                                            or val[0] == 'Value type' 
+                                                            or val[0] == 'Scale type'
+                                                            or val[0] == 'Scale name'
+                                                            or val[0] == 'Value metric description'
+                                                            or val[0] == 'Value metric units'
+                                                            or val[0] == 'Value metric score'
+                                                            or val[0] == 'Spatial feature name'
+                                                            or val[0] == 'Spatial feature description'
+                                                            or val[0] == 'Date collected'
+                                                            or val[0] == 'Metric score source'
+                                                            or val[0] == 'Metric score contact'):
 
-                                                            rowPosition = self.info_window.tableWidget.rowCount()
-                                                            self.info_window.tableWidget.insertRow(rowPosition)
-                                                            self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
-                                                            self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
-                                                            self.info_window.tableWidget.setRowHeight(rowPosition,17) 
-                                                            for col in range(0,4):
-                                                                self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
-                                                        idx = idx + 1
-                                                    col_alt = not col_alt
+                                                                rowPosition = self.info_window.tableWidget.rowCount()
+                                                                self.info_window.tableWidget.insertRow(rowPosition)
+                                                                self.info_window.tableWidget.setItem(rowPosition, 0, QtGui.QTableWidgetItem(layname))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 1, QtGui.QTableWidgetItem(poly_or_point_id))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 2, QtGui.QTableWidgetItem(val[0]))
+                                                                self.info_window.tableWidget.setItem(rowPosition, 3, QtGui.QTableWidgetItem(cfs[idx]))
+                                                                self.info_window.tableWidget.setRowHeight(rowPosition,17) 
+                                                                for col in range(0,4):
+                                                                    self.info_window.tableWidget.item(rowPosition,col).setBackground(QBrush(curcol))
+                                                            idx = idx + 1
+                                                        col_alt = not col_alt
 
-        #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
-        pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
-        self.info_window.labelCoord.setText(pttxt)
-        self.info_window.show()
-        self.info_window.activateWindow()
-
+            #Bring info window back to the front. It is not modal so clicking a point makes it move behind the QGIS window.
+            pttxt = "Point at " + "{0:.4f}".format(round(point.x(),4)) + ", " + "{0:.4f}".format(round(point.y(),4))
+            self.info_window.labelCoord.setText(pttxt)
+            self.info_window.show()
+            self.info_window.activateWindow()
+        except:
+            self.dlg.error.setPlainText("Error releasing canvas. [91]")
 class Anchor(pg.ItemGroup):
     #Graphics item that anchors its position to the coordinate system inside a view box.
     def __init__(self, view, pos, x=True, y=True):
