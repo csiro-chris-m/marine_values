@@ -131,7 +131,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Cancel</string>
+         <string>Close</string>
         </property>
         <property name="autoDefault">
          <bool>false</bool>

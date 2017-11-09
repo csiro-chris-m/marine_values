@@ -48,6 +48,12 @@
  *   -------------------------------------------------------------------   *
  *                                                                         *
  ***************************************************************************/
+
+/***************************************************************************
+ *   Known problems:                                                       *
+ *                                                                         *
+ ***************************************************************************/
+
 """
 
 import resources
@@ -357,6 +363,24 @@ class ELVIS:
 
         #Read database with ELVIS value details and keep in memory for quick access.
         self.dlg.list_of_values = []
+
+        self.dlg.list_of_values_fields = []
+        self.dlg.list_of_values_fields.append(['Spatial feature name', 'spatial_feature_name', 17])
+        self.dlg.list_of_values_fields.append(['Scale name', 'scale_name', 8])
+        self.dlg.list_of_values_fields.append(['Scale id', 'scale_id', 7])
+        self.dlg.list_of_values_fields.append(['Value name', 'value_name', 1])
+        self.dlg.list_of_values_fields.append(['Value metric score', 'value_metric_score', 12])
+        self.dlg.list_of_values_fields.append(['Value type', 'value_type', 4])
+        self.dlg.list_of_values_fields.append(['Value metric description', 'value_metric_description', 10])
+        self.dlg.list_of_values_fields.append(['Spatial feature id', 'spatial_feature_id', 18])
+        self.dlg.list_of_values_fields.append(['Value category', 'value_category', 2])
+        self.dlg.list_of_values_fields.append(['Scale type', 'scale_type', 6])
+        self.dlg.list_of_values_fields.append(['Value metric units', 'value_metric_units', 11])
+        self.dlg.list_of_values_fields.append(['Spatial feature description', 'spatial_feature_description', 19])
+        self.dlg.list_of_values_fields.append(['Date collected', 'date_collected', 21])
+        self.dlg.list_of_values_fields.append(['Metric score source', 'metric_score_source', 22])
+        self.dlg.list_of_values_fields.append(['Metric score contact', 'metric_score_contact', 23])
+
         self.dlg.area_value_matrix = []
         self.readSQLiteDB()
 
@@ -463,7 +487,6 @@ class ELVIS:
     def openProjClicked(self):
         fileo = QtGui.QFileDialog.getOpenFileName(None, 'Project file to open:', '', '*.qgs')
         if fileo:
-            self.dlg.error.setPlainText("ELIVS database is missing or incrorrectly structured. [34]")
             filep = QDir.toNativeSeparators(fileo)
             qset = QSettings()
             self.last_opened_project = qset.setValue("ELVIS/last_opened_project", filep)
@@ -696,8 +719,21 @@ class ELVIS:
                 #Was unchecked and has now been checked
                 if chk == 'not loaded' and cs.checkState() == QtCore.Qt.Checked:
                     sfile = os.path.join(self.last_opened_project_dir, nam) + ".shp"
-                    layer = self.iface.addVectorLayer(sfile, namwo, "ogr")
-                    QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+                    #Reference about nodes: https://www.lutraconsulting.co.uk/blog/2014/07/25/qgis-layer-tree-api-part-2/
+                    layer = QgsVectorLayer(sfile, namwo, "ogr")
+
+                    root = QgsProject.instance().layerTreeRoot()
+                    mygroup = root.findGroup("ELVIS")
+                    if mygroup == None:
+                        #In following line, the second parameter set to False means that the layer is not shown in the tree root. 
+                        #Hence we add manually to control where it goes
+                        ly = QgsMapLayerRegistry.instance().addMapLayer(layer, False) 
+                        root.addLayer(layer)
+                    else:
+                        ly = QgsMapLayerRegistry.instance().addMapLayer(layer, False) 
+                        mygroup.insertChildNode(-1, QgsLayerTreeLayer(layer.id()))
+
                     for agl in range(len(self.projectlayers)):
                         if nam == self.projectlayers[agl][3]:
                             self.projectlayers[agl][1] = 'loaded'
@@ -1658,7 +1694,6 @@ class ELVIS:
                                     nt = sorted(restab, key = operator.itemgetter(0, 1)) #Scale name and value type which will be retained when grouped later
 
                                     if res_feat:
-
                                         #Reorganise list to group by value categories
                                         newtab = []
                                         fg = []
@@ -1777,92 +1812,52 @@ class ELVIS:
 
 
     def readSQLiteDB(self):
-        try:
-            if self.testReadELVISdb():
-                db = QSqlDatabase.addDatabase("QSQLITE");
-                # Reuse the path to DB to set database name
-                db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
-                # Open the connection
-                db.open()
-                # query the table
-                query = db.exec_("select * from marine_values_all")
-                while query.next():
-                    record = query.record()
 
-                    idx_spatfeatnam = query.record().indexOf('spatial_feature_name')
-                    idx_scalenam = query.record().indexOf('scale_name')
-                    idx_scaleid = query.record().indexOf('scale_id')
-                    idx_valnam = query.record().indexOf('value_name')
-                    idx_valmetscore = query.record().indexOf('value_metric_score')
-                    idx_valtype = query.record().indexOf('value_type')
-                    idx_valmetdesc = query.record().indexOf('value_metric_description')
-                    idx_spatial_feature_id = query.record().indexOf('spatial_feature_id')
-                    idx_valuecategory = query.record().indexOf('value_category')
-                    idx_scaletype = query.record().indexOf('scale_type')
-                    idx_valuemetricunits = query.record().indexOf('value_metric_units')
-                    idx_spatfeatdesc = query.record().indexOf('spatial_feature_description')
-                    idx_datecollected = query.record().indexOf('date_collected')
-                    idx_metricscoresource = query.record().indexOf('metric_score_source')
-                    idx_metricscorecontact = query.record().indexOf('metric_score_contact')
 
-                    self.dlg.list_of_values_fields = []
-                    self.dlg.list_of_values_fields.append(['Spatial feature name', 'spatial_feature_name', idx_spatfeatnam])
-                    self.dlg.list_of_values_fields.append(['Scale name', 'scale_name', idx_scalenam])
-                    self.dlg.list_of_values_fields.append(['Scale id', 'scale_id', idx_scaleid])
-                    self.dlg.list_of_values_fields.append(['Value name', 'value_name', idx_valnam])
-                    self.dlg.list_of_values_fields.append(['Value metric score', 'value_metric_score', idx_valmetscore])
-                    self.dlg.list_of_values_fields.append(['Value type', 'value_type', idx_valtype])
-                    self.dlg.list_of_values_fields.append(['Value metric description', 'value_metric_description', idx_valmetdesc])
-                    self.dlg.list_of_values_fields.append(['Spatial feature id', 'spatial_feature_id', idx_spatial_feature_id])
-                    self.dlg.list_of_values_fields.append(['Value category', 'value_category', idx_valuecategory])
-                    self.dlg.list_of_values_fields.append(['Scale type', 'scale_type', idx_scaletype])
-                    self.dlg.list_of_values_fields.append(['Value metric units', 'value_metric_units', idx_valuemetricunits])
-                    self.dlg.list_of_values_fields.append(['Spatial feature description', 'spatial_feature_description', idx_spatfeatdesc])
-                    self.dlg.list_of_values_fields.append(['Date collected', 'date_collected', idx_datecollected])
-                    self.dlg.list_of_values_fields.append(['Metric score source', 'metric_score_source', idx_metricscoresource])
-                    self.dlg.list_of_values_fields.append(['Metric score contact', 'metric_score_contact', idx_metricscorecontact])
+        if self.testReadELVISdb():
+            db = QSqlDatabase.addDatabase("QSQLITE");
+            # Reuse the path to DB to set database name
+            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+            # Open the connection
+            db.open()
+            query = QSqlQuery(db)
+            query.exec_("select * from marine_values_all")
 
-                    # **************************************************************************
-                    # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygosn and points in the shapefiles)
-                    listv = [str(record.value(idx_spatfeatnam)),      # 0 - Spatial feature name
-                       str(record.value(idx_scalenam)),               # 1 - Scale name
-                       str(record.value(idx_scaleid)),                # 2 - Scale id
-                       str(record.value(idx_valnam)),                 # 3 - Value name
-                       str(record.value(idx_valmetscore)),            # 4 - Value metric score
-                       str(record.value(idx_valtype)),                # 5 - Value type
-                       str(record.value(idx_valmetdesc)),             # 6 - Value metric description
-                       str(record.value(idx_spatial_feature_id)),     # 7 - Spatial feature id
-                       str(record.value(idx_valuecategory)),          # 8 - Value category
-                       str(record.value(idx_scaletype)),              # 9 - Scale type
-                       str(record.value(idx_valuemetricunits)),       #10 - Value metric units
-                       str(record.value(idx_spatfeatdesc)),           #11 - Spatial feature description
-                       str(record.value(idx_datecollected)),          #12 - Date collected
-                       str(record.value(idx_metricscoresource)),      #13 - Metric score source
-                       str(record.value(idx_metricscorecontact))]     #14 - Metric score contact
-                    # **************************************************************************
-                    self.dlg.list_of_values.append(listv)
+            while query.next():
 
-                query2 = db.exec_("select * from marine_values_value_matrix")
-                while query2.next():
-                    recorda = query2.record()
-                    # 1 - value_name
-                    # 2 - spatial_feature_name
-                    # 3 - scale_name
-                    # 4 - scale_id
-                    # 5 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
-                    # 6 - income (= value_metric_score of records where value_metric_description = "Importance for income")
-                    # 7 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
-                    idy_valnam = query2.record().indexOf('value_name')
-                    idy_spatfeatnam = query2.record().indexOf('spatial_feature_name')
-                    idy_scalenam = query2.record().indexOf('scale_name')
-                    idy_scaleid = query2.record().indexOf('scale_id')
-                    idy_wellbeing = query2.record().indexOf('wellbeing')
-                    idy_income = query2.record().indexOf('income')
-                    idy_foodsec = query2.record().indexOf('food_security')
-                    listw = [str(recorda.value(idy_valnam)), str(recorda.value(idy_spatfeatnam)), str(recorda.value(idy_scalenam)), str(recorda.value(idy_scaleid)), str(recorda.value(idy_wellbeing)), str(recorda.value(idy_income)), str(recorda.value(idy_foodsec))]
-                    self.dlg.area_value_matrix.append(listw)
-        except:
-            self.dlg.error.setPlainText("Error reading values from database. [61]")
+                record = query.record()
+                # **************************************************************************
+                # self.dlg.list_of_values - copy of SQLite table marine_values_all (has values for polygons and points in the shapefiles)
+                listv = [str(record.value(17)),      # 0 - Spatial feature name
+                   str(record.value(8)),               # 1 - Scale name
+                   str(record.value(7)),                # 2 - Scale id
+                   str(record.value(1)),                 # 3 - Value name
+                   str(record.value(12)),            # 4 - Value metric score
+                   str(record.value(4)),                # 5 - Value type
+                   str(record.value(10)),             # 6 - Value metric description
+                   str(record.value(18)),     # 7 - Spatial feature id
+                   str(record.value(2)),          # 8 - Value category
+                   str(record.value(6)),              # 9 - Scale type
+                   str(record.value(11)),       #10 - Value metric units
+                   str(record.value(19)),           #11 - Spatial feature description
+                   str(record.value(21)),          #12 - Date collected
+                   str(record.value(22)),      #13 - Metric score source
+                   str(record.value(23))]     #14 - Metric score contact
+                # **************************************************************************
+                self.dlg.list_of_values.append(listv)
+
+            query2 = db.exec_("select * from marine_values_value_matrix")
+            while query2.next():
+                recorda = query2.record()
+                # 1 - value_name
+                # 2 - spatial_feature_name
+                # 3 - scale_name
+                # 4 - scale_id
+                # 5 - wellbeing (= value_metric_score of records where value_metric_description = "Importance for human wellbeing")
+                # 6 - income (= value_metric_score of records where value_metric_description = "Importance for income")
+                # 7 - food_security (= value_metric_score of records where value_metric_description = "Importance for food security")
+                listw = [str(recorda.value(0)), str(recorda.value(1)), str(recorda.value(2)), str(recorda.value(3)), str(recorda.value(4)), str(recorda.value(5)), str(recorda.value(6))]
+                self.dlg.area_value_matrix.append(listw)
 
 
     def pushButtonOrigExtentClicked(self):
@@ -1908,32 +1903,33 @@ class ELVIS:
 
     def butDeleteClicked(self):
         try:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Question)
-            msg.setText("Click Yes to delete this area permanently.")
-            msg.setInformativeText("")
-            msg.setWindowTitle("Confirm delete")
-            msg.setDetailedText("")
-            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            msg.buttonClicked.connect(self.msgbtn)
-            retval = msg.exec_()
-            if retval == QMessageBox.Yes:
-                if self.testReadELVISdb():
-                    try: 
-                        delid = str(int(self.dlgsavesel.fldID.text()))
-                        db = QSqlDatabase.addDatabase("QSQLITE");
-                        db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
-                        db.open()
-                        sqls = "delete from area_selections where id = " + delid
-                        query = db.exec_(sqls)
-                        db.commit()
-                        self.reqaoirecs()
-                        self.dlgsavesel.tableWidgetAOI.selectRow(0)
-                        self.tableWidgetAOIClicked(0, 0)
-                    except ValueError:
-                        self.dlg.error.setPlainText("Select the area to be deleted in the list at the top. [58]")
-            else:
-                pass
+            if self.dlgsavesel.tableWidgetAOI.rowCount() > 0:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Question)
+                msg.setText("Click Yes to delete this area permanently.")
+                msg.setInformativeText("")
+                msg.setWindowTitle("Confirm delete")
+                msg.setDetailedText("")
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msg.buttonClicked.connect(self.msgbtn)
+                retval = msg.exec_()
+                if retval == QMessageBox.Yes:
+                    if self.testReadELVISdb():
+                        try: 
+                            delid = str(int(self.dlgsavesel.fldID.text()))
+                            db = QSqlDatabase.addDatabase("QSQLITE");
+                            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+                            db.open()
+                            sqls = "delete from area_selections where id = " + delid
+                            query = db.exec_(sqls)
+                            db.commit()
+                            self.reqaoirecs()
+                            self.dlgsavesel.tableWidgetAOI.selectRow(0)
+                            self.tableWidgetAOIClicked(0, 0)
+                        except ValueError:
+                            self.dlg.error.setPlainText("Select the area to be deleted in the list at the top. [58]")
+                else:
+                    pass
         except:
             self.dlg.error.setPlainText("Unable to delete area. [29]")
 
@@ -2099,56 +2095,62 @@ class ELVIS:
 
 
     def reqaoirecs(self):
-        if self.testReadELVISdb():
-            AOIs = []
-            db = QSqlDatabase.addDatabase("QSQLITE");
-            db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
-            db.open()
-            query = db.exec_("select * from area_selections")
-            while query.next():
-                record = query.record()
-                listv = [str(record.value(0)), str(record.value(1)), str(record.value(2)), str(record.value(3)), str(record.value(4))]
-                AOIs.append(listv)
+        try:
+            if self.testReadELVISdb():
+                AOIs = []
+                db = QSqlDatabase.addDatabase("QSQLITE");
+                db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
+                db.open()
+                query = db.exec_("select * from area_selections")
+                while query.next():
+                    record = query.record()
+                    listv = [str(record.value(0)), str(record.value(1)), str(record.value(2)), str(record.value(3)), str(record.value(4))]
+                    AOIs.append(listv)
 
-            self.dlgsavesel.tableWidgetAOI.setRowCount(0)
-            for ele in AOIs:
-                rowPosition = self.dlgsavesel.tableWidgetAOI.rowCount()
-                self.dlgsavesel.tableWidgetAOI.insertRow(rowPosition)
-                self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 0, QtGui.QTableWidgetItem(ele[0]))
-                self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(ele[3])))
-                self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(ele[1])))
-                self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(ele[2])))
-                self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(ele[4])))
-                self.dlgsavesel.tableWidgetAOI.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+                self.dlgsavesel.tableWidgetAOI.setRowCount(0)
+                if len(AOIs) > 0:
+                    for ele in AOIs:
+                        rowPosition = self.dlgsavesel.tableWidgetAOI.rowCount()
+                        self.dlgsavesel.tableWidgetAOI.insertRow(rowPosition)
+                        self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 0, QtGui.QTableWidgetItem(ele[0]))
+                        self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(ele[3])))
+                        self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(ele[1])))
+                        self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 3, QtGui.QTableWidgetItem(str(ele[2])))
+                        self.dlgsavesel.tableWidgetAOI.setItem(rowPosition, 4, QtGui.QTableWidgetItem(str(ele[4])))
+                        self.dlgsavesel.tableWidgetAOI.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+        except:
+            self.dlg.error.setPlainText("No saved areas or error retrieving records. [97]")
 
 
     def tableWidgetAOIClicked(self, row, column):
+        try:
+            self.dlgsavesel.butNewArea.setEnabled(False)
 
-        self.dlgsavesel.butNewArea.setEnabled(False)
+            item = self.dlgsavesel.tableWidgetAOI.item(row, 2)
+            itm = item.text()
+            self.dlgsavesel.textAOIShortT.clear()
+            self.dlgsavesel.textAOIShortT.appendPlainText(itm)
 
-        item = self.dlgsavesel.tableWidgetAOI.item(row, 2)
-        itm = item.text()
-        self.dlgsavesel.textAOIShortT.clear()
-        self.dlgsavesel.textAOIShortT.appendPlainText(itm)
+            item = self.dlgsavesel.tableWidgetAOI.item(row, 3)
+            itm = item.text()
+            self.dlgsavesel.textAOIDesc.clear()
+            self.dlgsavesel.textAOIDesc.appendPlainText(itm)
 
-        item = self.dlgsavesel.tableWidgetAOI.item(row, 3)
-        itm = item.text()
-        self.dlgsavesel.textAOIDesc.clear()
-        self.dlgsavesel.textAOIDesc.appendPlainText(itm)
+            item = self.dlgsavesel.tableWidgetAOI.item(row, 1)
+            itm = item.text()
+            self.dlgsavesel.labelDate.setText(itm)
 
-        item = self.dlgsavesel.tableWidgetAOI.item(row, 1)
-        itm = item.text()
-        self.dlgsavesel.labelDate.setText(itm)
+            item = self.dlgsavesel.tableWidgetAOI.item(row, 4)
+            itm = item.text()
+            self.dlgsavesel.textAOIPtLst.clear()
+            self.dlgsavesel.textAOIPtLst.appendPlainText(itm)
 
-        item = self.dlgsavesel.tableWidgetAOI.item(row, 4)
-        itm = item.text()
-        self.dlgsavesel.textAOIPtLst.clear()
-        self.dlgsavesel.textAOIPtLst.appendPlainText(itm)
-
-        #Hidden field ID. So we can write changes to that record
-        item = self.dlgsavesel.tableWidgetAOI.item(row, 0)
-        itm = item.text()
-        self.dlgsavesel.fldID.setText(itm)
+            #Hidden field ID. So we can write changes to that record
+            item = self.dlgsavesel.tableWidgetAOI.item(row, 0)
+            itm = item.text()
+            self.dlgsavesel.fldID.setText(itm)
+        except:
+            self.dlg.error.setPlainText("No saved areas. [13]")
 
 #***********************************************
 #***********************************************
@@ -2361,5 +2363,4 @@ class Anchor(pg.ItemGroup):
         if y:
             pos.setY(anchorPos.y())
         self.setPos(pos)
-        print "pos upd"
 
