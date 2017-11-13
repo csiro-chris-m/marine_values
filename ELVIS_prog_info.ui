@@ -33,13 +33,13 @@
    <property name="geometry">
     <rect>
      <x>151</x>
-     <y>33</y>
+     <y>24</y>
      <width>241</width>
-     <height>51</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;CSIRO ELVIS&lt;br/&gt;&lt;/span&gt;Environmental Values Interrogation System&lt;br/&gt;v.1.8&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;CSIRO ELVIS&lt;br/&gt;&lt;/span&gt;Environmental and Livelihood Values &lt;br/&gt;Interrogation System&lt;br/&gt;v.1.8&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
   <widget class="Line" name="line">

@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 *    CSIRO - Commonwealth Scientific and Industrial Research Organisation  *
-*    ELVIS - EnvironmentaL Values Interrogation System                     *
+*    ELVIS - Environmental and Livelihood Values Interrogation System      *
 *    A QGIS plugin                                                         *
 * ------------------------------------------------------------------------ *
 *        begin                : 2016-12-25                                 *
@@ -50,9 +50,9 @@
  ***************************************************************************/
 
 /***************************************************************************
- *   Known problems:                                                       *
- *   Inexplicable slow behaviour in previously fast functions (like        *
- *   project load, area selection and info function could be caused by     *
+ *   Known issues:                                                         *
+ *   Inexplicable slow behaviour in previously fast functions, like        *
+ *   project load, area selection and info function, could be caused by    *
  *   the plugin reloader. Ensure that the newest version is in use.        *
  ***************************************************************************/
 
@@ -1917,6 +1917,9 @@ class ELVIS:
                 msg.buttonClicked.connect(self.msgbtn)
                 retval = msg.exec_()
                 if retval == QMessageBox.Yes:
+                    self.dlgsavesel.textAOIShortT.clear()
+                    self.dlgsavesel.textAOIDesc.clear()
+                    self.dlgsavesel.textAOIPtLst.clear()
                     if self.testReadELVISdb():
                         try: 
                             delid = str(int(self.dlgsavesel.fldID.text()))
@@ -1970,15 +1973,24 @@ class ELVIS:
                     sqls = "insert into area_selections (crea_date, short_name, description, point_list) values ('" + fdat1 + "','" + self.dlgsavesel.textAOIShortT.toPlainText() + "','" + self.dlgsavesel.textAOIDesc.toPlainText() + "','" + self.dlgsavesel.textAOIPtLst.toPlainText() + "')"
                     query = db.exec_(sqls)
                     db.commit()
-                    self.dlgsavesel.close()
+                    self.reqaoirecs()
+                    self.dlgsavesel.tableWidgetAOI.selectRow(0)
+                    self.tableWidgetAOIClicked(0, 0)
+                    #self.dlgsavesel.close()
                 else:
                     self.dlg.error.setPlainText("To save area ensure all required text is filled. [92]")
         else:
             self.dlg.error.setPlainText("ELIVS database is missing or incrorrectly structured. [93]")
 
 
-
     def butNewAreaClicked(self):
+
+        self.dlgsavesel.textAOIShortT.clear()
+        self.dlgsavesel.textAOIDesc.clear()
+        self.dlgsavesel.textAOIPtLst.clear()
+        self.dlgsavesel.fldID.clear()
+        self.dlgsavesel.labelDate.clear()
+        '''
         try:
             if self.testReadELVISdb():
                 AOIs = []
@@ -2004,7 +2016,7 @@ class ELVIS:
                     self.dlg.error.setPlainText("To save a new area ensure all required text is filled. [41]")
         except:
             self.dlg.error.setPlainText("Error writing new area to database. [93]")
-
+        '''
 
     def pushButtonOKClicked(self):
         try:
@@ -2127,7 +2139,7 @@ class ELVIS:
 
     def tableWidgetAOIClicked(self, row, column):
         try:
-            self.dlgsavesel.butNewArea.setEnabled(False)
+            #self.dlgsavesel.butNewArea.setEnabled(False)
 
             item = self.dlgsavesel.tableWidgetAOI.item(row, 2)
             itm = item.text()
@@ -2262,7 +2274,7 @@ class PointTool2(QgsMapTool):
                     #Only processing where name of layer = 'Marine Values' or 'MarineValues' for a wfs layer
                     #if layname[:13] == ("Marine Values") or layname[:12] == "MarineValues":
                     if layname.endswith('_LLG') or layname.endswith('_DIS') or layname.endswith('_ECO'):
-                        if lay.geometryType() == 2 or lay.geometryType() == QGis.Point:
+                        if lay.geometryType() == 2  or lay.geometryType() == QGis.Point:
                             fiter = lay.getFeatures()
                             for feature in fiter:
                                 fgem = feature.geometry()
@@ -2273,8 +2285,8 @@ class PointTool2(QgsMapTool):
                                     buf = fgem.buffer(0.005,100) #Within 500m radius of the pointfeature. Circle aprroximated with 100 segnments
                                     if buf.contains(point):
                                         isIn = True
-
-                                if lay.geometryType() == 2:
+                                
+                                if lay.geometryType() == 2 or lay.geometryType() == 0:
                                     if fgem.contains(point): #Point is in polygon feature
                                         isIn = True
 
@@ -2304,7 +2316,8 @@ class PointTool2(QgsMapTool):
                                                 poly_or_point_id = "POLY_" + str(attry[idx_poly_id])
                                             else:
                                                 proc_type = "NONE" #Could not find any point or poly fields
-
+                                        print poly_id
+                                        print point_id
                                         if proc_type != "NONE":
                                             for cfs in self.dlist_of_values:
                                                 cc = str(cfs[7])
