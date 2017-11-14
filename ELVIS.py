@@ -1306,10 +1306,10 @@ class ELVIS:
             self.iface.mapCanvas().xyCoordinates.disconnect(self.showRBCoordinates)
             self.iface.mapCanvas().setMapTool(self.previousMapTool)
             self.RBMode = "user"
-            self.procAreaSelection()
+            self.procAreaSelection('points')
 
 
-    def procAreaSelection(self):
+    def procAreaSelection(self, proc_type):
         try:
             self.dlg.tableWidgetDetail.setRowCount(0)
             self.dlg.tableWidgetDetailCounts.setRowCount(0)
@@ -1327,9 +1327,23 @@ class ELVIS:
             prx.addAttributes( [ QgsField("id", QVariant.Int) ] )
             # Add a feature
             fetx = QgsFeature()
-            fetx.setGeometry(geom_rb)
-            fetx.setAttributes([0, "Feature"])
-            prx.addFeatures( [ fetx ] )
+
+            #Get geometry from rubberband list
+            if proc_type == 'points':
+                fetx.setGeometry(geom_rb)
+                fetx.setAttributes([0, "Feature"])
+                prx.addFeatures( [ fetx ] )
+            #Get geometry from  polygon in shapefile (passed into this function via proc_type parameter)
+            else:
+                layer = QgsVectorLayer(proc_type, 'import_rubberband', "ogr")
+                cfeature = QgsFeature()
+                cfeatures = []
+                cfeat = layer.getFeatures()
+                for xfeature in cfeat:
+                    xgeometry = xfeature.geometry()
+                    cfeature.setGeometry(xgeometry)
+                    cfeatures.append(cfeature)
+                prx.addFeatures(cfeatures)
 
             #Change rubberband appearance
             symbol = QgsSymbolV2.defaultSymbol(vlx.geometryType())
@@ -1343,7 +1357,6 @@ class ELVIS:
             vlx.rendererV2().setSymbol(symbol)
             vlx.commitChanges()
             QgsMapLayerRegistry.instance().addMapLayers([vlx])
-
             #Getting coordinates to save rubber band to tableViewRB
             clay = QgsMapLayerRegistry.instance().mapLayersByName("rubber_band")[0]
 
@@ -1361,6 +1374,13 @@ class ELVIS:
                         self.rubberbandPoints.append(new_pt)
 
             ql = QgsMapLayerRegistry.instance().mapLayers().values()
+
+            #List of all countable values before sumarising
+            countable_nat_res = []
+            countable_eco_reg = []
+            countable_eco_stru_proc = []
+            countable_soc_cul = []
+
             for layerIterator in ql:
                 layname = layerIterator.name()
                 #Only processing vector layers
@@ -1393,9 +1413,6 @@ class ELVIS:
 
                                     if layer_t6.name() == "rubber_band":
                                         layer_to_clip = layer_t6
-    #********** TEST NEW for using complex polygon in shapefile rahter than rubberband
-    #                            layer_to_clip = QgsMapLayerRegistry.instance().mapLayersByName("test")[0]
-    #********** END TEST NEW
 
                                 #Clipping intersected area and saving it in-memory. It is layer named "Clipped"
                                 processing.runandload("qgis:clip", overlay_layer, layer_to_clip, None)
@@ -1619,6 +1636,17 @@ class ELVIS:
                                 if self.cur_scale_id == "ECO":
         # H E A D E R
                                     #Read header for each layer
+
+                                    '''
+                                    #********************************************************************************************
+                                    #The following deactivated code fills the countable values table
+                                    #by marking entries per layer. Each layer has a header and data after it.
+                                    #The code was changed since the team required the data to be summarized
+                                    #across layers. Rest of code has been left intact so will create results
+                                    #by layer but then added code for summarizing and printing across layers.
+                                    #Further down there are other deactivated code lines for the same reason.
+                                    #********************************************************************************************
+
                                     rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
                                     self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
                                     self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem(layname + " ----------------------------------"))
@@ -1629,6 +1657,7 @@ class ELVIS:
                                     self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
                                     self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
                                     self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+                                    '''
 
                                     lstValueTypes = []
                                     restab = []
@@ -1712,6 +1741,9 @@ class ELVIS:
                                                 fg.append(e1[3])
                                                 newtab.append(fg)
 
+                                                #Append to list of all countable values
+                                                countable_nat_res.append(fg)
+
                                         fg = []
                                         fg.append("Ecological regulatory values")
                                         fg.append("")
@@ -1724,6 +1756,9 @@ class ELVIS:
                                                 fg.append(e1[1])
                                                 fg.append(e1[3])
                                                 newtab.append(fg)
+
+                                                #Append to list of all countable values
+                                                countable_eco_reg.append(fg)
 
                                         fg = []
                                         fg.append("Ecosystem structure and process values")
@@ -1738,6 +1773,9 @@ class ELVIS:
                                                 fg.append(e1[3])
                                                 newtab.append(fg)
 
+                                                #Append to list of all countable values
+                                                countable_eco_stru_proc.append(fg)
+
                                         fg = []
                                         fg.append("Socio-cultural values")
                                         fg.append("")
@@ -1751,6 +1789,11 @@ class ELVIS:
                                                 fg.append(e1[3])
                                                 newtab.append(fg)
 
+                                                #Append to list of all countable values
+                                                countable_soc_cul.append(fg)
+
+                                        #Deactivated code. Reactivate is display by layer is required
+                                        '''
                                         for elem70 in newtab:
                                             rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
                                             self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
@@ -1761,16 +1804,174 @@ class ELVIS:
                                                 for col in range(0,3):
                                                     self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
                                             self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+                                        '''
 
             #**********************************************************************************
 
                                 else:
                                     pass
-
+                                #Since each layer has been clipped must remove each clip layer
                                 for treeLayer in self.project.layerTreeRoot().findLayers():                
                                     layer_f2 = treeLayer.layer()
                                     if layer_f2.name() == "Clipped":
                                         QgsMapLayerRegistry.instance().removeMapLayer(layer_f2.id())
+
+            #Summarise countable values. Deactivate this block to return to values by layer.
+            #Also requires deactivation of some code above.
+            rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
+            self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem('Natural resource values' + " ----------------------------------"))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 10)
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+            self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+            self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+
+            cou_nat_res = []
+            countable_nat_res = sorted(countable_nat_res, key = operator.itemgetter(0, 1))
+            if len(countable_nat_res) > 0:
+                for fl in countable_nat_res:
+                    if len(cou_nat_res) > 0:
+                        notfound = True
+                        for x in cou_nat_res:
+                            if fl[0].strip() == x[0].strip() and fl[1].strip() == x[1].strip():
+                                x[2] = x[2] + fl[2]
+                                notfound = False
+                                break
+                        if notfound:
+                            cou_nat_res.append(fl)
+                    else: #First one
+                        cou_nat_res.append(fl)
+
+                for elem80 in cou_nat_res:
+                    rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                    self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem80[0])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem80[1])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem80[2])))
+                    if not elem80[1]: #If second column is empty we assume it is a header and colour it
+                        for col in range(0,3):
+                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+
+
+            rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
+            self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem('Ecological regulatory values' + " ----------------------------------"))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 10)
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+            self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+            self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+
+            cou_eco_reg = []
+            countable_eco_reg = sorted(countable_eco_reg, key = operator.itemgetter(0, 1))
+            if len(countable_eco_reg) > 0:
+                for fl in countable_eco_reg:
+                    if len(cou_eco_reg) > 0:
+                        notfound = True
+                        for x in cou_eco_reg:
+                            if fl[0].strip() == x[0].strip() and fl[1].strip() == x[1].strip():
+                                x[2] = x[2] + fl[2]
+                                notfound = False
+                                break
+                        if notfound:
+                            cou_eco_reg.append(fl)
+                    else: #First one
+                        cou_eco_reg.append(fl)
+
+                for elem80 in cou_eco_reg:
+                    rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                    self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem80[0])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem80[1])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem80[2])))
+                    if not elem80[1]: #If second column is empty we assume it is a header and colour it
+                        for col in range(0,3):
+                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+
+
+            rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
+            self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem('Ecosystem structure and process values' + " ----------------------------------"))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 10)
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+            self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+            self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+
+            cou_eco_stru_proc = []
+            countable_eco_stru_proc = sorted(countable_eco_stru_proc, key = operator.itemgetter(0, 1))
+            if len(countable_eco_stru_proc) > 0:
+                for fl in countable_eco_stru_proc:
+                    if len(cou_eco_stru_proc) > 0:
+                        notfound = True
+                        for x in cou_eco_stru_proc:
+                            if fl[0].strip() == x[0].strip() and fl[1].strip() == x[1].strip():
+                                x[2] = x[2] + fl[2]
+                                notfound = False
+                                break
+                        if notfound:
+                            cou_eco_stru_proc.append(fl)
+                    else: #First one
+                        cou_eco_stru_proc.append(fl)
+
+                for elem80 in cou_eco_stru_proc:
+                    rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                    self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem80[0])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem80[1])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem80[2])))
+                    if not elem80[1]: #If second column is empty we assume it is a header and colour it
+                        for col in range(0,3):
+                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+
+
+            rowPositionC = self.dlg.tableWidgetDetailCounts.rowCount()
+            self.dlg.tableWidgetDetailCounts.insertRow(rowPositionC)
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 0, QtGui.QTableWidgetItem('Socio-cultural values' + " ----------------------------------"))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 1, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setItem(rowPositionC, 2, QtGui.QTableWidgetItem(""))
+            self.dlg.tableWidgetDetailCounts.setSpan(rowPositionC, 0, 1, 10)
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setForeground(QBrush(QColor.fromRgb(255,255,255)))
+            self.dlg.tableWidgetDetailCounts.item(rowPositionC,0).setBackground(QBrush(QColor.fromRgb(30,106,175)))
+            self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
+            self.dlg.tableWidgetDetailCounts.setRowHeight(rowPositionC,17)
+
+            cou_soc_cul = []
+            countable_soc_cul = sorted(countable_soc_cul, key = operator.itemgetter(0, 1))
+            if len(countable_soc_cul) > 0:
+                for fl in countable_soc_cul:
+                    if len(cou_soc_cul) > 0:
+                        notfound = True
+                        for x in cou_soc_cul:
+                            if fl[0].strip() == x[0].strip() and fl[1].strip() == x[1].strip():
+                                x[2] = x[2] + fl[2]
+                                notfound = False
+                                break
+                        if notfound:
+                            cou_soc_cul.append(fl)
+                    else: #First one
+                        cou_soc_cul.append(fl)
+
+                for elem80 in cou_soc_cul:
+                    rowPosition = self.dlg.tableWidgetDetailCounts.rowCount()
+                    self.dlg.tableWidgetDetailCounts.insertRow(rowPosition)
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 0, QtGui.QTableWidgetItem(str(elem80[0])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 1, QtGui.QTableWidgetItem(str(elem80[1])))
+                    self.dlg.tableWidgetDetailCounts.setItem(rowPosition, 2, QtGui.QTableWidgetItem(str(elem80[2])))
+                    if not elem80[1]: #If second column is empty we assume it is a header and colour it
+                        for col in range(0,3):
+                            self.dlg.tableWidgetDetailCounts.item(rowPosition,col).setBackground(QBrush(QColor.fromRgb(198,187,107)))
+                    self.dlg.tableWidgetDetailCounts.verticalHeader().setDefaultSectionSize(self.dlg.tableWidgetDetailCounts.verticalHeader().minimumSectionSize())
 
             #Create graph
             if self.dlg.tableWidgetDetail.columnCount() > 1:
@@ -1984,44 +2185,24 @@ class ELVIS:
 
 
     def butNewAreaClicked(self):
-
         self.dlgsavesel.textAOIShortT.clear()
         self.dlgsavesel.textAOIDesc.clear()
         self.dlgsavesel.textAOIPtLst.clear()
         self.dlgsavesel.fldID.clear()
         self.dlgsavesel.labelDate.clear()
-        '''
-        try:
-            if self.testReadELVISdb():
-                AOIs = []
-                db = QSqlDatabase.addDatabase("QSQLITE");
-                db.setDatabaseName(self.last_opened_project_dir + "\\ELVIS.db")
-                db.open()
 
-                if self.dlgsavesel.textAOIShortT.toPlainText() and self.dlgsavesel.textAOIDesc.toPlainText() and self.dlgsavesel.textAOIPtLst.toPlainText():
-                    ndate = datetime.date.today()
-                    n_day = "%02d" % (ndate.day,) 
-                    n_mon = "%02d" % (ndate.month,) 
-                    n_yea = "%04d" % (ndate.year,) 
-                    fdat1 = n_day + "/" + n_mon + "/" + n_yea
-
-                    sqls = "insert into area_selections (crea_date, short_name, description, point_list) values ('" + fdat1 + "','" + self.dlgsavesel.textAOIShortT.toPlainText() + "','" + self.dlgsavesel.textAOIDesc.toPlainText() + "','" + self.dlgsavesel.textAOIPtLst.toPlainText() + "')"
-                    query = db.exec_(sqls)
-                    db.commit()
-
-                    self.reqaoirecs()
-                    self.dlgsavesel.tableWidgetAOI.selectRow(0)
-                    self.tableWidgetAOIClicked(0, 0)
-                else:
-                    self.dlg.error.setPlainText("To save a new area ensure all required text is filled. [41]")
-        except:
-            self.dlg.error.setPlainText("Error writing new area to database. [93]")
-        '''
 
     def pushButtonOKClicked(self):
-        try:
-            fr = self.dlgsavesel.textAOIPtLst.toPlainText()
-            if fr:
+#        try:
+        fr = self.dlgsavesel.textAOIPtLst.toPlainText()
+        if fr:
+            if fr.endswith(".shp"):
+                if isfile(fr):
+                    self.procAreaSelection(fr)
+                    self.dlgsavesel.close()
+                else:
+                    self.dlg.error.setPlainText("Shapefile for input cannot be found. [82]")                
+            else:
                 self.myRubberBand = QgsRubberBand(self.iface.mapCanvas(),QGis.Polygon) #Init rubberband
                 fx = unicodedata.normalize('NFKD', fr).encode('ascii','ignore')
                 fx = fx.replace("[", "")
@@ -2041,10 +2222,10 @@ class ELVIS:
                 gPoly = QgsGeometry.fromPolygon(( [[ QgsPoint( pair[0], pair[1] ) for pair in NewRubberBand ]] ))
                 self.myRubberBand.addGeometry(gPoly, None)
                 self.RBMode = "saved"
-                self.procAreaSelection()
+                self.procAreaSelection('points')
                 self.dlgsavesel.close()
-        except:
-            self.dlg.error.setPlainText("Point list could not be read. Please verify format. [80]")                
+#        except:
+#            self.dlg.error.setPlainText("Point list could not be read. Please verify format. [80]")                
 
         
     def pushButtonCancelClicked(self):
@@ -2095,7 +2276,6 @@ class ELVIS:
         filep = QDir.toNativeSeparators(fileo)
         self.dlgsavesel.textAOIPtLst.clear()
         self.dlgsavesel.textAOIPtLst.appendPlainText(filep)
-
 
 
     def butInsLastSelAreaClicked(self):

@@ -147,7 +147,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Open</string>
+         <string>Run</string>
         </property>
        </widget>
        <widget class="QPushButton" name="buttonSave">
@@ -482,12 +482,12 @@
              </rect>
             </property>
             <property name="text">
-             <string>Read points in shp</string>
+             <string>Polygon vertices</string>
             </property>
            </widget>
            <widget class="QPushButton" name="butShapefile">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -498,7 +498,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>Use shapefile</string>
+             <string>Select file</string>
             </property>
            </widget>
           </widget>
